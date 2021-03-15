@@ -7,7 +7,7 @@ import (
 
 func main() {
 
-	strReverse := str.Reverse("hello world")
-	fmt.Printf("%v", strReverse)
+	strCamel := str.Camel("123-ldfjl-sdf")
+	fmt.Printf("%v", strCamel)
 
 }
