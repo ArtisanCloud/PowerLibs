@@ -1,7 +1,7 @@
 package main
 
 import (
-	"ArtisanCloud.com/go-libs/str"
+	"artisancloud.com/go-libs/str"
 	"fmt"
 )
 

@@ -1,8 +1,8 @@
 package helper
 
 import (
-	. "ArtisanCloud.com/go-libs/objects"
-	"ArtisanCloud.com/go-libs/str"
+	. "artisancloud.com/go-libs/objects"
+	"artisancloud.com/go-libs/str"
 	"crypto/sha256"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
