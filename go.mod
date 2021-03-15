@@ -1,4 +1,4 @@
-module artisancloud.com/go-libs
+module github.com/ArtisanCloud/go-libs
 
 go 1.15
 
