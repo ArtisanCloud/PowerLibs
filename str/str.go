@@ -1,7 +1,7 @@
 package str
 
 import (
-	. "artisancloud.com/go-libs/objects"
+	. "github.com/ArtisanCloud/go-libs/objects"
 	"regexp"
 	"strings"
 	"unicode"
