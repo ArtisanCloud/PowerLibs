@@ -114,8 +114,8 @@ func EncodePlainPassword(plainPassword string) (encodedPassword string) {
 
 func CheckPassword(hashedPassword string, password string) (isPasswordValid bool) {
 
-	fmt.Printf("hashedPassword %s\r\n", hashedPassword)
-	fmt.Printf("password %s\n", password)
+	//fmt.Printf("hashedPassword %s\r\n", hashedPassword)
+	//fmt.Printf("password %s\n", password)
 
 	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
 		fmt.Printf("%x", err)
