@@ -1,14 +1,41 @@
 package helper
 
 import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
 	. "github.com/ArtisanCloud/go-libs/objects"
 	"github.com/ArtisanCloud/go-libs/str"
-	"crypto/sha256"
-	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"reflect"
 )
+
+const (
+	empty = ""
+	tab   = "\t"
+)
+func PrettyJson(data interface{}) (string, error) {
+	buffer := new(bytes.Buffer)
+	encoder := json.NewEncoder(buffer)
+	encoder.SetIndent(empty, tab)
+
+	err := encoder.Encode(data)
+	if err != nil {
+		return empty, err
+	}
+	return buffer.String(), nil
+}
+
+func Dump(data interface{}) {
+
+	prettyJson, err := PrettyJson(data)
+	if err != nil {
+		fmt.Printf("convert pretty format error:%v", err)
+	}
+	fmt.Printf("%v", prettyJson)
+}
 
 /**
  * Transform Array Keys to Camel format
@@ -116,7 +143,6 @@ func CheckPassword(hashedPassword string, password string) (isPasswordValid bool
 
 	fmt.Printf("hashedPassword %s\r\n", hashedPassword)
 	fmt.Printf("password %s\n", password)
-
 
 	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
 		fmt.Printf("%x", err)
