@@ -16,6 +16,7 @@ const (
 	empty = ""
 	tab   = "\t"
 )
+
 func PrettyJson(data interface{}) (string, error) {
 	buffer := new(bytes.Buffer)
 	encoder := json.NewEncoder(buffer)
@@ -30,11 +31,24 @@ func PrettyJson(data interface{}) (string, error) {
 
 func Dump(data interface{}) {
 
-	prettyJson, err := PrettyJson(data)
+	var (
+		strData string
+		err     error
+	)
+	if reflect.TypeOf(data).Kind() != reflect.String {
+		////fmt.Printf("dump data: %+v\r\n", data)
+		strData = fmt.Sprintf("%+v",data)
+		//fmt.Printf("dump convert string: %+v\r\n", strData)
+
+	} else {
+		strData = data.(string)
+	}
+
+	prettyJson, err := PrettyJson(strData)
 	if err != nil {
 		fmt.Printf("convert pretty format error:%v", err)
 	}
-	fmt.Printf("%v", prettyJson)
+	fmt.Printf("%+v", prettyJson)
 }
 
 /**
