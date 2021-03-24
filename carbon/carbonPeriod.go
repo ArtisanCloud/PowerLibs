@@ -1,6 +1,7 @@
 package carbon
 
 import (
+	"errors"
 	"fmt"
 	"github.com/golang-module/carbon"
 	"reflect"
@@ -32,28 +33,28 @@ func CreateCarbonPeriod() (p *CarbonPeriod) {
 
 func (period *CarbonPeriod) SetStartDate(date interface{}, inclusive interface{}) *CarbonPeriod {
 
-	fmt.Println("set start datetime")
-	setDate(period.startDatetime, date)
+	//fmt.Println("set start datetime")
+	setDate(&period.startDatetime, date)
 	return period
 }
 
 func (period *CarbonPeriod) SetEndDate(date interface{}, inclusive interface{}) *CarbonPeriod {
 
-	fmt.Println("set end datetime")
-	setDate(period.startDatetime, date)
+	//fmt.Println("set end datetime")
+	setDate(&period.endDatetime, date)
 
 	return period
 }
 
-func setDate(toSetDate *carbon.Carbon, date interface{}) *carbon.Carbon {
+func setDate(toSetDate **carbon.Carbon, date interface{}) (err error) {
 	dType := reflect.TypeOf(date).String()
-	fmt.Printf("%v\r\n", dType)
+	//fmt.Printf("%v\r\n", dType)
 	// 解析字符串
 	if dType == "string" {
 		parsedDate := carbon.Parse(date.(string))
 		if parsedDate.Error == nil {
 
-			toSetDate = &parsedDate
+			*toSetDate = &parsedDate
 		} else {
 			panic("Invalid date string format.")
 		}
@@ -61,26 +62,26 @@ func setDate(toSetDate *carbon.Carbon, date interface{}) *carbon.Carbon {
 	} else if dType == "carbon.Carbon" {
 		// 直接赋值carbon指针
 		ptr := date.(carbon.Carbon)
-		toSetDate = &ptr
+		*toSetDate = &ptr
 	} else if dType == "*carbon.Carbon" {
 		// 直接赋值carbon指针
-		toSetDate = date.(*carbon.Carbon)
+		*toSetDate = date.(*carbon.Carbon)
 	} else {
 		// 如果不是string或者*carbon.Carbon， 抛出panic
-		panic("Invalid date.")
+		err = errors.New("Invalid date.")
 
 	}
 
-	return toSetDate
+	return nil
 }
 
 func (period *CarbonPeriod) Overlaps(insideRange *CarbonPeriod) bool {
 
 	//fmt.Printf("start is : %#v", period.startDatetime.ToDateTimeString())
-	fmt.Printf("current end %d\r\n", period.calculateEnd())
-	fmt.Printf("range start %d\r\n", insideRange.calculateStart())
-	fmt.Printf("range end %d\r\n", insideRange.calculateEnd())
-	fmt.Printf("current start %d\r\n", period.calculateStart())
+	fmt.Printf("current start :%s %d\r\n", period.startDatetime.ToString(), period.calculateStart())
+	fmt.Printf("current end   :%s %d\r\n", period.endDatetime.ToString(), period.calculateEnd())
+	fmt.Printf("range start   :%s %d\r\n", insideRange.startDatetime.ToString(), insideRange.calculateStart())
+	fmt.Printf("range end     :%s %d\r\n\n", insideRange.endDatetime.ToString(), insideRange.calculateEnd())
 
 	return period.calculateEnd() > insideRange.calculateStart() && insideRange.calculateEnd() > period.calculateStart()
 }
