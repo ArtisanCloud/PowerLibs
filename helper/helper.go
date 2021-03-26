@@ -5,7 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	. "github.com/ArtisanCloud/go-libs/objects"
+	. "github.com/ArtisanCloud/go-libs/object"
 	"github.com/ArtisanCloud/go-libs/str"
 	"golang.org/x/crypto/bcrypt"
 	"log"
@@ -29,15 +29,20 @@ func PrettyJson(data interface{}) (string, error) {
 	return buffer.String(), nil
 }
 
-func Dump(data interface{}) {
+func Dump(datas ...interface{}) {
+	for _, data := range datas {
+		dump(data)
+	}
+}
 
+func dump(data interface{})  {
 	var (
 		strData string
 		err     error
 	)
 	if reflect.TypeOf(data).Kind() != reflect.String {
 		////fmt.Printf("dump data: %+v\r\n", data)
-		strData = fmt.Sprintf("%+v",data)
+		strData = fmt.Sprintf("%+v", data)
 		//fmt.Printf("dump convert string: %+v\r\n", strData)
 
 	} else {

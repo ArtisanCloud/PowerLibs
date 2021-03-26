@@ -1,3 +1,5 @@
+github.com/go-redis/redis v6.15.9+incompatible h1:K0pv1D7EQUjfyoMql+r/jZqCLizCGKFlFgcHWWmHQjg=
+github.com/go-redis/redis v6.15.9+incompatible/go.mod h1:NAIEuMOZ/fxfXJIrKDQDz8wamY7mA7PouImQ2Jvg6kA=
 github.com/golang-module/carbon v1.3.5 h1:Iv/lb1AIiQ87IdEtGReuh4YMR5H5MU+BMd30w0hiN04=
 github.com/golang-module/carbon v1.3.5/go.mod h1:wIIzB2BwewCNV4KyXfAASbAIsCJpwceR9JwVrgqdLIw=
 golang.org/x/crypto v0.0.0-20210314154223-e6e6c4f2bb5b h1:wSOdpTq0/eI46Ez/LkDwIsAKA71YP2SRKBODiRWM0as=
