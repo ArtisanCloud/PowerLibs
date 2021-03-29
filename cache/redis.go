@@ -1,9 +1,11 @@
 package cache
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/ArtisanCloud/go-libs/object"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	"time"
 )
 
@@ -12,6 +14,14 @@ type GRedis struct {
 	defaultExpiration time.Duration
 	lockRetries       int
 }
+
+const SYSTEM_CACHE_TIMEOUT = 60 * 60
+const SYSTEM_CACHE_TIMEOUT_MINUTE = 60
+const SYSTEM_CACHE_TIMEOUT_HOUR = 60 * 60
+const SYSTEM_CACHE_TIMEOUT_DAY = 60 * 60 * 24
+const SYSTEM_CACHE_TIMEOUT_MONTH = 60 * 60 * 24 * 30
+const SYSTEM_CACHE_TIMEOUT_SEASON = 60 * 60 * 24 * 30 * 3
+const SYSTEM_CACHE_TIMEOUT_YEAR = 60 * 60 * 24 * 30 * 3 * 12
 
 const (
 	defaultMaxIdle        = 5
@@ -38,6 +48,8 @@ type RedisOptions struct {
 	TimeoutWrite   int
 	TimeoutIdle    int
 }
+
+var CTXRedis = context.Background()
 
 const lockRetries = 5
 
@@ -116,15 +128,18 @@ func (gr *GRedis) Set(key string, value interface{}, expires time.Duration) erro
 	if err != nil {
 		return err
 	}
-	return gr.Pool.Set(key, b, expires).Err()
+	cmd := gr.Pool.Set(CTXRedis, key, b, expires)
+	//re:= cmd.String()
+	//fmt.Printf("result:", re)
+
+	return cmd.Err()
 }
 
 func (gr *GRedis) Get(key string, ptrValue interface{}) error {
-	b, err := gr.Pool.Get(key).Bytes()
+	b, err := gr.Pool.Get(CTXRedis, key).Bytes()
 	if err == redis.Nil {
 		return ErrCacheMiss
 	}
-
 	if err != nil {
 		return err
 	}
@@ -133,7 +148,7 @@ func (gr *GRedis) Get(key string, ptrValue interface{}) error {
 }
 
 func (gr *GRedis) GetMulti(keys ...string) (object.HashMap, error) {
-	res, err := gr.Pool.MGet(keys...).Result()
+	res, err := gr.Pool.MGet(CTXRedis, keys...).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -150,15 +165,15 @@ func (gr *GRedis) GetMulti(keys ...string) (object.HashMap, error) {
 }
 
 func (gr *GRedis) Delete(key string) error {
-	return gr.Pool.Del(key).Err()
+	return gr.Pool.Del(CTXRedis, key).Err()
 }
 
 func (gr *GRedis) Keys() ([]string, error) {
-	return gr.Pool.Keys("*").Result()
+	return gr.Pool.Keys(CTXRedis, "*").Result()
 }
 
 func (gr *GRedis) Flush() error {
-	return gr.Pool.FlushAll().Err()
+	return gr.Pool.FlushAll(CTXRedis).Err()
 }
 
 /**
@@ -169,21 +184,28 @@ func (gr *GRedis) Flush() error {
  * @param  \Closure  callback
  * @return mixed
  */
-func (gr *GRedis) Remember(key string, ttl interface{}, callback func() interface{}) interface{} {
+func (gr *GRedis) Remember(key string, ttl time.Duration, callback func() interface{}) (obj interface{}, err error) {
 
 	var value interface{}
-	err := gr.Get(key, &value)
+	err = gr.Get(key, &value)
 
 	// If the item exists in the cache we will just return this immediately and if
 	// not we will execute the given Closure and cache the result of that for a
 	// given number of seconds so it's available for all subsequent requests.
-	if err != nil {
-		return value
-	}
-	value = callback()
-	gr.Put(key, value, ttl)
+	if err != nil && err != ErrCacheMiss {
+		return nil, err
 
-	return value
+	} else if value != nil {
+		return value, err
+	}
+
+	value = callback()
+	result := gr.Put(key, value, ttl)
+	if !result {
+		panic(fmt.Sprintf("remember cache put err, ttl:%d", ttl))
+	}
+	// ErrCacheMiss and query value from source
+	return value, err
 }
 
 /**
@@ -194,31 +216,32 @@ func (gr *GRedis) Remember(key string, ttl interface{}, callback func() interfac
  * @param  \DateTimeInterface|\DateInterval|int|null  ttl
  * @return bool
  */
-func (gr *GRedis) Put(key interface{}, value interface{}, ttl interface{}) bool {
+func (gr *GRedis) Put(key interface{}, value interface{}, ttl time.Duration) bool {
 	// key如果是数组
-	if arrayKey, ok := key.([]interface{}); !ok {
-		return gr.PutMany(arrayKey, value)
-	}
-	//
+	//if arrayKey, ok := key.([]interface{}); !ok {
+	//	return gr.PutMany(arrayKey, value)
+	//}
+
 	//if ttl == nil {
 	//	return gr.forever(key, value)
 	//}
-	//
-	//seconds = gr.getSeconds(ttl)
+
+	//seconds := gr.GetSeconds(ttl)
 	//
 	//if seconds <= 0 {
-	//	return gr.forget(key)
-	//}
-	//
-	//result = gr.store- > put(gr.itemKey(key), value, seconds)
-	//
-	//if result {
-	//	gr.event(new
-	//	KeyWritten(key, value, seconds))
+	//	return gr.Delete(key)
 	//}
 
-	//return result
-	return false
+	//result = gr.Pool.Put(gr.itemKey(key), value, seconds)
+
+	err := gr.Set(key.(string), value, ttl)
+	if err != nil {
+		panic(err)
+		return false
+	}
+
+	return true
+
 }
 
 /**
@@ -228,7 +251,7 @@ func (gr *GRedis) Put(key interface{}, value interface{}, ttl interface{}) bool 
  * @param  \DateTimeInterface|\DateInterval|int|null  ttl
  * @return bool
  */
-func (gr *GRedis) PutMany(values object.Array, ttl interface{}) bool {
+func (gr *GRedis) PutMany(values object.Array, ttl time.Duration) bool {
 	//if ttl == nil {
 	//	return gr.PutManyForever(values)
 	//}
@@ -269,7 +292,7 @@ func (gr *GRedis) PutManyForever(values []interface{}) bool {
  * @param  \DateTimeInterface|\DateInterval|int  ttl
  * @return int
  */
-func (gr *GRedis) GetSeconds(ttl interface{}) int {
+func (gr *GRedis) GetSeconds(ttl time.Duration) int {
 	//duration := gr.ParseDateInterval(ttl)
 	//
 	//if reflect.Type(duration).Kind() == DateTimeInterface {
@@ -282,4 +305,27 @@ func (gr *GRedis) GetSeconds(ttl interface{}) int {
 	//	return 0
 	//}
 	return 0
+}
+
+func (gr *GRedis) SetByTags(key string, val interface{}, tags []string, expiry time.Duration) error {
+	pipe := gr.Pool.TxPipeline()
+	for _, tag := range tags {
+		pipe.SAdd(CTXRedis, tag, key)
+		pipe.Expire(CTXRedis, tag, expiry)
+	}
+
+	pipe.Set(CTXRedis, key, val, expiry)
+
+	_, errExec := pipe.Exec(CTXRedis)
+	return errExec
+}
+
+func (gr *GRedis) Invalidate(tags []string) {
+	keys := make([]string, 0)
+	for _, tag := range tags {
+		k, _ := gr.Pool.SMembers(CTXRedis, tag).Result()
+		keys = append(keys, tag)
+		keys = append(keys, k...)
+	}
+	gr.Pool.Del(CTXRedis, keys...)
 }

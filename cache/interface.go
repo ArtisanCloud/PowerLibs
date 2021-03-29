@@ -1,5 +1,7 @@
 package cache
 
+import "github.com/ArtisanCloud/go-libs/object"
+
 type CacheInterface interface {
 
 
@@ -16,7 +18,7 @@ type CacheInterface interface {
 	//* @panic InvalidArgumentException
 	//*   MUST be thrown if the key string,is not a legal value.
 	//*/
-	//Get(key string, defaultValue object.HashMap) interface{}
+	Get(key string, defaultValue object.HashMap) interface{}
 	//
 	///**
 	//* Persists data in the cache, uniquely referenced by a key with an optional expiration TTL time.
@@ -32,7 +34,7 @@ type CacheInterface interface {
 	//* @panic InvalidArgumentException
 	//*   MUST be thrown if the key string,is not a legal value.
 	//*/
-	//Set(key string, value object.HashMap, ttl int) bool
+	Set(key string, value object.HashMap, ttl int) bool
 	//
 	///**
 	//* Delete an item from the cache by its unique key.
