@@ -3,6 +3,8 @@ package object
 type Array []interface{}
 
 
+
+
 func InArray(needle interface{}, hystack interface{}) bool {
 	switch key := needle.(type) {
 	case string:

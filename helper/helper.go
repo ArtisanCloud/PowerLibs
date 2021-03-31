@@ -1,9 +1,7 @@
 package helper
 
 import (
-	"bytes"
 	"crypto/sha256"
-	"encoding/json"
 	"fmt"
 	. "github.com/ArtisanCloud/go-libs/object"
 	"github.com/ArtisanCloud/go-libs/str"
@@ -12,52 +10,8 @@ import (
 	"reflect"
 )
 
-const (
-	empty = ""
-	tab   = "\t"
-)
-
-func PrettyJson(data interface{}) (string, error) {
-	buffer := new(bytes.Buffer)
-	encoder := json.NewEncoder(buffer)
-	encoder.SetIndent(empty, tab)
-
-	err := encoder.Encode(data)
-	if err != nil {
-		return empty, err
-	}
-	return buffer.String(), nil
-}
-
-func Dump(datas ...interface{}) {
-	for _, data := range datas {
-		dump(data)
-	}
-}
-
-func dump(data interface{})  {
-	var (
-		strData string
-		err     error
-	)
-	if reflect.TypeOf(data).Kind() != reflect.String {
-		////fmt.Printf("dump data: %+v\r\n", data)
-		strData = fmt.Sprintf("%+v", data)
-		//fmt.Printf("dump convert string: %+v\r\n", strData)
-
-	} else {
-		strData = data.(string)
-	}
-
-	prettyJson, err := PrettyJson(strData)
-	if err != nil {
-		fmt.Printf("convert pretty format error:%v", err)
-	}
-	fmt.Printf("%+v", prettyJson)
-}
-
 /**
- * Transform Array Keys to Camel format
+ * Transform Array Keys to Camel fmt
  *
  * @param  string $mx
  * @return strID
@@ -77,7 +31,7 @@ func TransformArrayKeysToCamel(arrayData HashMap) HashMap {
 }
 
 /**
- * Transform Array Keys to Snake format
+ * Transform Array Keys to Snake fmt
  *
  * @param  string $mx
  * @return strID
