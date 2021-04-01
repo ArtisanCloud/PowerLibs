@@ -142,7 +142,7 @@ type CacheInterface interface {
 	//* @param  \DateTimeInterface|\DateInterval|int|null  ttl
 	//* @return bool
 	//*/
-	//Add(key string, value, ttl int) bool
+	Add(key string, value, ttl int) bool
 	//
 	///**
 	//* Increment the value of an item in the cache.
@@ -179,7 +179,7 @@ type CacheInterface interface {
 	//* @param  \Closure  callback
 	//* @return mixed
 	//*/
-	//Remember(key string, ttl, callback func()) interface{}
+	Remember(key string, ttl, callback func()) interface{}
 	//
 	///**
 	//* Get an item from the cache, or execute the given Closure and store the result forever.

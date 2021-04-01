@@ -123,6 +123,20 @@ func (r *RedisOptions) initDefaults() *RedisOptions {
 	return r
 }
 
+func (gr *GRedis) Add(key string, value interface{}, ttl time.Duration) (err error) {
+
+	// If the store has an "add" method we will call the method on the store so it
+	// has a chance to override this logic. Some drivers better support the way
+	// this operation should work with a total "atomic" implementation of it.
+	var obj interface{}
+	err = gr.Get(key, obj)
+	if err == ErrCacheMiss {
+		return gr.Set(key, value, ttl)
+	}
+
+	return err
+}
+
 func (gr *GRedis) Set(key string, value interface{}, expires time.Duration) error {
 	b, err := json.Marshal(value)
 	if err != nil {
@@ -218,7 +232,7 @@ func (gr *GRedis) Remember(key string, ttl time.Duration, callback func() interf
  */
 func (gr *GRedis) Put(key interface{}, value interface{}, ttl time.Duration) bool {
 	// key如果是数组
-	//if arrayKey, ok := key.([]interface{}); !ok {
+	//if arrayKey, ok := key.([]interface{}) !ok {
 	//	return gr.PutMany(arrayKey, value)
 	//}
 
