@@ -43,6 +43,7 @@ type RedisOptions struct {
 	Host           string
 	Password       string
 	DB             int
+	SSLEnabled     bool
 	Expiration     time.Duration
 	TimeoutConnect int
 	TimeoutRead    int
@@ -73,9 +74,12 @@ func NewGRedis(opts interface{}) (gr *GRedis) {
 			IdleTimeout:        toI,
 			Password:           options.Password,
 			IdleCheckFrequency: 500 * time.Millisecond,
-			TLSConfig: &tls.Config{
+		}
+
+		if options.SSLEnabled {
+			option.TLSConfig = &tls.Config{
 				InsecureSkipVerify: true,
-			},
+			}
 		}
 
 		c := redis.NewClient(option)
