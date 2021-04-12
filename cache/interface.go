@@ -1,9 +1,10 @@
 package cache
 
-import "github.com/ArtisanCloud/go-libs/object"
+import (
+	"time"
+)
 
 type CacheInterface interface {
-
 
 	//SetOptions(opts interface{}) error
 	//
@@ -18,7 +19,7 @@ type CacheInterface interface {
 	//* @panic InvalidArgumentException
 	//*   MUST be thrown if the key string,is not a legal value.
 	//*/
-	Get(key string, defaultValue object.HashMap) interface{}
+	Get(key string, defaultValue interface{}) error
 	//
 	///**
 	//* Persists data in the cache, uniquely referenced by a key with an optional expiration TTL time.
@@ -34,7 +35,7 @@ type CacheInterface interface {
 	//* @panic InvalidArgumentException
 	//*   MUST be thrown if the key string,is not a legal value.
 	//*/
-	Set(key string, value object.HashMap, ttl int) bool
+	Set(key string, value interface{}, expires time.Duration) error
 	//
 	///**
 	//* Delete an item from the cache by its unique key.
@@ -142,7 +143,7 @@ type CacheInterface interface {
 	//* @param  \DateTimeInterface|\DateInterval|int|null  ttl
 	//* @return bool
 	//*/
-	Add(key string, value, ttl int) bool
+	Add(key string, value interface{}, ttl time.Duration) (err error)
 	//
 	///**
 	//* Increment the value of an item in the cache.
@@ -179,7 +180,7 @@ type CacheInterface interface {
 	//* @param  \Closure  callback
 	//* @return mixed
 	//*/
-	Remember(key string, ttl, callback func()) interface{}
+	Remember(key string, ttl time.Duration, callback func() interface{}) (obj interface{}, err error)
 	//
 	///**
 	//* Get an item from the cache, or execute the given Closure and store the result forever.
@@ -213,6 +214,5 @@ type CacheInterface interface {
 	//* @return \Illuminate\Contracts\Cache\Store
 	//*/
 	//GetStore()
-
 
 }

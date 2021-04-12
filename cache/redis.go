@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"github.com/ArtisanCloud/go-libs/object"
@@ -72,6 +73,9 @@ func NewGRedis(opts interface{}) (gr *GRedis) {
 			IdleTimeout:        toI,
 			Password:           options.Password,
 			IdleCheckFrequency: 500 * time.Millisecond,
+			TLSConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
 		}
 
 		c := redis.NewClient(option)
