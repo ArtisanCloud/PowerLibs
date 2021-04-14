@@ -2,7 +2,6 @@ package carbon
 
 import (
 	"errors"
-	"fmt"
 	"github.com/golang-module/carbon"
 	"reflect"
 )
@@ -19,7 +18,7 @@ type CarbonPeriod struct {
 
 func CreateCarbonPeriod() (p *CarbonPeriod) {
 
-	startDatetime := carbon.Now()
+	startDatetime := GetCarbonNow()
 	endDatetime := startDatetime.AddDay()
 	p = &CarbonPeriod{
 		&startDatetime,
@@ -28,6 +27,7 @@ func CreateCarbonPeriod() (p *CarbonPeriod) {
 		0,
 		0,
 	}
+	//fmt.Printf("%+v \r\n", p)
 	return p
 }
 
@@ -78,10 +78,10 @@ func setDate(toSetDate **carbon.Carbon, date interface{}) (err error) {
 func (period *CarbonPeriod) Overlaps(insideRange *CarbonPeriod) bool {
 
 	//fmt.Printf("start is : %#v", period.startDatetime.ToDateTimeString())
-	fmt.Printf("current start :%s %d\r\n", period.startDatetime.ToString(), period.calculateStart())
-	fmt.Printf("current end   :%s %d\r\n", period.endDatetime.ToString(), period.calculateEnd())
-	fmt.Printf("range start   :%s %d\r\n", insideRange.startDatetime.ToString(), insideRange.calculateStart())
-	fmt.Printf("range end     :%s %d\r\n\n", insideRange.endDatetime.ToString(), insideRange.calculateEnd())
+	//fmt.Printf("current start :%s %d\r\n", period.startDatetime.ToString(), period.calculateStart())
+	//fmt.Printf("current end   :%s %d\r\n", period.endDatetime.ToString(), period.calculateEnd())
+	//fmt.Printf("range start   :%s %d\r\n", insideRange.startDatetime.ToString(), insideRange.calculateStart())
+	//fmt.Printf("range end     :%s %d\r\n\n", insideRange.endDatetime.ToString(), insideRange.calculateEnd())
 
 	return period.calculateEnd() > insideRange.calculateStart() && insideRange.calculateEnd() > period.calculateStart()
 }
