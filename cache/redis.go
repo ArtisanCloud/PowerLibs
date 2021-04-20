@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/ArtisanCloud/go-libs/object"
 	"github.com/go-redis/redis/v8"
@@ -35,6 +36,8 @@ const (
 	defaultProtocol       = "tcp"
 	defaultRetryThreshold = 5
 )
+
+const SCRIPT_SETEX = `return redis.call('exists',KEYS[1])<1 and redis.call('setex',KEYS[1],ARGV[2],ARGV[1])`
 
 type RedisOptions struct {
 	MaxIdle        int
@@ -139,20 +142,29 @@ func (gr *GRedis) Add(key string, value interface{}, ttl time.Duration) (err err
 	var obj interface{}
 	err = gr.Get(key, obj)
 	if err == ErrCacheMiss {
-		return gr.Set(key, value, ttl)
+		return gr.SetEx(key, value, ttl)
+	} else {
+		return errors.New("this value has been actually added to the cache")
 	}
 
-	return err
 }
 
-func (gr *GRedis) Set(key string, value interface{}, expires time.Duration) error {
-	b, err := json.Marshal(value)
+func (gr *GRedis) SetEx(key string, value interface{}, expires time.Duration) error {
+	mValue, err := json.Marshal(value)
+	//mExpire, err := json.Marshal(expires)
 	if err != nil {
 		return err
 	}
-	cmd := gr.Pool.Set(CTXRedis, key, b, expires)
-	//re:= cmd.String()
-	//fmt.Printf("result:", re)
+
+	//luaScript := redis.NewScript(SCRIPT_SETEX)
+	//cmd := luaScript.Run(gr.Pool.Context(),gr.Pool, []string{key}, mExpire, mValue)
+	//fmt.Printf("result:%s \r\n",cmd.String())
+	//fmt.Printf("err:%s \r\n", cmd.Err())
+
+	connPool := gr.Pool.Conn(gr.Pool.Context())
+	cmd := connPool.SetEX(CTXRedis, key, mValue, expires)
+	//fmt2.Dump(connPool.Pipeline())
+	//fmt.Printf("result:", cmd.String())
 
 	return cmd.Err()
 }
@@ -256,7 +268,7 @@ func (gr *GRedis) Put(key interface{}, value interface{}, ttl time.Duration) boo
 
 	//result = gr.Pool.Put(gr.itemKey(key), value, seconds)
 
-	err := gr.Set(key.(string), value, ttl)
+	err := gr.SetEx(key.(string), value, ttl)
 	if err != nil {
 		panic(err)
 		return false
