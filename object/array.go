@@ -30,3 +30,9 @@ func InArray(needle interface{}, hystack interface{}) bool {
 	}
 	return false
 }
+
+
+func ArrayKeyExists(key interface{}, m map[interface{}]interface{}) bool {
+	_, ok := m[key]
+	return ok
+}
