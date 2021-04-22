@@ -135,6 +135,9 @@ type CacheInterface interface {
 	//*/
 	//Put(key string, value, ttl int) bool
 	//
+
+	AddNX(key string, value interface{}, ttl time.Duration) bool
+
 	///**
 	//* Store an item in the cache if the key does not exist.
 	//*

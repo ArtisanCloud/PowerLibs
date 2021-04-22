@@ -134,8 +134,16 @@ func (r *RedisOptions) initDefaults() *RedisOptions {
 	return r
 }
 
+func (gr *GRedis) AddNX(key string, value interface{}, ttl time.Duration) bool {
+	cmd := gr.Pool.SetNX(CTXRedis, key, value, ttl)
+	r, err := cmd.Result()
+	//fmt.Printf("r:%b \r\n", r)
+	if err != nil {
+		fmt.Errorf("SetNX error: %+v \r\n", err)
+	}
+	return r
+}
 func (gr *GRedis) Add(key string, value interface{}, ttl time.Duration) (err error) {
-
 	// If the store has an "add" method we will call the method on the store so it
 	// has a chance to override this logic. Some drivers better support the way
 	// this operation should work with a total "atomic" implementation of it.
