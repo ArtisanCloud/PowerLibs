@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	fmt2 "github.com/ArtisanCloud/go-libs/fmt"
 	"github.com/ArtisanCloud/go-libs/object"
 	"github.com/go-redis/redis/v8"
 	"time"
@@ -235,6 +236,7 @@ func (gr *GRedis) Remember(key string, ttl time.Duration, callback func() interf
 	// not we will execute the given Closure and cache the result of that for a
 	// given number of seconds so it's available for all subsequent requests.
 	if err != nil && err != ErrCacheMiss {
+		fmt2.Dump("error:",err.Error())
 		return nil, err
 
 	} else if value != nil {

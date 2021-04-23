@@ -71,7 +71,7 @@ func Camel(value string) string {
  * @param  string  $delimiter
  * @return string
  */
-func snake(value string, delimiter string) string {
+func Snake(value string, delimiter string) string {
 	if delimiter == "" {
 		delimiter = "_"
 	}
@@ -84,8 +84,8 @@ func snake(value string, delimiter string) string {
 
 	if !IsUpper(value) {
 		value = RegexpReplace("/\\s+/u", "", UCWords(value))
-
-		value = Lower(RegexpReplace("/(.)(?=[A-Z])/u", "$1"+delimiter, value))
+		//value = Lower(RegexpReplace("/(.)(?=[A-Z])/g", "$1"+delimiter, value))
+		value = Lower(strings.Replace(value,"-", delimiter, -1))
 	}
 	//
 	CamelCache[key] = value
