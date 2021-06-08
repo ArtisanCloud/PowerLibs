@@ -17,9 +17,7 @@ var _defaults *object.HashMap
 
 func NewHttpRequest(config *object.HashMap) *HttpRequest {
 	return &HttpRequest{
-		httpClient: &gout.Client{
-			Config: config,
-		},
+		httpClient: gout.NewClient(config),
 	}
 }
 

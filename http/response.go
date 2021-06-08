@@ -6,7 +6,7 @@ type HttpResponse struct {
 
 }
 
-func (response *HttpResponse) CastResponseToType(res *contract.ResponseContract, responseType string) interface{} {
+func (response *HttpResponse) CastResponseToType(res *contract.ResponseContract, responseType interface{}) interface{} {
 
 	return nil
 }
