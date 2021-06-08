@@ -1,10 +1,12 @@
 package http
 
-import (
-	"github.com/ArtisanCloud/go-wechat/src/kernel/http/contract"
-)
+import "github.com/ArtisanCloud/go-libs/http/contract"
 
-func (client *BaseClient) castResponseToType(response contract.ResponseContract, responseType string) interface{} {
+type HttpResponse struct {
+
+}
+
+func (response *HttpResponse) CastResponseToType(res *contract.ResponseContract, responseType string) interface{} {
 
 	return nil
 }
