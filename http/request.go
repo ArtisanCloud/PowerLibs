@@ -9,8 +9,9 @@ import (
 
 type HttpRequest struct {
 	httpClient contract.ClientInterface
+	baseUri    string
 
-	Middlewares object.HashMap
+	Middlewares []interface{}
 }
 
 var _defaults *object.HashMap
@@ -47,24 +48,30 @@ func (request *HttpRequest) GetHttpClient() contract.ClientInterface {
 	return request.httpClient
 }
 
-func (request *HttpRequest) GetMiddlewares() object.HashMap {
+func (request *HttpRequest) GetMiddlewares() []interface{} {
 	return request.Middlewares
 }
 
-func (request *HttpRequest) pushMiddleware(middleware interface{}, name string) bool {
+func (request *HttpRequest) PushMiddleware(middleware interface{}, name string) bool {
 	if name != "" {
-		request.Middlewares[name] = middleware
+		request.Middlewares = append(request.Middlewares, middleware)
+
 		return true
 	}
 	return false
 }
 
-func (request *HttpRequest) PerformRequest(url string, method string, options object.HashMap) *contract.ResponseContract {
+func (request *HttpRequest) PerformRequest(url string, method string, options *object.HashMap, outResponse interface{}) contract.ResponseContract {
 	// change method string format
 	method = str.Lower(method)
 
 	// merge options with default options
-	//options:= merge(_defaults,options,hash)
-	response := request.GetHttpClient().Request(method, url, options)
+	options = object.MergeHashMap(options, _defaults, &object.HashMap{"handler": request.GetMiddlewares()})
+	//fmt2.Printf("%v \n",(*options)["handler"].(object.HashMap))
+	if request.baseUri != "" {
+		(*options)["base_uri"] = request.baseUri
+	}
+
+	response := request.GetHttpClient().Request(method, url, options, outResponse)
 	return response
 }

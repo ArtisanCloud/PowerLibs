@@ -2,10 +2,11 @@ package gout
 
 import (
 	"fmt"
-	fmt2 "github.com/ArtisanCloud/go-libs/fmt"
 	"github.com/ArtisanCloud/go-libs/http/contract"
 	"github.com/ArtisanCloud/go-libs/object"
+	"github.com/guonaihong/gout"
 	"github.com/guonaihong/gout/dataflow"
+	dataflow2 "github.com/guonaihong/gout/interface"
 	"net/url"
 )
 
@@ -21,81 +22,122 @@ func NewClient(config *object.HashMap) *Client {
 		df:     &dataflow.DataFlow{},
 		Config: config,
 	}
+	out := dataflow.New()
+	client.df.SetGout(out)
 	return client
 }
 
-func (client *Client) Send(request contract.RequestInterface, options object.HashMap) *contract.ResponseContract {
+func (client *Client) Send(request contract.RequestInterface, options *object.HashMap) contract.ResponseContract {
 	return nil
 }
-func (client *Client) SendAsync(request contract.RequestInterface, options object.HashMap) *contract.PromiseInterface {
+func (client *Client) SendAsync(request contract.RequestInterface, options *object.HashMap) contract.PromiseInterface {
 	return nil
 }
-func (client *Client) Request(method string, uri string, options object.HashMap) *contract.ResponseContract {
+func (client *Client) Request(method string, uri string, options *object.HashMap, outResponse interface{}) contract.ResponseContract {
 
-	options[OPTION_SYNCHRONOUS] = true
+	(*options)[OPTION_SYNCHRONOUS] = true
 	options = client.prepareDefaults(options)
 
-	var (
-		headers object.StringMap = object.StringMap{}
-		body    object.HashMap   = object.HashMap{}
-		//version string = "1.1"
-	)
-	if options["headers"] != nil {
-		headers = options["headers"].(object.StringMap)
-	}
-	if options["body"] != nil {
-		body = options["body"].(object.HashMap)
-	}
+	//var (
+	//	headers string   = "{}"
+	//	body    string   = "{}"
+	//	//version string = "1.1"
+	//)
+	//if (*options)["headers"] != nil {
+	//	//headers = (*options)["headers"].(object.StringMap)
+	//}
+	//if (*options)["body"] != nil {
+	//	//body = (*options)["body"].(object.HashMap)
+	//	//body = (*options)["body"].(object.HashMap)
+	//}
+	//fmt2.Dump(headers, body)
 	//if options["version"] != "" {
 	//	version = options["version"].(string)
 	//}
 
 	// Merge the URI into the base URI
 	parsedURL, _ := url.Parse(uri)
-	parsedURL = client.buildUri(parsedURL, client.Config)
+	parsedURL = client.buildUri(parsedURL, options)
 	strURL := parsedURL.String()
-	println(strURL)
-	result := ""
-	err := client.df.
-		SetURL(strURL).
-		SetHeader(headers).
-		SetBody(body).
-		BindBody(&result).
+
+	df := client.QueryMethod(method, strURL)
+
+	// get middlewares stack
+	if (*options)["handler"] != nil {
+		middlewares := (*options)["handler"].([]interface{})
+		client.useMiddleware(df, middlewares)
+	}
+
+	err := df.
+		Debug(true).
+		RequestUse().
+		BindJSON(outResponse).
 		Do()
 
 	if err != nil {
 		fmt.Printf("do request error:", err.Error())
 	}
-	fmt2.Dump(result)
+
 	return nil
 
 }
 
-func (client *Client) RequestAsync(method string, uri string, options object.HashMap) {
-	options[OPTION_SYNCHRONOUS] = false
+func (client *Client) RequestAsync(method string, uri string, options *object.HashMap, outResponse interface{}) {
+	(*options)[OPTION_SYNCHRONOUS] = false
 
-	go client.Request(method, uri, options)
+	go client.Request(method, uri, options, outResponse)
 
 }
 
-func (client *Client) prepareDefaults(options object.HashMap) object.HashMap {
+func (client *Client) prepareDefaults(options *object.HashMap) *object.HashMap {
 	return options
 }
 
-func (client *Client) buildUri(url *url.URL, config *object.HashMap) *url.URL {
-	arrayConfig := *config
-	fmt2.Dump(arrayConfig)
-	strUri:=arrayConfig["http"].(map[string]string)["base_uri"]
-	if strUri!= "" {
-		url, _ = url.Parse(strUri)
+func (client *Client) buildUri(uri *url.URL, config *object.HashMap) *url.URL {
+	var baseUri *url.URL
+	if (*config)["base_uri"] != nil {
+		strBaseUri := (*config)["base_uri"].(string)
+		if strBaseUri != "" {
+			baseUri, _ = url.Parse(strBaseUri)
+		}
+	} else {
+		strBaseUri := (*client.Config)["http"].(map[string]string)["base_uri"]
+		baseUri, _ = url.Parse(strBaseUri)
 	}
+
+	uri = baseUri.ResolveReference(uri)
 
 	// idn_conversion
 	// ...
 
-	if url.Scheme == "" && url.Host != "" {
-		url.Scheme = "http"
+	if uri.Scheme == "" && uri.Host != "" {
+		uri.Scheme = "http"
 	}
 
-	return url
+	return uri
+}
+
+func (client *Client) QueryMethod(method string, url string) (df *dataflow.DataFlow) {
+
+	switch method {
+	case "get":
+		df = gout.GET(url)
+		break
+	case "post":
+		df = gout.POST(url)
+		break
+	case "put":
+		df = gout.PUT(url)
+		break
+	default:
+		df = gout.GET(url)
+	}
+	return df
+}
+
+func (client *Client) useMiddleware(df *dataflow.DataFlow, middlewares []interface{}) {
+	for _,middleware := range middlewares{
+		requestMiddleware  := middleware.(dataflow2.RequestMiddler)
+		df.RequestUse(requestMiddleware)
+	}
 }

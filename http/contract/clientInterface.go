@@ -5,9 +5,9 @@ import (
 )
 
 type ClientInterface interface {
-	Send(request RequestInterface, options object.HashMap) *ResponseContract
-	SendAsync(request RequestInterface, options object.HashMap) *PromiseInterface
+	Send(request RequestInterface, options *object.HashMap) ResponseContract
+	SendAsync(request RequestInterface, options *object.HashMap) PromiseInterface
 
-	Request(method string, uri string, options object.HashMap) *ResponseContract
-	RequestAsync(method string, uri string, options object.HashMap)
+	Request(method string, uri string, options *object.HashMap,outResponse interface{}) ResponseContract
+	RequestAsync(method string, uri string, options *object.HashMap,outResponse interface{})
 }

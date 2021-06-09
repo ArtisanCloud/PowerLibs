@@ -37,8 +37,9 @@ func dump(data interface{}) {
 		err     error
 	)
 	if data==nil{
-		fmt.Print("[nil]\r\n")
-	}
+		//fmt.Print("[nil]\r\n")
+
+	}else
 	if reflect.TypeOf(data).Kind() != reflect.String {
 		prettyJson,err = PrettyJson(data)
 
