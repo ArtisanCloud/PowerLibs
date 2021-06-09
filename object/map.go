@@ -1,5 +1,10 @@
 package object
 
+import (
+	"bytes"
+	"fmt"
+)
+
 type HashMap map[string]interface{}
 type StringMap map[string]string
 
@@ -29,4 +34,12 @@ func MergeStringMap(toMap *HashMap, subMaps ...*HashMap) *HashMap {
 		}
 	}
 	return toMap
+}
+
+func ConvertStringMapToString(m *StringMap) string {
+	b := new(bytes.Buffer)
+	for key, value := range *m {
+		fmt.Fprintf(b, "%s=\"%s\"\n", key, value)
+	}
+	return b.String()
 }

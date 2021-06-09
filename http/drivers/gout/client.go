@@ -13,17 +13,18 @@ import (
 const OPTION_SYNCHRONOUS = "synchronous"
 
 type Client struct {
-	df     *dataflow.DataFlow
 	Config *object.HashMap
+
 }
 
 func NewClient(config *object.HashMap) *Client {
 	client := &Client{
-		df:     &dataflow.DataFlow{},
 		Config: config,
 	}
-	out := dataflow.New()
-	client.df.SetGout(out)
+
+	// set default config
+	client.configureDefaults(config)
+
 	return client
 }
 
@@ -60,17 +61,20 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 	parsedURL = client.buildUri(parsedURL, options)
 	strURL := parsedURL.String()
 
+	// init a dataflow
 	df := client.QueryMethod(method, strURL)
 
-	// get middlewares stack
+	// load middlewares stack
 	if (*options)["handler"] != nil {
 		middlewares := (*options)["handler"].([]interface{})
 		client.useMiddleware(df, middlewares)
 	}
+	// append query
+	queries := (*options)["query"]
 
 	err := df.
 		Debug(true).
-		RequestUse().
+		SetQuery(queries).
 		BindJSON(outResponse).
 		Do()
 
@@ -117,6 +121,20 @@ func (client *Client) buildUri(uri *url.URL, config *object.HashMap) *url.URL {
 	return uri
 }
 
+func (client *Client) configureDefaults(config *object.HashMap) {
+	defaults := &object.HashMap{
+		//"allow_redirects": RedirectMiddleware::$defaultSettings,
+		"http_errors": true,
+		"decode_content": true,
+		"verify": true,
+		"cookies": false,
+		"idn_conversion": false,
+	}
+
+	object.MergeHashMap(client.Config, defaults)
+
+}
+
 func (client *Client) QueryMethod(method string, url string) (df *dataflow.DataFlow) {
 
 	switch method {
@@ -136,8 +154,8 @@ func (client *Client) QueryMethod(method string, url string) (df *dataflow.DataF
 }
 
 func (client *Client) useMiddleware(df *dataflow.DataFlow, middlewares []interface{}) {
-	for _,middleware := range middlewares{
-		requestMiddleware  := middleware.(dataflow2.RequestMiddler)
+	for _, middleware := range middlewares {
+		requestMiddleware := middleware.(dataflow2.RequestMiddler)
 		df.RequestUse(requestMiddleware)
 	}
 }

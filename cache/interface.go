@@ -114,7 +114,7 @@ type CacheInterface interface {
 	//* @panic InvalidArgumentException
 	//*   MUST be thrown if the key string,is not a legal value.
 	//*/
-	//Has(key string) bool
+	Has(key string) bool
 	//
 	///**
 	//* Retrieve an item from the cache and delete it.
