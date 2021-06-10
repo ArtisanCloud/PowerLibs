@@ -1,1 +1,69 @@
 package cache
+
+import (
+	"errors"
+	"fmt"
+	"github.com/patrickmn/go-cache"
+	"time"
+)
+
+const DEFAULT_EXPIRES_IN = 5
+const DEFAULT_PURGE_EXPIRES_IN_PERIOD = 10
+
+type MemCache struct {
+	*cache.Cache
+	cacheFile string
+}
+
+func NewMemCache(namespace string, defaultLifeTime time.Duration, directory string) *MemCache {
+
+	if defaultLifeTime <= 0 {
+		defaultLifeTime = time.Duration(DEFAULT_EXPIRES_IN) * time.Minute
+	}
+	defaultPurgePeriod := time.Duration(DEFAULT_PURGE_EXPIRES_IN_PERIOD) * time.Minute
+
+	MemCache := &MemCache{
+		cache.NewFrom(
+			defaultLifeTime,
+			defaultPurgePeriod,
+			map[string]cache.Item{},
+		),
+		directory,
+	}
+	return MemCache
+}
+
+func (cache *MemCache) Get(key string, defaultValue interface{}) (ptrValue interface{}, err error) {
+	var found bool
+	ptrValue, found = cache.Cache.Get(key)
+	if !found {
+		return nil, errors.New(fmt.Sprintf("Cannot find value with key: %s", key))
+	}
+
+	return ptrValue, nil
+}
+
+func (cache *MemCache) Set(key string, value interface{}, expires time.Duration) error {
+
+	cache.Cache.Set(key, value, expires)
+	return nil
+}
+
+func (cache *MemCache) Has(key string) bool {
+
+	_, found := cache.Cache.Get(key)
+
+	return found
+}
+
+func (cache *MemCache) AddNX(key string, value interface{}, ttl time.Duration) bool {
+	return false
+}
+
+func (cache *MemCache) Add(key string, value interface{}, ttl time.Duration) (err error) {
+	return nil
+}
+
+func (cache *MemCache) Remember(key string, ttl time.Duration, callback func() interface{}) (obj interface{}, err error) {
+	return nil, nil
+}

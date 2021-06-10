@@ -19,7 +19,7 @@ type CacheInterface interface {
 	//* @panic InvalidArgumentException
 	//*   MUST be thrown if the key string,is not a legal value.
 	//*/
-	Get(key string, defaultValue interface{}) error
+	Get(key string, defaultValue interface{}) (ptrValue interface{}, err error)
 	//
 	///**
 	//* Persists data in the cache, uniquely referenced by a key with an optional expiration TTL time.
