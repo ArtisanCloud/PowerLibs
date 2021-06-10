@@ -38,11 +38,7 @@ func (request *HttpRequest) SetHttpClient(httpClient contract.ClientInterface) *
 func (request *HttpRequest) GetHttpClient() contract.ClientInterface {
 
 	if request.httpClient == nil {
-		//oType:=reflect.TypeOf(request.httpClient)
-		//if fmt.Sprintf("%T",oType) != "ClientInterface"{
-		//	if request.App.
-		//}
-		request.httpClient = &gout.Client{}
+		request.httpClient = gout.NewClient(nil)
 	}
 
 	return request.httpClient
@@ -67,11 +63,13 @@ func (request *HttpRequest) PerformRequest(url string, method string, options *o
 
 	// merge options with default options
 	options = object.MergeHashMap(options, _defaults, &object.HashMap{"handler": request.GetMiddlewares()})
-	//fmt2.Printf("%v \n",(*options)["handler"].(object.HashMap))
+
+	// use request basrUri as final
 	if request.baseUri != "" {
 		(*options)["base_uri"] = request.baseUri
 	}
 
+	// use current http client driver to request
 	response := request.GetHttpClient().Request(method, url, options, outResponse)
 	return response
 }

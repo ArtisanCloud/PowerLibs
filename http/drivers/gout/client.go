@@ -39,22 +39,22 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 	(*options)[OPTION_SYNCHRONOUS] = true
 	options = client.prepareDefaults(options)
 
-	//var (
-	//	headers string   = "{}"
-	//	body    string   = "{}"
-	//	//version string = "1.1"
-	//)
-	//if (*options)["headers"] != nil {
-	//	//headers = (*options)["headers"].(object.StringMap)
-	//}
+	var (
+		headers gout.H = gout.H{}
+		//body    gout.H = gout.H{}
+		//version string = "1.1"
+	)
+	if (*options)["headers"] != nil {
+		headers = (*options)["headers"].(gout.H)
+	}
 	//if (*options)["body"] != nil {
-	//	//body = (*options)["body"].(object.HashMap)
-	//	//body = (*options)["body"].(object.HashMap)
+	//	body = (*options)["body"].(gout.H)
 	//}
-	//fmt2.Dump(headers, body)
+	// tbd
 	//if options["version"] != "" {
 	//	version = options["version"].(string)
 	//}
+
 
 	// Merge the URI into the base URI
 	parsedURL, _ := url.Parse(uri)
@@ -75,10 +75,13 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 	err := df.
 		Debug(true).
 		SetQuery(queries).
+		SetHeader(&headers).
+		//SetBody(body).
 		BindJSON(outResponse).
 		Do()
 
 	if err != nil {
+		// tbd throw excption
 		fmt.Printf("do request error:", err.Error())
 	}
 
@@ -94,6 +97,7 @@ func (client *Client) RequestAsync(method string, uri string, options *object.Ha
 }
 
 func (client *Client) prepareDefaults(options *object.HashMap) *object.HashMap {
+	// tbd
 	return options
 }
 
@@ -111,7 +115,7 @@ func (client *Client) buildUri(uri *url.URL, config *object.HashMap) *url.URL {
 
 	uri = baseUri.ResolveReference(uri)
 
-	// idn_conversion
+	// tbd idn_conversion
 	// ...
 
 	if uri.Scheme == "" && uri.Host != "" {
