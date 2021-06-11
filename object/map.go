@@ -43,3 +43,18 @@ func ConvertStringMapToString(m *StringMap) string {
 	}
 	return b.String()
 }
+
+// Get an item from an hashMap using "dot" notation.
+func Get(hashedObject HashMap, key string, defaultValue interface{}) interface{} {
+	if key==""{
+		return &hashedObject
+	}
+
+	if hashedObject[key] !=nil{
+		return hashedObject[key]
+	}
+
+
+
+	return nil
+}
