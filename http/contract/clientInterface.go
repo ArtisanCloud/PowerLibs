@@ -10,4 +10,7 @@ type ClientInterface interface {
 
 	Request(method string, uri string, options *object.HashMap,outResponse interface{}) ResponseContract
 	RequestAsync(method string, uri string, options *object.HashMap,outResponse interface{})
+
+	SetClientConfig(config *object.HashMap) ClientInterface
+	GetClientConfig() *object.HashMap
 }

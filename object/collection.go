@@ -103,7 +103,6 @@ func (c *Collection)Count() int  {
 
 func (c *Collection)Unserialize(serialized string) HashMap {
 
-
 	return c.items
 }
 

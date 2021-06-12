@@ -14,7 +14,6 @@ const OPTION_SYNCHRONOUS = "synchronous"
 
 type Client struct {
 	Config *object.HashMap
-
 }
 
 func NewClient(config *object.HashMap) *Client {
@@ -54,7 +53,6 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 	//if options["version"] != "" {
 	//	version = options["version"].(string)
 	//}
-
 
 	// Merge the URI into the base URI
 	parsedURL, _ := url.Parse(uri)
@@ -96,6 +94,15 @@ func (client *Client) RequestAsync(method string, uri string, options *object.Ha
 
 }
 
+func (client *Client) SetClientConfig(config *object.HashMap) contract.ClientInterface {
+	client.Config = config
+	return client
+}
+
+func (client *Client) GetClientConfig() *object.HashMap {
+	return client.Config
+}
+
 func (client *Client) prepareDefaults(options *object.HashMap) *object.HashMap {
 	// tbd
 	return options
@@ -128,10 +135,10 @@ func (client *Client) buildUri(uri *url.URL, config *object.HashMap) *url.URL {
 func (client *Client) configureDefaults(config *object.HashMap) {
 	defaults := &object.HashMap{
 		//"allow_redirects": RedirectMiddleware::$defaultSettings,
-		"http_errors": true,
+		"http_errors":    true,
 		"decode_content": true,
-		"verify": true,
-		"cookies": false,
+		"verify":         true,
+		"cookies":        false,
 		"idn_conversion": false,
 	}
 

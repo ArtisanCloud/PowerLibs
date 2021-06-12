@@ -1,10 +1,12 @@
 package contract
 
-import "github.com/ArtisanCloud/go-libs/object"
+import (
+	http2 "net/http"
+)
 
 type MessageInterface interface{
-	GetBody() *object.HashMap
-	GetHeaders() *object.HashMap
+	GetBody() *http2.Response
+	GetHeaders() *http2.ResponseWriter
 }
 
 type ResponseContract interface {
