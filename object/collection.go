@@ -12,8 +12,8 @@ func NewCollection(items *HashMap) *Collection {
 	}
 }
 
-func (c *Collection) All() HashMap {
-	return c.items
+func (c *Collection) All() *HashMap {
+	return &c.items
 }
 
 func (c *Collection) Only(keys []string) (result *HashMap) {
@@ -60,6 +60,8 @@ func (c *Collection) Set(key string, value interface{}) {
 // Get an item from an hashMap using "dot" notation.
 func (c *Collection) Get(key string, defaultValue interface{}) interface{} {
 
+	var result interface{}
+
 	hashedObject := c.items
 
 	if key == "" {
@@ -68,44 +70,44 @@ func (c *Collection) Get(key string, defaultValue interface{}) interface{} {
 
 	if hashedObject[key] != nil {
 		return hashedObject[key]
+	}else{
+		result = defaultValue
 	}
 
 	segments := strings.Split(key, ".")
-	for _, segment := range segments {
-		if hashedObject[segment] != nil {
-			return defaultValue
-		} else {
-			hashedObject = hashedObject[segment].(HashMap)
+	if len(segments) > 1 {
+		for _, segment := range segments {
+			if hashedObject[segment] == nil {
+				return defaultValue
+			} else {
+				result = hashedObject[segment]
+			}
 		}
 	}
 
-	return hashedObject
+	return result
 }
 
-func (c *Collection)Forget(key string){
+func (c *Collection) Forget(key string) {
 
 }
 
-func (c *Collection)ToHashMap() HashMap{
+func (c *Collection) ToHashMap() *HashMap {
 	return c.All()
 }
 
-func (c *Collection)ToJson(option int) string  {
+func (c *Collection) ToJson(option int) string {
 	return ""
 }
-func (c *Collection)ToString() string  {
+func (c *Collection) ToString() string {
 	return c.ToJson(0)
 }
 
-func (c *Collection)Count() int  {
+func (c *Collection) Count() int {
 	return len(c.items)
 }
 
-func (c *Collection)Unserialize(serialized string) HashMap {
+func (c *Collection) Unserialize(serialized string) HashMap {
 
 	return c.items
 }
-
-
-
-

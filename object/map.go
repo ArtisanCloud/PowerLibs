@@ -37,9 +37,10 @@ func MergeStringMap(toMap *HashMap, subMaps ...*HashMap) *HashMap {
 }
 
 func ConvertStringMapToString(m *StringMap) string {
-	b := new(bytes.Buffer)
+	var b bytes.Buffer
 	for key, value := range *m {
-		fmt.Fprintf(b, "%s=\"%s\"\n", key, value)
+		fmt.Fprintf(&b, "%s=%s&", key, value)
 	}
+	//fmt.Fprint(&b, "/0")
 	return b.String()
 }

@@ -142,7 +142,8 @@ func (client *Client) configureDefaults(config *object.HashMap) {
 		"idn_conversion": false,
 	}
 
-	object.MergeHashMap(client.Config, defaults)
+	object.MergeHashMap(client.Config, defaults, config)
+
 
 }
 

@@ -5,7 +5,7 @@ import (
 )
 
 type MessageInterface interface{
-	GetBody() *http2.Response
+	GetBody() *http2.ResponseWriter
 	GetHeaders() *http2.ResponseWriter
 }
 
