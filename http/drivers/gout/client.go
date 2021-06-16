@@ -143,8 +143,6 @@ func (client *Client) configureDefaults(config *object.HashMap) {
 	}
 
 	object.MergeHashMap(client.Config, defaults, config)
-
-
 }
 
 func (client *Client) QueryMethod(method string, url string) (df *dataflow.DataFlow) {
