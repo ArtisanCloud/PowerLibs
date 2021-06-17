@@ -246,7 +246,7 @@ func (gr *GRedis) Remember(key string, ttl time.Duration, callback func() interf
 	value = callback()
 	result := gr.Put(key, value, ttl)
 	if !result {
-		panic(fmt.Sprintf("remember cache put err, ttl:%d", ttl))
+		err = errors.New(fmt.Sprintf("remember cache put err, ttl:%d", ttl))
 	}
 	// ErrCacheMiss and query value from source
 	return value, err
@@ -280,7 +280,7 @@ func (gr *GRedis) Put(key interface{}, value interface{}, ttl time.Duration) boo
 
 	err := gr.SetEx(key.(string), value, ttl)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 		return false
 	}
 

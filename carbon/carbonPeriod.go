@@ -56,7 +56,8 @@ func setDate(toSetDate **carbon.Carbon, date interface{}) (err error) {
 
 			*toSetDate = &parsedDate
 		} else {
-			panic("Invalid date string fmt.")
+			err = errors.New("Invalid date string fmt.")
+			return err
 		}
 
 	} else if dType == "carbon.Carbon" {
