@@ -1,5 +1,7 @@
 package object
 
+import "reflect"
+
 type Array []interface{}
 
 
@@ -31,6 +33,26 @@ func InArray(needle interface{}, hystack interface{}) bool {
 	return false
 }
 
+
+func SearchInArray(val interface{}, array interface{}) (exists bool, index int) {
+	exists = false
+	index = -1
+
+	switch reflect.TypeOf(array).Kind() {
+	case reflect.Slice:
+		s := reflect.ValueOf(array)
+
+		for i := 0; i < s.Len(); i++ {
+			if reflect.DeepEqual(val, s.Index(i).Interface()) == true {
+				index = i
+				exists = true
+				return
+			}
+		}
+	}
+
+	return
+}
 
 func ArrayKeyExists(key interface{}, m map[interface{}]interface{}) bool {
 	_, ok := m[key]
