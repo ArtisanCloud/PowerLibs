@@ -2,6 +2,7 @@ package object
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"reflect"
 )
@@ -37,14 +38,15 @@ func MergeStringMap(toMap *HashMap, subMaps ...*HashMap) *HashMap {
 	return toMap
 }
 
-func ConvertStringMapToString(m *StringMap) string {
+func ConvertStringMapToString(m *StringMap, separate string) string {
 	var b bytes.Buffer
 	for key, value := range *m {
-		fmt.Fprintf(&b, "%s=%s&", key, value)
+		fmt.Fprintf(&b, "%s=%s%s", key, value, separate)
 	}
 	//fmt.Fprint(&b, "/0")
 	return b.String()
 }
+
 
 func InHash(val interface{}, hash *HashMap) (exists bool, key string) {
 	exists = false
@@ -63,4 +65,26 @@ func InHash(val interface{}, hash *HashMap) (exists bool, key string) {
 	}
 
 	return
+}
+
+
+func StructToMap(obj interface{}) (newMap map[string]interface{}, err error) {
+	data, err := json.Marshal(obj) // Convert to a json string
+
+	if err != nil {
+		return
+	}
+
+	err = json.Unmarshal(data, &newMap) // Convert to a map
+	return
+}
+
+func StructToJson(obj interface{}) (strJson string, err error) {
+	data, err := json.Marshal(obj) // Convert to a json string
+
+	if err != nil {
+		return "" , err
+	}
+
+	return string(data), nil
 }

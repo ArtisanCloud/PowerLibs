@@ -85,7 +85,7 @@ func Snake(value string, delimiter string) string {
 	if !IsUpper(value) {
 		value = RegexpReplace("/\\s+/u", "", UCWords(value))
 		//value = Lower(RegexpReplace("/(.)(?=[A-Z])/g", "$1"+delimiter, value))
-		value = Lower(strings.Replace(value,"-", delimiter, -1))
+		value = Lower(strings.Replace(value, "-", delimiter, -1))
 	}
 	//
 	CamelCache[key] = value
@@ -211,4 +211,15 @@ func RegexpReplace(pattern string, replacement string, subject string) string {
 
 	return re.ReplaceAllString(subject, replacement)
 
+}
+
+func Implode(glue string, arrayStrs []string) string {
+	var strValues string
+	if len(arrayStrs) > 0 {
+		for _, v := range arrayStrs {
+			strValues += v + "|"
+		}
+		strValues = strValues[:len(strValues)-1]
+	}
+	return strValues
 }

@@ -67,14 +67,19 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 		middlewares := (*options)["handler"].([]interface{})
 		client.useMiddleware(df, middlewares)
 	}
+
 	// append query
 	queries := (*options)["query"]
+	if queries == nil {
+		queries = ""
+	}
+
+	df = client.applyOptions(df, options)
 
 	err := df.
 		Debug(true).
 		SetQuery(queries).
 		SetHeader(&headers).
-		//SetBody(body).
 		BindJSON(outResponse).
 		Do()
 
@@ -106,6 +111,24 @@ func (client *Client) GetClientConfig() *object.HashMap {
 func (client *Client) prepareDefaults(options *object.HashMap) *object.HashMap {
 	// tbd
 	return options
+}
+
+func (client *Client) applyOptions(r *dataflow.DataFlow, options *object.HashMap) *dataflow.DataFlow {
+
+	if (*options)["form_params"] != nil {
+		(*options)["body"], _ = object.StructToMap((*options)["form_params"])
+		(*options)["form_params"] = nil
+
+		(*options)["_conditional"] = &object.StringMap{
+			"Content-Type": "application/x-www-form-urlencoded",
+		}
+
+		bodyData := (*options)["body"].(map[string]interface{})
+		r.SetJSON(bodyData)
+
+	}
+
+	return r
 }
 
 func (client *Client) buildUri(uri *url.URL, config *object.HashMap) *url.URL {
