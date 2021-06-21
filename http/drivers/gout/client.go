@@ -74,10 +74,17 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 		queries = ""
 	}
 
+	// debug mode
+	debug := false
+	//fmt2.Dump(*client.Config)
+	if (*client.Config)["debug"] != nil && (*client.Config)["debug"].(bool) == true {
+		debug = true
+	}
+
 	df = client.applyOptions(df, options)
 
 	err := df.
-		Debug(true).
+		Debug(debug).
 		SetQuery(queries).
 		SetHeader(&headers).
 		BindJSON(outResponse).
