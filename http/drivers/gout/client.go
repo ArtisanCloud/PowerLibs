@@ -69,16 +69,18 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 	}
 
 	// append query
-	queries := (*options)["query"]
-	if queries == nil {
-		queries = ""
+	queries := &object.StringMap{}
+	if (*options)["query"]!=nil{
+		queries = (*options)["query"].(*object.StringMap)
 	}
+
 
 	// debug mode
 	debug := false
 	//fmt2.Dump(*client.Config)
 	if (*client.Config)["debug"] != nil && (*client.Config)["debug"].(bool) == true {
 		debug = true
+		(*queries)["debug"] = "1"
 	}
 
 	df = client.applyOptions(df, options)
