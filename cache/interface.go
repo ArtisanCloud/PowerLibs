@@ -4,6 +4,9 @@ import (
 	"time"
 )
 
+var ACCache CacheInterface
+
+
 type CacheInterface interface {
 
 	//SetOptions(opts interface{}) error

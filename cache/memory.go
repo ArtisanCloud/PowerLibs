@@ -4,33 +4,82 @@ import (
 	"errors"
 	"fmt"
 	"github.com/patrickmn/go-cache"
+	"os"
+	"path"
 	"time"
 )
 
 const DEFAULT_EXPIRES_IN = 5
 const DEFAULT_PURGE_EXPIRES_IN_PERIOD = 10
 
+
+
 type MemCache struct {
 	*cache.Cache
 	cacheFile string
 }
 
-func NewMemCache(namespace string, defaultLifeTime time.Duration, directory string) *MemCache {
+func NewMemCache(namespace string, defaultLifeTime time.Duration, directory string) CacheInterface {
+
+	if ACCache!=nil{
+		return ACCache
+	}
 
 	if defaultLifeTime <= 0 {
 		defaultLifeTime = time.Duration(DEFAULT_EXPIRES_IN) * time.Minute
 	}
 	defaultPurgePeriod := time.Duration(DEFAULT_PURGE_EXPIRES_IN_PERIOD) * time.Minute
 
-	MemCache := &MemCache{
+	//path, err := createCacheFile(directory)
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//	return nil
+	//}
+
+	memCache := &MemCache{
 		cache.NewFrom(
 			defaultLifeTime,
 			defaultPurgePeriod,
 			map[string]cache.Item{},
 		),
-		directory,
+		"",
 	}
-	return MemCache
+
+	//err = memCache.Cache.LoadFile(path)
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//}
+
+	ACCache = memCache
+
+	return ACCache
+}
+
+func createCacheFile(directory string) (cachePath string, err error) {
+
+	_, err = os.Stat(directory)
+	if err != nil && os.IsExist(err) {
+		return "", err
+	} else if os.IsNotExist(err) {
+		directory, err = os.UserHomeDir()
+	}
+
+	directory = path.Join(directory, ".ArtisanCloud")
+	err = os.Mkdir(directory, os.ModePerm)
+	if err == nil || os.IsExist(err) {
+		cachePath = path.Join(directory, "cache")
+		_, err = os.Create(cachePath)
+		if err == nil || os.IsExist(err) {
+			return cachePath, nil
+		}
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	return cachePath, nil
+
 }
 
 func (cache *MemCache) Get(key string, defaultValue interface{}) (ptrValue interface{}, err error) {
@@ -46,7 +95,8 @@ func (cache *MemCache) Get(key string, defaultValue interface{}) (ptrValue inter
 func (cache *MemCache) Set(key string, value interface{}, expires time.Duration) error {
 
 	cache.Cache.Set(key, value, expires)
-	return nil
+	err := cache.Cache.SaveFile(cache.cacheFile)
+	return err
 }
 
 func (cache *MemCache) Has(key string) bool {
