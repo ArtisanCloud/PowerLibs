@@ -48,7 +48,6 @@ func ConvertStringMapToString(m *StringMap, separate string) string {
 	return b.String()
 }
 
-
 func InHash(val interface{}, hash *HashMap) (exists bool, key string) {
 	exists = false
 	key = ""
@@ -68,6 +67,17 @@ func InHash(val interface{}, hash *HashMap) (exists bool, key string) {
 	return
 }
 
+func StructToHashMap(obj interface{}) (newMap *HashMap, err error) {
+	data, err := json.Marshal(obj) // Convert to a json string
+
+	if err != nil {
+		return
+	}
+
+	newMap = &HashMap{}
+	err = json.Unmarshal(data, newMap) // Convert to a map
+	return
+}
 
 func StructToMap(obj interface{}) (newMap map[string]interface{}, err error) {
 	data, err := json.Marshal(obj) // Convert to a json string
@@ -84,7 +94,7 @@ func StructToJson(obj interface{}) (strJson string, err error) {
 	data, err := json.Marshal(obj) // Convert to a json string
 
 	if err != nil {
-		return "" , err
+		return "", err
 	}
 
 	return string(data), nil
