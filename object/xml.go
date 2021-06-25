@@ -1,8 +1,11 @@
 package object
 
 import (
+	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
+	"strings"
 )
 
 func Map2Xml(obj *HashMap) (strXML string) {
@@ -19,4 +22,36 @@ func Map2Xml(obj *HashMap) (strXML string) {
 		}
 	}
 	return "<xml>" + strXML + "</xml>"
+}
+
+func Xml2Map(b []byte) (m HashMap) {
+
+	decoder := xml.NewDecoder(bytes.NewReader(b))
+	m = make(HashMap)
+	tag := ""
+	for {
+		token, err := decoder.Token()
+
+		if err != nil {
+			break
+		}
+		switch t := token.(type) {
+		case xml.StartElement:
+			if t.Name.Local != "xml" {
+				tag = t.Name.Local
+			} else {
+				tag = ""
+			}
+			break
+		case xml.EndElement:
+			break
+		case xml.CharData:
+			data := strings.TrimSpace(string(t))
+			if len(data) != 0 {
+				m[tag] = data
+			}
+			break
+		}
+	}
+	return
 }
