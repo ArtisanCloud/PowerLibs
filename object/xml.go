@@ -24,7 +24,7 @@ func Map2Xml(obj *HashMap) (strXML string) {
 	return "<xml>" + strXML + "</xml>"
 }
 
-func Xml2Map(b []byte) (m HashMap) {
+func Xml2Map(b []byte) (m HashMap, err error) {
 
 	decoder := xml.NewDecoder(bytes.NewReader(b))
 	m = make(HashMap)
@@ -53,5 +53,5 @@ func Xml2Map(b []byte) (m HashMap) {
 			break
 		}
 	}
-	return
+	return m, nil
 }
