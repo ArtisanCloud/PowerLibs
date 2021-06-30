@@ -53,5 +53,5 @@ func Xml2Map(b []byte) (m HashMap, err error) {
 			break
 		}
 	}
-	return
+	return m, nil
 }
