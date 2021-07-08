@@ -149,7 +149,7 @@ func (gr *GRedis) Add(key string, value interface{}, ttl time.Duration) (err err
 	// has a chance to override this logic. Some drivers better support the way
 	// this operation should work with a total "atomic" implementation of it.
 	var obj interface{}
-	obj, err = gr.Get(key, obj)
+	obj, err = gr.Get(key, &obj)
 	if err == ErrCacheMiss {
 		return gr.SetEx(key, value, ttl)
 	} else {
@@ -178,7 +178,7 @@ func (gr *GRedis) SetEx(key string, value interface{}, expires time.Duration) er
 	return cmd.Err()
 }
 
-func (gr *GRedis) Get(key string, defaultValue interface{}) (ptrValue interface{}, err error) {
+func (gr *GRedis) Get(key string, ptrValue *interface{}) (returnValue interface{}, err error) {
 	b, err := gr.Pool.Get(CTXRedis, key).Bytes()
 	if err == redis.Nil {
 		return nil, ErrCacheMiss
@@ -187,8 +187,10 @@ func (gr *GRedis) Get(key string, defaultValue interface{}) (ptrValue interface{
 		return nil, err
 	}
 	err = json.Unmarshal(b, ptrValue)
-	return ptrValue, err
+	returnValue = *ptrValue
+	return returnValue, err
 }
+
 
 func (gr *GRedis) GetMulti(keys ...string) (object.HashMap, error) {
 	res, err := gr.Pool.MGet(CTXRedis, keys...).Result()
@@ -230,7 +232,7 @@ func (gr *GRedis) Flush() error {
 func (gr *GRedis) Remember(key string, ttl time.Duration, callback func() interface{}) (obj interface{}, err error) {
 
 	var value interface{}
-	value, err = gr.Get(key, nil)
+	value, err = gr.Get(key, &value)
 
 	// If the item exists in the cache we will just return this immediately and if
 	// not we will execute the given Closure and cache the result of that for a
@@ -251,6 +253,7 @@ func (gr *GRedis) Remember(key string, ttl time.Duration, callback func() interf
 	// ErrCacheMiss and query value from source
 	return value, err
 }
+
 
 /**
  * Store an item in the cache.
