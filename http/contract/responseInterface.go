@@ -1,12 +1,13 @@
 package contract
 
 import (
-	http2 "net/http"
+	"io"
+	"net/http"
 )
 
-type MessageInterface interface{
-	GetBody() *http2.ResponseWriter
-	GetHeaders() *http2.ResponseWriter
+type MessageInterface interface {
+	GetBody() io.ReadCloser
+	GetHeader() http.Header
 }
 
 type ResponseContract interface {
@@ -17,5 +18,4 @@ type ResponseContract interface {
 }
 
 type PromiseInterface interface {
-
 }

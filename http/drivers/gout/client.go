@@ -2,6 +2,7 @@ package gout
 
 import (
 	"fmt"
+	"github.com/ArtisanCloud/go-libs/http"
 	"github.com/ArtisanCloud/go-libs/http/contract"
 	"github.com/ArtisanCloud/go-libs/object"
 	"github.com/guonaihong/gout"
@@ -84,11 +85,14 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 
 	df = client.applyOptions(df, options)
 
+	response := http.HttpResponse{}
 	err := df.
 		Debug(debug).
 		SetQuery(queries).
 		SetHeader(&headers).
 		BindJSON(outResponse).
+		BindHeader(response.Header).
+		BindBody(response.Body).
 		Do()
 
 	if err != nil {
@@ -96,7 +100,7 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 		fmt.Printf("do request error:%s \n", err.Error())
 	}
 
-	return nil
+	return response
 
 }
 
