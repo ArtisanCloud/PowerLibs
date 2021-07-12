@@ -70,10 +70,9 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 
 	// append query
 	queries := &object.StringMap{}
-	if (*options)["query"]!=nil{
+	if (*options)["query"] != nil {
 		queries = (*options)["query"].(*object.StringMap)
 	}
-
 
 	// debug mode
 	debug := false
@@ -93,8 +92,8 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 		Do()
 
 	if err != nil {
-		// tbd throw excption
-		fmt.Printf("do request error:", err.Error())
+		// tbd throw exception
+		fmt.Printf("do request error:%s \n", err.Error())
 	}
 
 	return nil
@@ -134,6 +133,25 @@ func (client *Client) applyOptions(r *dataflow.DataFlow, options *object.HashMap
 
 		bodyData := (*options)["body"].(map[string]interface{})
 		r.SetJSON(bodyData)
+
+	}
+
+	if (*options)["multipart"] != nil {
+		for _, media := range (*options)["multipart"].([]*object.HashMap) {
+			name := (*media)["name"].(string)
+			content := (*media)["contents"].(string)
+			if (*media)["headers"] != nil {
+				//headers := (*media)["headers"].(string)
+				r.SetForm(gout.H{
+					name: gout.FormFile(content),
+				}).SetHeader(gout.H{
+				})
+			} else {
+				r.SetForm(gout.H{
+					name: gout.FormMem(content),
+				})
+			}
+		}
 
 	}
 
