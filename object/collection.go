@@ -57,6 +57,30 @@ func (c *Collection) Set(key string, value interface{}) {
 
 }
 
+func (c *Collection) GetBool(key string, defaultValue bool) bool {
+	return c.Get(key, defaultValue).(bool)
+}
+
+func (c *Collection) GetInt(key string, defaultValue int) int {
+	return c.Get(key, defaultValue).(int)
+}
+
+func (c *Collection) GetInt8(key string, defaultValue int8) int8 {
+	return c.Get(key, defaultValue).(int8)
+}
+
+func (c *Collection) GetString(key string, defaultValue string) string {
+	return c.Get(key, defaultValue).(string)
+}
+
+func (c *Collection) GetFloat64(key string, defaultValue float64) float64 {
+	return c.Get(key, defaultValue).(float64)
+}
+
+func (c *Collection) GetFloat32(key string, defaultValue float64) float32 {
+	return c.Get(key, defaultValue).(float32)
+}
+
 // Get an item from an hashMap using "dot" notation.
 func (c *Collection) Get(key string, defaultValue interface{}) interface{} {
 
@@ -70,7 +94,7 @@ func (c *Collection) Get(key string, defaultValue interface{}) interface{} {
 
 	if hashedObject[key] != nil {
 		return hashedObject[key]
-	}else{
+	} else {
 		result = defaultValue
 	}
 
