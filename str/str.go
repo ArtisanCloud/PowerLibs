@@ -1,9 +1,11 @@
 package str
 
 import (
+	"fmt"
 	. "github.com/ArtisanCloud/go-libs/object"
 	"regexp"
 	"strings"
+	"time"
 	"unicode"
 )
 
@@ -44,6 +46,16 @@ func init() {
 	StudlyCache = StringMap{}
 	UidFactory = StringMap{}
 }
+
+
+
+func UniqueID(prefix string) string {
+	now := time.Now()
+	sec := now.Unix()
+	usec := now.UnixNano() % 0x100000
+	return fmt.Sprintf("%s%08x%05x", prefix, sec, usec)
+}
+
 
 /**
  * Convert a value to camel case.
