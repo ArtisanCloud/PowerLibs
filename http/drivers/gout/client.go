@@ -1,13 +1,16 @@
 package gout
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"github.com/ArtisanCloud/go-libs/http"
 	"github.com/ArtisanCloud/go-libs/http/contract"
+	"github.com/ArtisanCloud/go-libs/http/response"
 	"github.com/ArtisanCloud/go-libs/object"
 	"github.com/guonaihong/gout"
 	"github.com/guonaihong/gout/dataflow"
 	dataflow2 "github.com/guonaihong/gout/interface"
+	"io/ioutil"
 	"net/url"
 )
 
@@ -34,26 +37,27 @@ func (client *Client) Send(request contract.RequestInterface, options *object.Ha
 func (client *Client) SendAsync(request contract.RequestInterface, options *object.HashMap) contract.PromiseInterface {
 	return nil
 }
-func (client *Client) Request(method string, uri string, options *object.HashMap, outResponse interface{}) contract.ResponseContract {
+
+func (client *Client) PrepareRequest(method string, uri string, options *object.HashMap) (
+	df *dataflow.DataFlow,
+	queries *object.StringMap, headers gout.H, body gout.H,
+	version string, debug bool) {
 
 	(*options)[OPTION_SYNCHRONOUS] = true
 	options = client.prepareDefaults(options)
 
-	var (
-		headers gout.H = gout.H{}
-		//body    gout.H = gout.H{}
-		//version string = "1.1"
-	)
+	version = "1.1"
+
 	if (*options)["headers"] != nil {
 		headers = (*options)["headers"].(gout.H)
 	}
-	//if (*options)["body"] != nil {
-	//	body = (*options)["body"].(gout.H)
-	//}
-	// tbd
-	//if options["version"] != "" {
-	//	version = options["version"].(string)
-	//}
+	if (*options)["body"] != nil {
+		body = (*options)["body"].(gout.H)
+	}
+
+	if (*options)["version"] != nil {
+		version = (*options)["version"].(string)
+	}
 
 	// Merge the URI into the base URI
 	parsedURL, _ := url.Parse(uri)
@@ -61,7 +65,7 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 	strURL := parsedURL.String()
 
 	// init a dataflow
-	df := client.QueryMethod(method, strURL)
+	df = client.QueryMethod(method, strURL)
 
 	// load middlewares stack
 	if (*options)["handler"] != nil {
@@ -70,44 +74,75 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 	}
 
 	// append query
-	queries := &object.StringMap{}
+	queries = &object.StringMap{}
 	if (*options)["query"] != nil {
 		queries = (*options)["query"].(*object.StringMap)
 	}
 
 	// debug mode
-	debug := false
+	debug = false
 	//fmt2.Dump(*client.Config)
 	if (*client.Config)["debug"] != nil && (*client.Config)["debug"].(bool) == true {
 		debug = true
 		(*queries)["debug"] = "1"
 	}
 
+	return df, queries, headers, body, version, debug
+}
+
+func (client *Client) Request(method string, uri string, options *object.HashMap, returnRaw bool, outHeader interface{}, outBody interface{}) contract.ResponseContract {
+
+	df, queries, headers, _, _, debug := client.PrepareRequest(method, uri, options)
+
 	df = client.applyOptions(df, options)
 
-	response := http.HttpResponse{}
-	err := df.
+	df = df.
 		Debug(debug).
 		SetQuery(queries).
 		SetHeader(&headers).
-		BindJSON(outResponse).
-		BindHeader(response.Header).
-		BindBody(response.Body).
-		Do()
+		BindHeader(outHeader)
 
+	if returnRaw {
+		df = df.BindBody(outBody)
+	} else {
+		df = df.BindJSON(outBody)
+	}
+
+	err := df.Do()
 	if err != nil {
-		// tbd throw exception
 		fmt.Printf("do request error:%s \n", err.Error())
 	}
 
-	return response
+	rs := client.GetHttpResponseFrom(outHeader, outBody, returnRaw)
+	return rs
 
 }
 
-func (client *Client) RequestAsync(method string, uri string, options *object.HashMap, outResponse interface{}) {
+func (client *Client) GetHttpResponseFrom(outHeader interface{}, outBody interface{}, returnRaw bool) *response.HttpResponse {
+	rs := response.NewHttpResponse()
+	//fmt2.Dump("outHeader:", outHeader)
+	//fmt2.Dump("outBody:", outBody)
+
+	// copy body
+	if returnRaw {
+		rs.Body = ioutil.NopCloser(bytes.NewBufferString(*(outBody.(*string))))
+	} else {
+		bodyBuffer, _ := json.Marshal(outBody)
+		rs.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBuffer))
+	}
+
+	// copy header
+	mapHeader, _ := object.StructToStringMap(outHeader)
+	for key, header := range *mapHeader {
+		rs.Header.Add(key, header)
+	}
+	return rs
+}
+
+func (client *Client) RequestAsync(method string, uri string, options *object.HashMap, returnRaw bool, outHeader interface{}, outBody interface{}) {
 	(*options)[OPTION_SYNCHRONOUS] = false
 
-	go client.Request(method, uri, options, outResponse)
+	go client.Request(method, uri, options, returnRaw, outHeader, outBody)
 
 }
 

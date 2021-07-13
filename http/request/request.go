@@ -1,4 +1,4 @@
-package http
+package request
 
 import (
 	"github.com/ArtisanCloud/go-libs/http/contract"
@@ -57,7 +57,8 @@ func (request *HttpRequest) PushMiddleware(middleware interface{}, name string) 
 	return false
 }
 
-func (request *HttpRequest) PerformRequest(url string, method string, options *object.HashMap, outResponse interface{}) contract.ResponseContract {
+func (request *HttpRequest) PerformRequest(url string, method string, options *object.HashMap,
+	returnRaw bool, outHeader interface{}, outBody interface{}) contract.ResponseContract {
 	// change method string format
 	method = str.Lower(method)
 
@@ -70,6 +71,6 @@ func (request *HttpRequest) PerformRequest(url string, method string, options *o
 	}
 
 	// use current http client driver to request
-	response := request.GetHttpClient().Request(method, url, options, outResponse)
+	response := request.GetHttpClient().Request(method, url, options, returnRaw, outHeader, outBody)
 	return response
 }
