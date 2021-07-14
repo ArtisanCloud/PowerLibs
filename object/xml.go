@@ -24,6 +24,15 @@ func Map2Xml(obj *HashMap) (strXML string) {
 	return "<xml>" + strXML + "</xml>"
 }
 
+func StringMap2Xml(obj *StringMap) (strXML string) {
+
+	for k, v := range *obj {
+		strXML = strXML + fmt.Sprintf("<%s><![CDATA[%s]]></%s>", k, v, k)
+	}
+	return "<xml>" + strXML + "</xml>"
+}
+
+
 func Xml2Map(b []byte) (m HashMap, err error) {
 
 	decoder := xml.NewDecoder(bytes.NewReader(b))

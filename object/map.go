@@ -25,18 +25,18 @@ func MergeHashMap(toMap *HashMap, subMaps ...*HashMap) *HashMap {
 	return toMap
 }
 
-func MergeStringMap(toMap *HashMap, subMaps ...*HashMap) *HashMap {
-	if toMap == nil {
-		toMap = &HashMap{}
+func MergeStringMap(toStringMap *StringMap, subStringMaps ...*StringMap) *StringMap {
+	if toStringMap == nil {
+		toStringMap = &StringMap{}
 	}
-	for _, subMap := range subMaps {
-		if subMap != nil {
-			for k, v := range *subMap {
-				(*toMap)[k] = v
+	for _, subStringMap := range subStringMaps {
+		if subStringMap != nil {
+			for k, v := range *subStringMap {
+				(*subStringMap)[k] = v
 			}
 		}
 	}
-	return toMap
+	return toStringMap
 }
 
 func ConvertStringMapToString(m *StringMap, separate string) string {
@@ -110,4 +110,14 @@ func StructToJson(obj interface{}) (strJson string, err error) {
 	}
 
 	return string(data), nil
+}
+
+func FilterEmptyStringMap(mapData *StringMap) (filteredMap *StringMap) {
+	filteredMap = &StringMap{}
+	for k, v := range *mapData {
+		if v != "" {
+			(*filteredMap)[k] = v
+		}
+	}
+	return filteredMap
 }
