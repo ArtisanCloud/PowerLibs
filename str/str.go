@@ -3,6 +3,7 @@ package str
 import (
 	"fmt"
 	. "github.com/ArtisanCloud/go-libs/object"
+	"math/rand"
 	"regexp"
 	"strings"
 	"time"
@@ -47,15 +48,12 @@ func init() {
 	UidFactory = StringMap{}
 }
 
-
-
 func UniqueID(prefix string) string {
 	now := time.Now()
 	sec := now.Unix()
 	usec := now.UnixNano() % 0x100000
 	return fmt.Sprintf("%s%08x%05x", prefix, sec, usec)
 }
-
 
 /**
  * Convert a value to camel case.
@@ -234,4 +232,13 @@ func Implode(glue string, arrayStrs []string) string {
 		strValues = strValues[:len(strValues)-1]
 	}
 	return strValues
+}
+
+func Shuffle(str string) string {
+	inRune := []rune(str)
+	rand.Shuffle(len(inRune), func(i, j int) {
+		inRune[i], inRune[j] = inRune[j], inRune[i]
+	})
+
+	return string(inRune)
 }
