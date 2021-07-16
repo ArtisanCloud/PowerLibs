@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"sort"
 )
 
 type AnyMap map[interface{}]interface{}
@@ -120,4 +121,25 @@ func FilterEmptyStringMap(mapData *StringMap) (filteredMap *StringMap) {
 		}
 	}
 	return filteredMap
+}
+
+func GetJoinedWithKSort(params *StringMap) string {
+
+	var strJoined string
+
+	// ksort
+	var keys []string
+	for k := range *params {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	// join
+	for _, k := range keys {
+		strJoined +=  k + "=" + (*params)[k] + "&"
+	}
+
+	strJoined = strJoined[0 : len(strJoined)-1]
+
+	return strJoined
 }
