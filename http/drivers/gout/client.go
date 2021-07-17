@@ -40,7 +40,7 @@ func (client *Client) SendAsync(request contract.RequestInterface, options *obje
 
 func (client *Client) PrepareRequest(method string, uri string, options *object.HashMap) (
 	df *dataflow.DataFlow,
-	queries *object.StringMap, headers gout.H, body gout.H,
+	queries *object.StringMap, headers interface{}, body interface{},
 	version string, debug bool) {
 
 	(*options)[OPTION_SYNCHRONOUS] = true
@@ -49,10 +49,10 @@ func (client *Client) PrepareRequest(method string, uri string, options *object.
 	version = "1.1"
 
 	if (*options)["headers"] != nil {
-		headers = (*options)["headers"].(gout.H)
+		headers = (*options)["headers"]
 	}
 	if (*options)["body"] != nil {
-		body = (*options)["body"].(gout.H)
+		body = (*options)["body"]
 	}
 
 	if (*options)["version"] != nil {
@@ -205,7 +205,7 @@ func (client *Client) buildUri(uri *url.URL, config *object.HashMap) *url.URL {
 			baseUri, _ = url.Parse(strBaseUri)
 		}
 	} else {
-		strBaseUri := (*client.Config)["http"].(map[string]string)["base_uri"]
+		strBaseUri := (*client.Config)["http"].(object.HashMap)["base_uri"].(string)
 		baseUri, _ = url.Parse(strBaseUri)
 	}
 
