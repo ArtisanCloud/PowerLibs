@@ -12,6 +12,7 @@ import (
 	dataflow2 "github.com/guonaihong/gout/interface"
 	"io/ioutil"
 	"net/url"
+	"path"
 )
 
 const OPTION_SYNCHRONOUS = "synchronous"
@@ -85,6 +86,7 @@ func (client *Client) PrepareRequest(method string, uri string, options *object.
 	if (*client.Config)["debug"] != nil && (*client.Config)["debug"].(bool) == true {
 		debug = true
 		(*queries)["debug"] = "1"
+		fmt.Printf("http debug mode %t \n", debug)
 	}
 
 	return df, queries, headers, body, version, debug
@@ -99,7 +101,8 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 	df = df.
 		Debug(debug).
 		SetQuery(queries).
-		SetHeader(&headers).
+		SetHeader(headers).
+		SetProxy("http://127.0.0.1:1088").
 		BindHeader(outHeader)
 
 	if returnRaw {
@@ -157,7 +160,23 @@ func (client *Client) GetClientConfig() *object.HashMap {
 
 func (client *Client) prepareDefaults(options *object.HashMap) *object.HashMap {
 	// tbd
-	return options
+	defaultOptions := client.Config
+
+	// merge headers
+	(*defaultOptions)["headers"] = &object.HashMap{
+		"Accept": "*/*",
+		"Content-Type": "application/json",
+	}
+	if (*options)["headers"] != nil {
+		switch (*options)["headers"].(type) {
+		case *object.HashMap:
+			println("error header ")
+			return nil
+		}
+	}
+	result := object.MergeHashMap(defaultOptions, options)
+
+	return result
 }
 
 func (client *Client) applyOptions(r *dataflow.DataFlow, options *object.HashMap) *dataflow.DataFlow {
@@ -209,7 +228,9 @@ func (client *Client) buildUri(uri *url.URL, config *object.HashMap) *url.URL {
 		baseUri, _ = url.Parse(strBaseUri)
 	}
 
-	uri = baseUri.ResolveReference(uri)
+	baseUri.Path = path.Join(baseUri.Path, uri.Path)
+	//uri = baseUri.ResolveReference(uri)
+	uri = baseUri
 
 	// tbd idn_conversion
 	// ...

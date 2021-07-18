@@ -113,6 +113,25 @@ func StructToJson(obj interface{}) (strJson string, err error) {
 	return string(data), nil
 }
 
+func FilterEmptyHashMap(mapData *HashMap) (filteredMap *HashMap) {
+	filteredMap = &HashMap{}
+	for k, v := range *mapData {
+		if v != nil {
+			(*filteredMap)[k] = v
+			switch v.(type) {
+			case HashMap:
+				o := v.(HashMap)
+				v = FilterEmptyHashMap(&o)
+				break
+			case *HashMap:
+				v = FilterEmptyHashMap(v.(*HashMap))
+				break
+			}
+		}
+	}
+	return filteredMap
+}
+
 func FilterEmptyStringMap(mapData *StringMap) (filteredMap *StringMap) {
 	filteredMap = &StringMap{}
 	for k, v := range *mapData {
@@ -136,7 +155,7 @@ func GetJoinedWithKSort(params *StringMap) string {
 
 	// join
 	for _, k := range keys {
-		strJoined +=  k + "=" + (*params)[k] + "&"
+		strJoined += k + "=" + (*params)[k] + "&"
 	}
 
 	strJoined = strJoined[0 : len(strJoined)-1]
