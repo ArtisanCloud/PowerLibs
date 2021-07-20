@@ -235,10 +235,17 @@ func Implode(glue string, arrayStrs []string) string {
 }
 
 func Shuffle(str string) string {
+
+	randBias := rand.Int63n(100)
+	timestamp := time.Now().Unix()
+	randBias = timestamp + randBias
+	//fmt2.Dump(randBias)
+	rand.Seed(randBias)
+
 	inRune := []rune(str)
 	rand.Shuffle(len(inRune), func(i, j int) {
+		//fmt.Printf("i:%d, j:%d ", i, j)
 		inRune[i], inRune[j] = inRune[j], inRune[i]
 	})
-
 	return string(inRune)
 }
