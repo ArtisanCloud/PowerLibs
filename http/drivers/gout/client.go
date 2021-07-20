@@ -163,13 +163,16 @@ func (client *Client) prepareDefaults(options *object.HashMap) *object.HashMap {
 	defaultOptions := client.Config
 
 	// merge headers
-	(*defaultOptions)["headers"] = &object.HashMap{
-		"Accept": "*/*",
+	headers := &object.HashMap{
+		"Accept":       "*/*",
 		"Content-Type": "application/json",
 	}
 	if (*options)["headers"] != nil {
 		switch (*options)["headers"].(type) {
 		case *object.HashMap:
+			(*options)["headers"] = object.MergeHashMap(headers, (*options)["headers"].(*object.HashMap))
+			break
+		default:
 			println("error header ")
 			return nil
 		}

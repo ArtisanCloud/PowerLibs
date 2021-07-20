@@ -126,6 +126,11 @@ func FilterEmptyHashMap(mapData *HashMap) (filteredMap *HashMap) {
 			case *HashMap:
 				v = FilterEmptyHashMap(v.(*HashMap))
 				break
+			case string:
+				if v.(string) == "" {
+					delete(*filteredMap, k)
+				}
+				break
 			}
 		}
 	}
