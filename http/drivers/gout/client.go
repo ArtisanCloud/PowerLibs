@@ -82,19 +82,22 @@ func (client *Client) PrepareRequest(method string, uri string, options *object.
 
 	// debug mode
 	debug = false
-	//fmt2.Dump(*client.Config)
-	if (*client.Config)["debug"] != nil && (*client.Config)["debug"].(bool) == true {
+	if (*client.Config)["http_debug"] != nil && (*client.Config)["http_debug"].(bool) == true {
 		debug = true
-		(*queries)["debug"] = "1"
-		fmt.Printf("http debug mode %t \n", debug)
+		fmt.Println("http debug mode open \n")
 	}
+	if (*client.Config)["debug"] != nil && (*client.Config)["debug"].(bool) == true {
+		(*queries)["debug"] = "1"
+		fmt.Println("wx debug mode open")
+	}
+
 
 	return df, queries, headers, body, version, debug
 }
 
-func (client *Client) Request(method string, uri string, options *object.HashMap, returnRaw bool, outHeader interface{}, outBody interface{}) contract.ResponseContract {
+func (client *Client) Request(method string, uri string, options *object.HashMap, returnRaw bool, outHeader interface{}, outBody interface{})( contract.ResponseContract ,error){
 
-	df, queries, headers, _, _, debug := client.PrepareRequest(method, uri, options)
+	df, queries, headers, body, _, debug := client.PrepareRequest(method, uri, options)
 
 	df = client.applyOptions(df, options)
 
@@ -102,6 +105,7 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 		Debug(debug).
 		SetQuery(queries).
 		SetHeader(headers).
+		SetBody(body).
 		SetProxy("http://127.0.0.1:1088").
 		BindHeader(outHeader)
 
@@ -114,10 +118,11 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 	err := df.Do()
 	if err != nil {
 		fmt.Printf("do request error:%s \n", err.Error())
+		return nil, err
 	}
 
 	rs := client.GetHttpResponseFrom(outHeader, outBody, returnRaw)
-	return rs
+	return rs, err
 
 }
 

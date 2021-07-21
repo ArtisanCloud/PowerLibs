@@ -249,3 +249,16 @@ func Shuffle(str string) string {
 	})
 	return string(inRune)
 }
+
+
+func QuickRandom(length int) string {
+	pool := "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+	// repeat the string
+	strRepeat := strings.Repeat(pool, length)
+
+	// shuffle the string
+	strShuffle := Shuffle(strRepeat)
+
+	return strShuffle[0:length]
+}
