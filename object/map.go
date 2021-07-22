@@ -12,6 +12,7 @@ type AnyMap map[interface{}]interface{}
 type HashMap map[string]interface{}
 type StringMap map[string]string
 
+// ------------------------------- Merge --------------------------------------------
 func MergeHashMap(toMap *HashMap, subMaps ...*HashMap) *HashMap {
 	if toMap == nil {
 		toMap = &HashMap{}
@@ -49,25 +50,7 @@ func ConvertStringMapToString(m *StringMap, separate string) string {
 	return b.String()
 }
 
-func InHash(val interface{}, hash *HashMap) (exists bool, key string) {
-	exists = false
-	key = ""
-
-	switch reflect.TypeOf(hash).Kind() {
-	case reflect.Map:
-		//s := reflect.ValueOf(hash)
-
-		for k, v := range *hash {
-			if reflect.DeepEqual(val, v) == true {
-				key = k
-				return
-			}
-		}
-	}
-
-	return
-}
-
+// ------------------------------- Conversion ---------------------------------------
 func StructToHashMap(obj interface{}) (newMap *HashMap, err error) {
 	data, err := json.Marshal(obj) // Convert to a json string
 
@@ -113,6 +96,74 @@ func StructToJson(obj interface{}) (strJson string, err error) {
 	return string(data), nil
 }
 
+func GetJoinedWithKSort(params *StringMap) string {
+
+	var strJoined string
+
+	// ksort
+	var keys []string
+	for k := range *params {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	// join
+	for _, k := range keys {
+		strJoined += k + "=" + (*params)[k] + "&"
+	}
+
+	strJoined = strJoined[0 : len(strJoined)-1]
+
+	return strJoined
+}
+
+// ------------------------------- Search --------------------------------------------
+func InHash(val interface{}, hash *HashMap) (exists bool, key string) {
+	exists = false
+	key = ""
+
+	switch reflect.TypeOf(hash).Kind() {
+	case reflect.Map:
+		//s := reflect.ValueOf(hash)
+
+		for k, v := range *hash {
+			if reflect.DeepEqual(val, v) == true {
+				key = k
+				return
+			}
+		}
+	}
+
+	return
+}
+
+func GetHashMapKV(maps StringMap) (keys []string, values []interface{}) {
+	mapLen := len(maps)
+	keys = make([]string, 0, mapLen)
+	values = make([]interface{}, 0, mapLen)
+
+	for k, v := range maps {
+		keys = append(keys, k)
+		values = append(values, v)
+	}
+
+	return keys, values
+}
+
+func GetStringMapKV(maps StringMap) (keys []string, values []string) {
+	mapLen := len(maps)
+	keys = make([]string, 0, mapLen)
+	values = make([]string, 0, mapLen)
+
+	for k, v := range maps {
+		keys = append(keys, k)
+		values = append(values, v)
+	}
+
+	return keys, values
+}
+
+// ------------------------------- Filter --------------------------------------------
 func FilterEmptyHashMap(mapData *HashMap) (filteredMap *HashMap) {
 	filteredMap = &HashMap{}
 	for k, v := range *mapData {
@@ -145,25 +196,4 @@ func FilterEmptyStringMap(mapData *StringMap) (filteredMap *StringMap) {
 		}
 	}
 	return filteredMap
-}
-
-func GetJoinedWithKSort(params *StringMap) string {
-
-	var strJoined string
-
-	// ksort
-	var keys []string
-	for k := range *params {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	// join
-	for _, k := range keys {
-		strJoined += k + "=" + (*params)[k] + "&"
-	}
-
-	strJoined = strJoined[0 : len(strJoined)-1]
-
-	return strJoined
 }

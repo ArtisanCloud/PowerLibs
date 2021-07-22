@@ -120,11 +120,12 @@ func (c *Collection) ToHashMap() *HashMap {
 	return c.All()
 }
 
-func (c *Collection) ToJson(option int) string {
-	return ""
+func (c *Collection) ToJson(option int) (string, error) {
+	return JsonEncode(c.items)
 }
 func (c *Collection) ToString() string {
-	return c.ToJson(0)
+	strJson, _ := c.ToJson(0)
+	return strJson
 }
 
 func (c *Collection) Count() int {
