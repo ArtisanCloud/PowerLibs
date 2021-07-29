@@ -91,11 +91,10 @@ func (client *Client) PrepareRequest(method string, uri string, options *object.
 		fmt.Println("wx debug mode open")
 	}
 
-
 	return df, queries, headers, body, version, debug
 }
 
-func (client *Client) Request(method string, uri string, options *object.HashMap, returnRaw bool, outHeader interface{}, outBody interface{})( contract.ResponseContract ,error){
+func (client *Client) Request(method string, uri string, options *object.HashMap, returnRaw bool, outHeader interface{}, outBody interface{}) (contract.ResponseContract, error) {
 
 	df, queries, headers, body, _, debug := client.PrepareRequest(method, uri, options)
 
@@ -105,9 +104,12 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 		Debug(debug).
 		SetQuery(queries).
 		SetHeader(headers).
-		SetBody(body).
 		SetProxy("http://127.0.0.1:1088").
 		BindHeader(outHeader)
+
+	if body != nil {
+		df = df.SetBody(body)
+	}
 
 	if returnRaw {
 		df = df.BindBody(outBody)

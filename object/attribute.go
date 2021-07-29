@@ -23,7 +23,8 @@ func (attr *Attribute) SetAttributes(attributes *HashMap) *Attribute {
 }
 
 func (attr *Attribute) SetAttribute(name string, value interface{}) *Attribute {
-	attr.Attributes[name] = value
+	strValue, _ := JsonEncode(value)
+	attr.Attributes[name] = strValue
 	return attr
 }
 
