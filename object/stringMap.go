@@ -10,24 +10,6 @@ import (
 type StringMap map[string]string
 
 
-func (m *StringMap) MarshalJSON() ([]byte, error) {
-
-	strMap, err := json.Marshal(m)
-
-	return strMap, err
-}
-
-
-func (m *StringMap) UnmarshalJSON(b []byte) error {
-
-	return json.Unmarshal(b, m)
-
-}
-
-
-
-
-
 // ------------------------------- Merge --------------------------------------------
 func MergeStringMap(toStringMap *StringMap, subStringMaps ...*StringMap) *StringMap {
 	if toStringMap == nil {

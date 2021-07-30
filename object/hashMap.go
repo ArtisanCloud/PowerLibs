@@ -7,21 +7,6 @@ import (
 
 type HashMap map[string]interface{}
 
-func (m *HashMap) MarshalJSON() ([]byte, error) {
-
-	strMap, err := json.Marshal(m)
-
-	return strMap, err
-}
-
-func (m *HashMap) UnmarshalJSON(b []byte) error {
-
-	return json.Unmarshal(b, m)
-
-}
-
-
-
 
 // ------------------------------- Merge --------------------------------------------
 func MergeHashMap(toMap *HashMap, subMaps ...*HashMap) *HashMap {
