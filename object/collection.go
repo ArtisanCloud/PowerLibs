@@ -54,11 +54,38 @@ func (c *Collection) Add(key string, value interface{}) {
 }
 
 func (c *Collection) Set(key string, value interface{}) {
+	segments := strings.Split(key, ".")
+	newItem := c.items
 
+	var segment string
+	for len(segments) > 1 {
+		segment, segments = segments[0], segments[1:]
+		if newItem[segment] == nil {
+			newItem[segment] = HashMap{}
+		}
+		newItem = newItem[segment].(HashMap)
+	}
+
+	newItem[segments[0]] = value
 }
 
 func (c *Collection) GetBool(key string, defaultValue bool) bool {
 	return c.Get(key, defaultValue).(bool)
+}
+
+func (c *Collection) GetIntArray(key string, defaultValue []int) []int {
+	return c.Get(key, defaultValue).([]int)
+}
+func (c *Collection) GetFloat64Array(key string, defaultValue []float64) []float64 {
+	return c.Get(key, defaultValue).([]float64)
+}
+
+func (c *Collection) GetInterfaceArray(key string, defaultValue []interface{}) []interface{} {
+	return c.Get(key, defaultValue).([]interface{})
+}
+
+func (c *Collection) GetStringArray(key string, defaultValue []string) []string {
+	return c.Get(key, defaultValue).([]string)
 }
 
 func (c *Collection) GetInt(key string, defaultValue int) int {
@@ -104,7 +131,14 @@ func (c *Collection) Get(key string, defaultValue interface{}) interface{} {
 			if hashedObject[segment] == nil {
 				return defaultValue
 			} else {
-				result = hashedObject[segment]
+				switch hashedObject[segment].(type) {
+				case HashMap:
+					hashedObject = hashedObject[segment].(HashMap)
+				case map[string]interface{}:
+					hashedObject = hashedObject[segment].(map[string]interface{})
+				default:
+					return hashedObject[segment]
+				}
 			}
 		}
 	}
