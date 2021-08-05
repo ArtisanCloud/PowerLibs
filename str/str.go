@@ -262,3 +262,5 @@ func QuickRandom(length int) string {
 
 	return strShuffle[0:length]
 }
+
+
