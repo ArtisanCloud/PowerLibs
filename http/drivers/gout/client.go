@@ -104,7 +104,7 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 		Debug(debug).
 		SetQuery(queries).
 		SetHeader(headers).
-		SetProxy("http://127.0.0.1:1088").
+		//SetProxy("http://127.0.0.1:1088").
 		BindHeader(outHeader)
 
 	if body != nil {
