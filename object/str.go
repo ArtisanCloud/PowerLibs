@@ -1,8 +1,7 @@
-package str
+package object
 
 import (
 	"fmt"
-	. "github.com/ArtisanCloud/go-libs/object"
 	"math/rand"
 	"regexp"
 	"strings"

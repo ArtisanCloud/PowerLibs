@@ -1,6 +1,9 @@
 package object
 
-import "strings"
+import (
+	"strings"
+	"time"
+)
 
 type Collection struct {
 	items HashMap
@@ -96,8 +99,42 @@ func (c *Collection) GetInt8(key string, defaultValue int8) int8 {
 	return c.Get(key, defaultValue).(int8)
 }
 
+func (c *Collection) GetInt16(key string, defaultValue int16) int16 {
+	return c.Get(key, defaultValue).(int16)
+}
+
+func (c *Collection) GetInt32(key string, defaultValue int32) int32 {
+	return c.Get(key, defaultValue).(int32)
+}
+
+func (c *Collection) GetInt64(key string, defaultValue int64) int64 {
+	return c.Get(key, defaultValue).(int64)
+}
+
 func (c *Collection) GetString(key string, defaultValue string) string {
 	return c.Get(key, defaultValue).(string)
+}
+
+func (c *Collection) GetNullString(key string, defaultValue string) NullString {
+
+	value := c.Get(key, nil)
+
+	switch value.(type) {
+	case NullString:
+		return value.(NullString)
+
+	case string:
+		strValue := value.(string)
+		if strValue != "" {
+			return NewNullString(strValue, true)
+		} else {
+			if defaultValue != "" {
+				return NewNullString(defaultValue, true)
+			}
+		}
+
+	}
+	return NewNullString("", false)
 }
 
 func (c *Collection) GetFloat64(key string, defaultValue float64) float64 {
@@ -106,6 +143,10 @@ func (c *Collection) GetFloat64(key string, defaultValue float64) float64 {
 
 func (c *Collection) GetFloat32(key string, defaultValue float64) float32 {
 	return c.Get(key, defaultValue).(float32)
+}
+
+func (c *Collection) GetDateTime(key string, defaultValue time.Time) time.Time {
+	return c.Get(key, defaultValue).(time.Time)
 }
 
 // Get an item from an hashMap using "dot" notation.

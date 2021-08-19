@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/ArtisanCloud/go-libs/str"
 	"fmt"
+	"github.com/ArtisanCloud/go-libs/object"
 )
 
 func main() {
 
-	strCamel := str.Camel("123-ldfjl-sdf")
+	strCamel := object.Camel("123-ldfjl-sdf")
 	fmt.Printf("%v", strCamel)
 
 }

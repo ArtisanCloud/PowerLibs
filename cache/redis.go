@@ -178,7 +178,7 @@ func (gr *GRedis) SetEx(key string, value interface{}, expires time.Duration) er
 	return cmd.Err()
 }
 
-func (gr *GRedis) Get(key string, ptrValue *interface{}) (returnValue interface{}, err error) {
+func (gr *GRedis) Get(key string, ptrValue interface{}) (returnValue interface{}, err error) {
 	b, err := gr.Pool.Get(CTXRedis, key).Bytes()
 	if err == redis.Nil {
 		return nil, ErrCacheMiss
@@ -187,7 +187,7 @@ func (gr *GRedis) Get(key string, ptrValue *interface{}) (returnValue interface{
 		return nil, err
 	}
 	err = json.Unmarshal(b, ptrValue)
-	returnValue = *ptrValue
+	returnValue = ptrValue
 	return returnValue, err
 }
 

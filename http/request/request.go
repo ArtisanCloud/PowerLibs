@@ -4,7 +4,6 @@ import (
 	"github.com/ArtisanCloud/go-libs/http/contract"
 	"github.com/ArtisanCloud/go-libs/http/drivers/gout"
 	"github.com/ArtisanCloud/go-libs/object"
-	"github.com/ArtisanCloud/go-libs/str"
 )
 
 type HttpRequest struct {
@@ -60,7 +59,7 @@ func (request *HttpRequest) PushMiddleware(middleware interface{}, name string) 
 func (request *HttpRequest) PerformRequest(url string, method string, options *object.HashMap,
 	returnRaw bool, outHeader interface{}, outBody interface{}) (contract.ResponseContract ,error){
 	// change method string format
-	method = str.Lower(method)
+	method = object.Lower(method)
 
 	// merge options with default options
 	options = object.MergeHashMap(options, _defaults, &object.HashMap{"handler": request.GetMiddlewares()})

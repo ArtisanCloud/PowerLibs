@@ -1,4 +1,4 @@
-package str
+package object
 
 import (
 	"github.com/ArtisanCloud/go-libs/fmt"

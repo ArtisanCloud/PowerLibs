@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"fmt"
 	. "github.com/ArtisanCloud/go-libs/object"
-	"github.com/ArtisanCloud/go-libs/str"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"reflect"
@@ -22,7 +21,7 @@ func TransformArrayKeysToCamel(arrayData HashMap) HashMap {
 
 		if reflect.TypeOf(value).Kind() == reflect.Map {
 			value = TransformArrayKeysToCamel(value.(HashMap))
-			arrayTransformedKeys[str.Camel(key)] = value
+			arrayTransformedKeys[Camel(key)] = value
 		}
 
 	}
@@ -43,7 +42,7 @@ func TransformArrayKeysToSnake(arrayData interface{}) HashMap {
 
 		if reflect.TypeOf(value).Kind() == reflect.Map {
 			value = TransformArrayKeysToSnake(value.(HashMap))
-			arrayTransformedKeys[str.Camel(key)] = value
+			arrayTransformedKeys[Camel(key)] = value
 		}
 
 	}
