@@ -149,7 +149,7 @@ func (gr *GRedis) Add(key string, value interface{}, ttl time.Duration) (err err
 	// has a chance to override this logic. Some drivers better support the way
 	// this operation should work with a total "atomic" implementation of it.
 	var obj interface{}
-	obj, err = gr.Get(key, &obj)
+	obj, err = gr.Get(key, obj)
 	if err == ErrCacheMiss {
 		return gr.SetEx(key, value, ttl)
 	} else {
@@ -186,7 +186,7 @@ func (gr *GRedis) Get(key string, ptrValue interface{}) (returnValue interface{}
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal(b, ptrValue)
+	err = json.Unmarshal(b, &ptrValue)
 	returnValue = ptrValue
 	return returnValue, err
 }
@@ -232,7 +232,7 @@ func (gr *GRedis) Flush() error {
 func (gr *GRedis) Remember(key string, ttl time.Duration, callback func() interface{}) (obj interface{}, err error) {
 
 	var value interface{}
-	value, err = gr.Get(key, &value)
+	value, err = gr.Get(key, value)
 
 	// If the item exists in the cache we will just return this immediately and if
 	// not we will execute the given Closure and cache the result of that for a
