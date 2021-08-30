@@ -11,12 +11,12 @@ type HttpResponse struct {
 	*http.Response
 }
 
-func NewHttpResponse() *HttpResponse {
+func NewHttpResponse(code int) *HttpResponse {
 	body := ""
 	return &HttpResponse{
 		Response: &http.Response{
 			Status:        "200 OK",
-			StatusCode:    200,
+			StatusCode:    code,
 			Proto:         "HTTP/1.1",
 			ProtoMajor:    1,
 			ProtoMinor:    1,

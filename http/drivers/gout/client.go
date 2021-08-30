@@ -100,21 +100,30 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 
 	df = client.applyOptions(df, options)
 
+	returnCode := 200
 	df = df.
 		Debug(debug).
 		SetQuery(queries).
-		SetHeader(headers).
-		//SetProxy("http://127.0.0.1:1088").
-		BindHeader(outHeader)
+		SetHeader(headers)
+	//Code(&returnCode).
+	//SetProxy("http://127.0.0.1:1088").
 
 	if body != nil {
 		df = df.SetBody(body)
 	}
 
-	if returnRaw {
-		df = df.BindBody(outBody)
-	} else {
-		df = df.BindJSON(outBody)
+	// bind out header
+	if outHeader != nil {
+		df = df.BindHeader(outHeader)
+	}
+
+	// bind out body
+	if outBody != nil {
+		if returnRaw {
+			df = df.BindBody(outBody)
+		} else {
+			df = df.BindJSON(outBody)
+		}
 	}
 
 	err := df.Do()
@@ -123,13 +132,13 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 		return nil, err
 	}
 
-	rs := client.GetHttpResponseFrom(outHeader, outBody, returnRaw)
+	rs := client.GetHttpResponseFrom(returnCode, outHeader, outBody, returnRaw)
 	return rs, err
 
 }
 
-func (client *Client) GetHttpResponseFrom(outHeader interface{}, outBody interface{}, returnRaw bool) *response.HttpResponse {
-	rs := response.NewHttpResponse()
+func (client *Client) GetHttpResponseFrom(returnCode int, outHeader interface{}, outBody interface{}, returnRaw bool) *response.HttpResponse {
+	rs := response.NewHttpResponse(returnCode)
 	//fmt2.Dump("outHeader:", outHeader)
 	//fmt2.Dump("outBody:", outBody)
 
