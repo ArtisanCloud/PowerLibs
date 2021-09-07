@@ -216,16 +216,21 @@ func (client *Client) applyOptions(r *dataflow.DataFlow, options *object.HashMap
 	if (*options)["multipart"] != nil {
 		for _, media := range (*options)["multipart"].([]*object.HashMap) {
 			name := (*media)["name"].(string)
-			content := (*media)["contents"].(string)
+
+			// load data from file
 			if (*media)["headers"] != nil {
+				value := (*media)["value"].(string)
 				//headers := (*media)["headers"].(string)
 				r.SetForm(gout.H{
-					name: gout.FormFile(content),
+					name: gout.FormFile(value),
 				}).SetHeader(gout.H{
 				})
-			} else {
+			} else
+			// load data from memory
+			{
+				value := (*media)["value"].([]byte)
 				r.SetForm(gout.H{
-					name: gout.FormMem(content),
+					name:     gout.FormMem(value),
 				})
 			}
 		}
