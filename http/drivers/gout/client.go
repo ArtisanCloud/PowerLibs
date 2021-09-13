@@ -11,6 +11,7 @@ import (
 	"github.com/guonaihong/gout/dataflow"
 	dataflow2 "github.com/guonaihong/gout/interface"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"path"
 )
@@ -94,13 +95,58 @@ func (client *Client) PrepareRequest(method string, uri string, options *object.
 	return df, queries, headers, body, version, debug
 }
 
+func (client *Client) Download(url string, method string, options *object.HashMap)(contract.ResponseContract, error){
+	df := client.QueryMethod(method, url)
+
+	// debug mode
+	debug := false
+	if (*client.Config)["http_debug"] != nil && (*client.Config)["http_debug"].(bool) == true {
+		debug = true
+		fmt.Println("http debug mode open \n")
+	}
+	if (*client.Config)["debug"] != nil && (*client.Config)["debug"].(bool) == true {
+		(*queries)["debug"] = "1"
+		fmt.Println("wx debug mode open")
+	}
+
+	if body != nil {
+		df = df.SetBody(body)
+	}
+
+	// bind out header
+	if outHeader != nil {
+		df = df.BindHeader(outHeader)
+	}
+
+	// bind out body
+	if outBody != nil {
+		if returnRaw {
+			df = df.BindBody(outBody)
+		} else {
+			df = df.BindJSON(outBody)
+		}
+	}
+
+	df = df.Debug(debug)
+	err := df.Do()
+	if err != nil {
+		fmt.Printf("do request error:%s \n", err.Error())
+		return nil, err
+	}
+
+	rs := client.GetHttpResponseFrom(returnCode, outHeader, outBody, true)
+	return rs, err
+
+
+}
+
 func (client *Client) Request(method string, uri string, options *object.HashMap, returnRaw bool, outHeader interface{}, outBody interface{}) (contract.ResponseContract, error) {
 
 	df, queries, headers, body, _, debug := client.PrepareRequest(method, uri, options)
 
 	df = client.applyOptions(df, options)
 
-	returnCode := 200
+	returnCode := http.StatusOK
 	df = df.
 		Debug(debug).
 		SetQuery(queries).

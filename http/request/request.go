@@ -64,7 +64,7 @@ func (request *HttpRequest) PerformRequest(url string, method string, options *o
 	// merge options with default options
 	options = object.MergeHashMap(options, _defaults, &object.HashMap{"handler": request.GetMiddlewares()})
 
-	// use request basrUri as final
+	// use request baseUri as final
 	if request.baseUri != "" {
 		(*options)["base_uri"] = request.baseUri
 	}
