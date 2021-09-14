@@ -1,12 +1,13 @@
 package response
 
 import (
-	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
 type StreamResponse struct {
 	*HttpResponse
+	Data []byte
 }
 
 type RequestDownload struct {
@@ -15,49 +16,38 @@ type RequestDownload struct {
 	DownloadURL string `json:"download_url""`
 }
 
+
+func NewStreamResponse(code int) *StreamResponse {
+
+	return &StreamResponse{
+		NewHttpResponse(code),
+		nil,
+	}
+}
+
+func (rs *StreamResponse)SetHttpResponse(httpResponse *HttpResponse){
+	rs.HttpResponse = httpResponse
+}
+
+
 func (rs *StreamResponse) Save(directory string, fileName string ) (int, error) {
 
-	saveFile, err := os.Create(directory)
+	path := filepath.Join(directory, fileName)
+
+	saveFile, err := os.Create(path)
 	if err != nil {
-		return 0, err
+		return 0,err
 	}
 	defer saveFile.Close()
 
-	data, err := ioutil.ReadAll(rs.GetBody())
-
-	//fileMd5 := sha256.New()
-	totalSize := 0
-	_, err = saveFile.Write(data)
+	totalSize, err := saveFile.Write(rs.Data)
 	if err != nil {
 		return 0, err
 	}
-
-	//fileMd5.Write(data)
-	//totalSize += len(data)
-
-	//if totalSize != d.fileSize {
-	//	return errors.New("文件不完整")
-	//}
-	//
-	//if d.md5 != "" {
-	//	if hex.EncodeToString(fileMd5.Sum(nil)) != d.md5 {
-	//		return errors.New("文件损坏")
-	//	} else {
-	//		log.Println("文件SHA-256校验成功")
-	//	}
-	//}
-	//
-	//if d.md5 != "" {
-	//	if hex.EncodeToString(fileMd5.Sum(nil)) != d.md5 {
-	//		return 0, errors.New("文件损坏")
-	//	} else {
-	//		log.Println("文件SHA-256校验成功")
-	//	}
-	//}
 
 	return totalSize, nil
 }
 
-func (rs *StreamResponse) SaveAs(directory string, fileName string, appendSuffix bool) (int, error) {
+func (rs *StreamResponse) SaveAs(directory string, fileName string) (int, error) {
 	return rs.Save(directory, fileName)
 }

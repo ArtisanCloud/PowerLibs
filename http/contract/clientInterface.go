@@ -11,8 +11,6 @@ type ClientInterface interface {
 	Request(method string, uri string, options *object.HashMap, returnRaw bool, outHeader interface{}, outBody interface{}) (ResponseContract, error)
 	RequestAsync(method string, uri string, options *object.HashMap, returnRaw bool, outHeader interface{}, outBody interface{})
 
-	Download(url string, method string, options *object.HashMap)
-
 	SetClientConfig(config *object.HashMap) ClientInterface
 	GetClientConfig() *object.HashMap
 }

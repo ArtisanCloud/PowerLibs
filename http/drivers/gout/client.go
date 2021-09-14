@@ -67,7 +67,7 @@ func (client *Client) PrepareRequest(method string, uri string, options *object.
 	strURL := parsedURL.String()
 
 	// init a dataflow
-	df = client.QueryMethod(method, strURL)
+	df = client.QueryWithMethod(method, strURL)
 
 	// load middlewares stack
 	if (*options)["handler"] != nil {
@@ -93,51 +93,6 @@ func (client *Client) PrepareRequest(method string, uri string, options *object.
 	}
 
 	return df, queries, headers, body, version, debug
-}
-
-func (client *Client) Download(url string, method string, options *object.HashMap)(contract.ResponseContract, error){
-	df := client.QueryMethod(method, url)
-
-	// debug mode
-	debug := false
-	if (*client.Config)["http_debug"] != nil && (*client.Config)["http_debug"].(bool) == true {
-		debug = true
-		fmt.Println("http debug mode open \n")
-	}
-	if (*client.Config)["debug"] != nil && (*client.Config)["debug"].(bool) == true {
-		(*queries)["debug"] = "1"
-		fmt.Println("wx debug mode open")
-	}
-
-	if body != nil {
-		df = df.SetBody(body)
-	}
-
-	// bind out header
-	if outHeader != nil {
-		df = df.BindHeader(outHeader)
-	}
-
-	// bind out body
-	if outBody != nil {
-		if returnRaw {
-			df = df.BindBody(outBody)
-		} else {
-			df = df.BindJSON(outBody)
-		}
-	}
-
-	df = df.Debug(debug)
-	err := df.Do()
-	if err != nil {
-		fmt.Printf("do request error:%s \n", err.Error())
-		return nil, err
-	}
-
-	rs := client.GetHttpResponseFrom(returnCode, outHeader, outBody, true)
-	return rs, err
-
-
 }
 
 func (client *Client) Request(method string, uri string, options *object.HashMap, returnRaw bool, outHeader interface{}, outBody interface{}) (contract.ResponseContract, error) {
@@ -190,7 +145,12 @@ func (client *Client) GetHttpResponseFrom(returnCode int, outHeader interface{},
 
 	// copy body
 	if returnRaw {
-		rs.Body = ioutil.NopCloser(bytes.NewBufferString(*(outBody.(*string))))
+		switch outBody.(type) {
+		case string:
+			rs.Body = ioutil.NopCloser(bytes.NewBufferString(*(outBody.(*string))))
+		default:
+			rs.Body = nil
+		}
 	} else {
 		bodyBuffer, _ := json.Marshal(outBody)
 		rs.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBuffer))
@@ -276,7 +236,7 @@ func (client *Client) applyOptions(r *dataflow.DataFlow, options *object.HashMap
 			{
 				value := (*media)["value"].([]byte)
 				r.SetForm(gout.H{
-					name:     gout.FormMem(value),
+					name: gout.FormMem(value),
 				})
 			}
 		}
@@ -288,19 +248,28 @@ func (client *Client) applyOptions(r *dataflow.DataFlow, options *object.HashMap
 
 func (client *Client) buildUri(uri *url.URL, config *object.HashMap) *url.URL {
 	var baseUri *url.URL
-	if (*config)["base_uri"] != nil {
-		strBaseUri := (*config)["base_uri"].(string)
-		if strBaseUri != "" {
+
+	// use customer custom url
+	if uri.Host != "" {
+		baseUri = uri
+	} else {
+
+		// use config base uri
+		if (*config)["base_uri"] != nil {
+			strBaseUri := (*config)["base_uri"].(string)
+			if strBaseUri != "" {
+				baseUri, _ = url.Parse(strBaseUri)
+			}
+		} else {
+			// use app config base uri
+			strBaseUri := (*client.Config)["http"].(object.HashMap)["base_uri"].(string)
 			baseUri, _ = url.Parse(strBaseUri)
 		}
-	} else {
-		strBaseUri := (*client.Config)["http"].(object.HashMap)["base_uri"].(string)
-		baseUri, _ = url.Parse(strBaseUri)
-	}
 
-	baseUri.Path = path.Join(baseUri.Path, uri.Path)
-	//uri = baseUri.ResolveReference(uri)
-	uri = baseUri
+		baseUri.Path = path.Join(baseUri.Path, uri.Path)
+		//uri = baseUri.ResolveReference(uri)
+		uri = baseUri
+	}
 
 	// tbd idn_conversion
 	// ...
@@ -325,7 +294,7 @@ func (client *Client) configureDefaults(config *object.HashMap) {
 	object.MergeHashMap(client.Config, defaults, config)
 }
 
-func (client *Client) QueryMethod(method string, url string) (df *dataflow.DataFlow) {
+func (client *Client) QueryWithMethod(method string, url string) (df *dataflow.DataFlow) {
 
 	switch method {
 	case "get":
