@@ -147,6 +147,7 @@ func (client *Client) GetHttpResponseFrom(returnCode int, outHeader interface{},
 	if returnRaw {
 		switch outBody.(type) {
 		case string:
+		case *string:
 			rs.Body = ioutil.NopCloser(bytes.NewBufferString(*(outBody.(*string))))
 		default:
 			rs.Body = nil
