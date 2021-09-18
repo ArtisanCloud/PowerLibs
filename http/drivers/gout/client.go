@@ -9,6 +9,7 @@ import (
 	"github.com/ArtisanCloud/go-libs/object"
 	"github.com/guonaihong/gout"
 	"github.com/guonaihong/gout/dataflow"
+	"github.com/guonaihong/gout/filter"
 	dataflow2 "github.com/guonaihong/gout/interface"
 	"io/ioutil"
 	"net/http"
@@ -33,7 +34,7 @@ func NewClient(config *object.HashMap) *Client {
 	return client
 }
 
-func (client *Client) Send(request contract.RequestInterface, options *object.HashMap) contract.ResponseContract {
+func (client *Client) Send(request contract.RequestInterface, options *object.HashMap) contract.ResponseInterface {
 	return nil
 }
 func (client *Client) SendAsync(request contract.RequestInterface, options *object.HashMap) contract.PromiseInterface {
@@ -95,7 +96,7 @@ func (client *Client) PrepareRequest(method string, uri string, options *object.
 	return df, queries, headers, body, version, debug
 }
 
-func (client *Client) Request(method string, uri string, options *object.HashMap, returnRaw bool, outHeader interface{}, outBody interface{}) (contract.ResponseContract, error) {
+func (client *Client) Request(method string, uri string, options *object.HashMap, returnRaw bool, outHeader interface{}, outBody interface{}) (contract.ResponseInterface, error) {
 
 	df, queries, headers, body, _, debug := client.PrepareRequest(method, uri, options)
 
@@ -315,7 +316,33 @@ func (client *Client) QueryWithMethod(method string, url string) (df *dataflow.D
 
 func (client *Client) useMiddleware(df *dataflow.DataFlow, middlewares []interface{}) {
 	for _, middleware := range middlewares {
+
+		md := middleware.(contract.MiddlewareInterface)
+		mdName := md.GetName()
+		if mdName == "retry" {
+			client.handleRetryMiddleware(df, md)
+		}
+
 		requestMiddleware := middleware.(dataflow2.RequestMiddler)
 		df.RequestUse(requestMiddleware)
 	}
+}
+
+func (client *Client) handleRetryMiddleware(df *dataflow.DataFlow, retryMiddleware contract.MiddlewareInterface) *dataflow.DataFlow {
+
+	retries := retryMiddleware.Retries()
+	delay := retryMiddleware.Delay()
+	df.F().Retry().Attempt(retries).WaitTime(delay).MaxWaitTime(delay).Func(func(c *gout.Context) error {
+		conditions := &object.HashMap{
+			"code": c.Code,
+		}
+		if c.Error != nil || retryMiddleware.RetryDecider(conditions) {
+			return filter.ErrRetry
+		}
+
+		return nil
+	})
+
+	return df
+
 }

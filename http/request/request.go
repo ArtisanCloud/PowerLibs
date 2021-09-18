@@ -57,7 +57,7 @@ func (request *HttpRequest) PushMiddleware(middleware interface{}, name string) 
 }
 
 func (request *HttpRequest) PerformRequest(url string, method string, options *object.HashMap,
-	returnRaw bool, outHeader interface{}, outBody interface{}) (contract.ResponseContract ,error){
+	returnRaw bool, outHeader interface{}, outBody interface{}) (contract.ResponseInterface ,error){
 	// change method string format
 	method = object.Lower(method)
 

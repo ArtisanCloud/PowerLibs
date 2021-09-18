@@ -10,7 +10,7 @@ type MessageInterface interface {
 	GetHeader() http.Header
 }
 
-type ResponseContract interface {
+type ResponseInterface interface {
 	MessageInterface
 	GetStatusCode() int
 	//WithStatus() object.HashMap
