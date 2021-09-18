@@ -38,6 +38,10 @@ func (rs HttpResponse) GetStatusCode() int {
 	return rs.Response.StatusCode
 }
 
-func (rs HttpResponse)Send(){
+func (rs HttpResponse) Send(writer http.ResponseWriter) (err error) {
 
+	writer.WriteHeader(http.StatusFound)
+	_, err = writer.Write([]byte("hello"))
+
+	return err
 }

@@ -41,7 +41,7 @@ func (client *Client) SendAsync(request contract.RequestInterface, options *obje
 	return nil
 }
 
-func (client *Client) PrepareRequest(method string, uri string, options *object.HashMap) (
+func (client *Client) PrepareRequest(method string, uri string, options *object.HashMap, outBody interface{}) (
 	df *dataflow.DataFlow,
 	queries *object.StringMap, headers interface{}, body interface{},
 	version string, debug bool) {
@@ -73,7 +73,7 @@ func (client *Client) PrepareRequest(method string, uri string, options *object.
 	// load middlewares stack
 	if (*options)["handler"] != nil {
 		middlewares := (*options)["handler"].([]interface{})
-		client.useMiddleware(df, middlewares)
+		client.useMiddleware(df, middlewares, outBody)
 	}
 
 	// append query
@@ -98,7 +98,7 @@ func (client *Client) PrepareRequest(method string, uri string, options *object.
 
 func (client *Client) Request(method string, uri string, options *object.HashMap, returnRaw bool, outHeader interface{}, outBody interface{}) (contract.ResponseInterface, error) {
 
-	df, queries, headers, body, _, debug := client.PrepareRequest(method, uri, options)
+	df, queries, headers, body, _, debug := client.PrepareRequest(method, uri, options, outBody)
 
 	df = client.applyOptions(df, options)
 
@@ -106,8 +106,8 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 	df = df.
 		Debug(debug).
 		SetQuery(queries).
-		SetHeader(headers)
-	//Code(&returnCode).
+		SetHeader(headers).
+		Code(&returnCode)
 	//SetProxy("http://127.0.0.1:1088").
 
 	if body != nil {
@@ -147,7 +147,6 @@ func (client *Client) GetHttpResponseFrom(returnCode int, outHeader interface{},
 	// copy body
 	if returnRaw {
 		switch outBody.(type) {
-		case string:
 		case *string:
 			rs.Body = ioutil.NopCloser(bytes.NewBufferString(*(outBody.(*string))))
 		default:
@@ -314,35 +313,46 @@ func (client *Client) QueryWithMethod(method string, url string) (df *dataflow.D
 	return df
 }
 
-func (client *Client) useMiddleware(df *dataflow.DataFlow, middlewares []interface{}) {
+func (client *Client) useMiddleware(df *dataflow.DataFlow, middlewares []interface{}, outBody interface{}) (err error) {
 	for _, middleware := range middlewares {
 
 		md := middleware.(contract.MiddlewareInterface)
 		mdName := md.GetName()
 		if mdName == "retry" {
-			client.handleRetryMiddleware(df, md)
+			df, err = client.handleRetryMiddleware(df, md, outBody)
 		}
 
 		requestMiddleware := middleware.(dataflow2.RequestMiddler)
 		df.RequestUse(requestMiddleware)
 	}
+
+	return nil
 }
 
-func (client *Client) handleRetryMiddleware(df *dataflow.DataFlow, retryMiddleware contract.MiddlewareInterface) *dataflow.DataFlow {
+func (client *Client) handleRetryMiddleware(df *dataflow.DataFlow, retryMiddleware contract.MiddlewareInterface, outBody interface{}) (*dataflow.DataFlow, error) {
 
 	retries := retryMiddleware.Retries()
 	delay := retryMiddleware.Delay()
 	df.F().Retry().Attempt(retries).WaitTime(delay).MaxWaitTime(delay).Func(func(c *gout.Context) error {
-		conditions := &object.HashMap{
-			"code": c.Code,
+
+		mapResponse, err := object.StructToHashMap(outBody)
+		if err != nil {
+			return err
 		}
-		if c.Error != nil || retryMiddleware.RetryDecider(conditions) {
-			return filter.ErrRetry
+		if (*mapResponse)["errcode"] != nil {
+			errCode := (*mapResponse)["errcode"].(int)
+			conditions := &object.HashMap{
+				"code": errCode,
+			}
+			if c.Error != nil || retryMiddleware.RetryDecider(conditions) {
+				return filter.ErrRetry
+			}
+
 		}
 
 		return nil
 	})
 
-	return df
+	return df, nil
 
 }
