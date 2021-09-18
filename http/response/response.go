@@ -37,3 +37,7 @@ func (rs HttpResponse) GetHeader() http.Header {
 func (rs HttpResponse) GetStatusCode() int {
 	return rs.Response.StatusCode
 }
+
+func (rs HttpResponse)Send(){
+
+}
