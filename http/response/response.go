@@ -40,8 +40,15 @@ func (rs HttpResponse) GetStatusCode() int {
 
 func (rs HttpResponse) Send(writer http.ResponseWriter) (err error) {
 
-	writer.WriteHeader(http.StatusFound)
-	_, err = writer.Write([]byte("hello"))
+	// set header code
+	writer.WriteHeader(rs.GetStatusCode())
+
+	// set write body
+	body, err := ioutil.ReadAll(rs.GetBody())
+	if err!=nil{
+		return err
+	}
+	_, err = writer.Write(body)
 
 	return err
 }
