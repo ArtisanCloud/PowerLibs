@@ -7,6 +7,7 @@ import (
 
 type MessageInterface interface {
 	GetBody() io.ReadCloser
+	GetBodyData() ([]byte, error)
 	GetHeader() http.Header
 }
 

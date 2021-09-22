@@ -2,6 +2,7 @@ package response
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -31,6 +32,19 @@ func NewHttpResponse(code int) *HttpResponse {
 func (rs HttpResponse) GetBody() io.ReadCloser {
 	return rs.Response.Body
 }
+
+func (rs HttpResponse) GetBodyData() ([]byte, error) {
+	body, err := ioutil.ReadAll(rs.Request.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read request body err: %v", err)
+	}
+
+	_ = rs.Request.Body.Close()
+	rs.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+	return body, nil
+}
+
 func (rs HttpResponse) GetHeader() http.Header {
 	return rs.Response.Header
 }
