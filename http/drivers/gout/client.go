@@ -130,7 +130,7 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 
 	err := df.Do()
 	if err != nil {
-		fmt.Printf("do request error:%s \n", err.Error())
+		fmt.Printf("http request error:%s \n", err.Error())
 		return nil, err
 	}
 
