@@ -112,7 +112,12 @@ func (c *Collection) GetInt64(key string, defaultValue int64) int64 {
 }
 
 func (c *Collection) GetString(key string, defaultValue string) string {
-	return c.Get(key, defaultValue).(string)
+
+	strResult := c.Get(key, defaultValue).(string)
+	if strResult==""{
+		strResult = defaultValue
+	}
+	return strResult
 }
 
 func (c *Collection) GetNullString(key string, defaultValue string) NullString {
