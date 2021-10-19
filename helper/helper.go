@@ -3,7 +3,7 @@ package helper
 import (
 	"crypto/sha256"
 	"fmt"
-	. "github.com/ArtisanCloud/go-libs/object"
+	. "github.com/ArtisanCloud/PowerLibs/object"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"reflect"

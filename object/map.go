@@ -2,7 +2,7 @@ package object
 
 import (
 	"encoding/json"
-	"github.com/ArtisanCloud/go-libs/fmt"
+	"github.com/ArtisanCloud/PowerLibs/fmt"
 	"reflect"
 )
 

@@ -1,7 +1,7 @@
 package object
 
 import (
-	"github.com/ArtisanCloud/go-libs/fmt"
+	"github.com/ArtisanCloud/PowerLibs/fmt"
 	"testing"
 )
 

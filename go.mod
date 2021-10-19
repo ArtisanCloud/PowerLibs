@@ -1,4 +1,4 @@
-module github.com/ArtisanCloud/go-libs
+module github.com/ArtisanCloud/PowerLibs
 
 go 1.16
 

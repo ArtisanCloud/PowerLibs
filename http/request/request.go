@@ -1,9 +1,9 @@
 package request
 
 import (
-	"github.com/ArtisanCloud/go-libs/http/contract"
-	"github.com/ArtisanCloud/go-libs/http/drivers/gout"
-	"github.com/ArtisanCloud/go-libs/object"
+	"github.com/ArtisanCloud/PowerLibs/http/contract"
+	"github.com/ArtisanCloud/PowerLibs/http/drivers/gout"
+	"github.com/ArtisanCloud/PowerLibs/object"
 )
 
 type HttpRequest struct {
