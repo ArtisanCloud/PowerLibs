@@ -18,7 +18,7 @@ func MergeStringMap(toStringMap *StringMap, subStringMaps ...*StringMap) *String
 	for _, subStringMap := range subStringMaps {
 		if subStringMap != nil {
 			for k, v := range *subStringMap {
-				(*subStringMap)[k] = v
+				(*toStringMap)[k] = v
 			}
 		}
 	}
