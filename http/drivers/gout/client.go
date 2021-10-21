@@ -21,11 +21,19 @@ const OPTION_SYNCHRONOUS = "synchronous"
 
 type Client struct {
 	Config *object.HashMap
+	HttpClient *http.Client
+
 }
 
-func NewClient(config *object.HashMap) *Client {
+type TLSConfig struct {
+	CertFile string
+	KeyFile string
+}
+
+func NewClient(config *object.HashMap, httpClient *http.Client) *Client {
 	client := &Client{
 		Config: config,
+		HttpClient: httpClient,
 	}
 
 	// set default config
@@ -297,18 +305,20 @@ func (client *Client) configureDefaults(config *object.HashMap) {
 
 func (client *Client) QueryWithMethod(method string, url string) (df *dataflow.DataFlow) {
 
+	goutClient:=gout.New(client.HttpClient)
+
 	switch method {
 	case "get":
-		df = gout.GET(url)
+		df = goutClient.GET(url)
 		break
 	case "post":
-		df = gout.POST(url)
+		df = goutClient.POST(url)
 		break
 	case "put":
-		df = gout.PUT(url)
+		df = goutClient.PUT(url)
 		break
 	default:
-		df = gout.GET(url)
+		df = goutClient.GET(url)
 	}
 	return df
 }

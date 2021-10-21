@@ -1,9 +1,14 @@
 package request
 
 import (
+	"crypto/tls"
+	"fmt"
 	"github.com/ArtisanCloud/PowerLibs/http/contract"
 	"github.com/ArtisanCloud/PowerLibs/http/drivers/gout"
 	"github.com/ArtisanCloud/PowerLibs/object"
+	"net"
+	"net/http"
+	"time"
 )
 
 type HttpRequest struct {
@@ -16,8 +21,21 @@ type HttpRequest struct {
 var _defaults *object.HashMap
 
 func NewHttpRequest(config *object.HashMap) *HttpRequest {
+
+	var httpClient *http.Client
+
+	certPath := (*config)["cert_path"].(string)
+	keyPath := (*config)["key_path"].(string)
+	if certPath != "" && keyPath!=""{
+		var err error
+		httpClient, err = NewTLSHttpClient(certPath, keyPath)
+		if err != nil {
+			return nil
+		}
+	}
+
 	return &HttpRequest{
-		httpClient: gout.NewClient(config),
+		httpClient: gout.NewClient(config, httpClient),
 	}
 }
 
@@ -37,7 +55,7 @@ func (request *HttpRequest) SetHttpClient(httpClient contract.ClientInterface) *
 func (request *HttpRequest) GetHttpClient() contract.ClientInterface {
 
 	if request.httpClient == nil {
-		request.httpClient = gout.NewClient(nil)
+		request.httpClient = gout.NewClient(nil, nil)
 	}
 
 	return request.httpClient
@@ -57,7 +75,7 @@ func (request *HttpRequest) PushMiddleware(middleware interface{}, name string) 
 }
 
 func (request *HttpRequest) PerformRequest(url string, method string, options *object.HashMap,
-	returnRaw bool, outHeader interface{}, outBody interface{}) (contract.ResponseInterface ,error){
+	returnRaw bool, outHeader interface{}, outBody interface{}) (contract.ResponseInterface, error) {
 	// change method string format
 	method = object.Lower(method)
 
@@ -72,4 +90,29 @@ func (request *HttpRequest) PerformRequest(url string, method string, options *o
 	// use current http client driver to request
 	response, err := request.GetHttpClient().Request(method, url, options, returnRaw, outHeader, outBody)
 	return response, err
+}
+
+func NewTLSHttpClient(certFile string, keyFile string) (httpClient *http.Client, err error) {
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		fmt.Print("can not init cert...")
+		return nil, err
+	}
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+	}
+
+	httpClient = &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			Dial: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).Dial,
+			TLSHandshakeTimeout: 10 * time.Second,
+			TLSClientConfig:     tlsConfig,
+		},
+		Timeout: 60 * time.Second,
+	}
+	return
 }
