@@ -114,7 +114,14 @@ func (attr *Attribute) Get(attribute string, defaultValue interface{}) interface
 
 func (attr *Attribute) Has(key string) bool {
 	return attr.Attributes[key] != nil
+}
 
+func (attr *Attribute) GetString(attribute string, defaultValue string) string {
+	strResult := attr.Get(attribute, defaultValue).(string)
+	if strResult==""{
+		strResult = defaultValue
+	}
+	return strResult
 }
 
 func (attr *Attribute) Merge(attributes *HashMap) *Attribute {
