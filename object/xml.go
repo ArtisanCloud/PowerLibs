@@ -8,6 +8,12 @@ import (
 	"strings"
 )
 
+func Str2Xml(in string) string {
+	var b bytes.Buffer
+	xml.EscapeText(&b, []byte(in))
+	return b.String()
+}
+
 func Map2Xml(obj *HashMap) (strXML string) {
 
 	for k, v := range *obj {

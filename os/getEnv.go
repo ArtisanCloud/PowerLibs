@@ -1,4 +1,4 @@
-package services
+package os
 
 import (
   "errors"
@@ -12,7 +12,7 @@ const LOCALE_TW = "zh_TW"
 
 var ErrEnvVarEmpty = errors.New("getEnv: environment variable empty")
 
-func getEnvStr(key string) (string, error) {
+func GetEnvStr(key string) (string, error) {
   v := os.Getenv(key)
   if v == "" {
     return v, ErrEnvVarEmpty
@@ -20,8 +20,8 @@ func getEnvStr(key string) (string, error) {
   return v, nil
 }
 
-func getEnvInt(key string) (int, error) {
-  s, err := getEnvStr(key)
+func GetEnvInt(key string) (int, error) {
+  s, err := GetEnvStr(key)
   if err != nil {
     return 0, err
   }
@@ -32,8 +32,8 @@ func getEnvInt(key string) (int, error) {
   return v, nil
 }
 
-func getEnvBool(key string) (bool, error) {
-  s, err := getEnvStr(key)
+func GetEnvBool(key string) (bool, error) {
+  s, err := GetEnvStr(key)
   if err != nil {
     return false, err
   }
