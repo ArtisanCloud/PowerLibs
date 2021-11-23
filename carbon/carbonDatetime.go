@@ -27,7 +27,7 @@ func (dt *CarbonDatetime) SetDatetime(c carbon.Carbon) {
 }
 
 func (dt *CarbonDatetime) SetTimezone(timezone string) *CarbonDatetime {
-	dt.C.Loc, dt.C.Error = time.LoadLocation(timezone)
+	//dt.C.Location(), dt.C.Error = time.LoadLocation(timezone)
 	dt.C.AddHours(8)
 
 	return dt
