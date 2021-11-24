@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
 	"reflect"
 )
 
@@ -22,6 +23,12 @@ func PrettyJson(data interface{}) (string, error) {
 		return empty, err
 	}
 	return buffer.String(), nil
+}
+
+
+func DD(datas ...interface{}) {
+	Dump(datas)
+	os.Exit(0)
 }
 
 func Dump(datas ...interface{}) {
