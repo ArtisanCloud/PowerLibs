@@ -158,6 +158,11 @@ func (gr *GRedis) Add(key string, value interface{}, ttl time.Duration) (err err
 
 }
 
+func (gr *GRedis) Set(key string, value interface{}, expires time.Duration) error {
+	result := gr.Pool.Set(CTXRedis, key, value, expires)
+	return result.Err()
+}
+
 func (gr *GRedis) SetEx(key string, value interface{}, expires time.Duration) error {
 	mValue, err := json.Marshal(value)
 	//mExpire, err := json.Marshal(expires)
@@ -191,6 +196,15 @@ func (gr *GRedis) Get(key string, ptrValue interface{}) (returnValue interface{}
 	return returnValue, err
 }
 
+func (gr *GRedis) Has(key string) bool {
+
+	value, err := gr.Get(key, nil)
+	if value != nil && err == nil {
+		return true
+	}
+
+	return false
+}
 
 func (gr *GRedis) GetMulti(keys ...string) (object.HashMap, error) {
 	res, err := gr.Pool.MGet(CTXRedis, keys...).Result()
@@ -253,7 +267,6 @@ func (gr *GRedis) Remember(key string, ttl time.Duration, callback func() interf
 	// ErrCacheMiss and query value from source
 	return value, err
 }
-
 
 /**
  * Store an item in the cache.
