@@ -159,7 +159,13 @@ func (gr *GRedis) Add(key string, value interface{}, ttl time.Duration) (err err
 }
 
 func (gr *GRedis) Set(key string, value interface{}, expires time.Duration) error {
-	result := gr.Pool.Set(CTXRedis, key, value, expires)
+	mValue, err := json.Marshal(value)
+	//mExpire, err := json.Marshal(expires)
+	if err != nil {
+		return err
+	}
+
+	result := gr.Pool.Set(CTXRedis, key, mValue, expires)
 	return result.Err()
 }
 

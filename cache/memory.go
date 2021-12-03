@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/patrickmn/go-cache"
@@ -30,11 +31,11 @@ func NewMemCache(namespace string, defaultLifeTime time.Duration, directory stri
 	}
 	defaultPurgePeriod := time.Duration(DEFAULT_PURGE_EXPIRES_IN_PERIOD) * time.Minute
 
-	//path, err := createCacheFile(directory)
-	//if err != nil {
-	//	fmt.Println(err.Error())
-	//	return nil
-	//}
+	path, err := createCacheFile(directory)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil
+	}
 
 	memCache := &MemCache{
 		cache.NewFrom(
@@ -42,7 +43,7 @@ func NewMemCache(namespace string, defaultLifeTime time.Duration, directory stri
 			defaultPurgePeriod,
 			map[string]cache.Item{},
 		),
-		"",
+		path,
 	}
 
 	//err = memCache.Cache.LoadFile(path)
@@ -82,20 +83,26 @@ func createCacheFile(directory string) (cachePath string, err error) {
 
 }
 
-func (cache *MemCache) Get(key string, defaultValue interface{}) (ptrValue interface{}, err error) {
-	var found bool
-	ptrValue, found = cache.Cache.Get(key)
+func (cache *MemCache) Get(key string, defaultValue interface{}) (returnValue interface{}, err error) {
+	ptrValue, found := cache.Cache.Get(key)
 	if !found {
 		return nil, errors.New(fmt.Sprintf("Cannot find value with key: %s", key))
 	}
 
-	return ptrValue, nil
+	err = json.Unmarshal(ptrValue.([]byte), &returnValue)
+	return returnValue, err
 }
 
 func (cache *MemCache) Set(key string, value interface{}, expires time.Duration) error {
 
-	cache.Cache.Set(key, value, expires)
-	err := cache.Cache.SaveFile(cache.cacheFile)
+	mValue, err := json.Marshal(value)
+	//mExpire, err := json.Marshal(expires)
+	if err != nil {
+		return err
+	}
+
+	cache.Cache.Set(key, mValue, expires)
+	err = cache.Cache.SaveFile(cache.cacheFile)
 	return err
 }
 
