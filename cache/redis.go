@@ -33,7 +33,7 @@ const (
 	defaultTimeoutConnect = 10000
 	defaultTimeoutRead    = 5000
 	defaultTimeoutWrite   = 5000
-	defaultHost           = "localhost:6379"
+	defaultAddr           = "localhost:6379"
 	defaultProtocol       = "tcp"
 	defaultRetryThreshold = 5
 )
@@ -44,7 +44,7 @@ type RedisOptions struct {
 	MaxIdle        int
 	MaxActive      int
 	Protocol       string
-	Host           string
+	Addr           string
 	Password       string
 	DB             int
 	SSLEnabled     bool
@@ -68,7 +68,7 @@ func NewGRedis(opts interface{}) (gr *GRedis) {
 		toW := time.Millisecond * time.Duration(options.TimeoutWrite)
 		toI := time.Duration(options.TimeoutIdle) * time.Second
 		option := &redis.Options{
-			Addr:               options.Host,
+			Addr:               options.Addr,
 			DB:                 options.DB,
 			DialTimeout:        toD,
 			ReadTimeout:        toR,
@@ -124,8 +124,8 @@ func (r *RedisOptions) initDefaults() *RedisOptions {
 		r.TimeoutWrite = defaultTimeoutWrite
 	}
 
-	if r.Host == "" {
-		r.Host = defaultHost
+	if r.Addr == "" {
+		r.Addr = defaultAddr
 	}
 
 	if r.Protocol == "" {
