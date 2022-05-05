@@ -26,7 +26,7 @@ func (v *NullString) MarshalJSON() ([]byte, error) {
 	}
 }
 
-func (v NullString) UnmarshalJSON(data []byte) error {
+func (v *NullString) UnmarshalJSON(data []byte) error {
 	var s *string
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err
