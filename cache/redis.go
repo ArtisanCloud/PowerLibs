@@ -249,7 +249,7 @@ func (gr *GRedis) Flush() error {
  * @param  \Closure  callback
  * @return mixed
  */
-func (gr *GRedis) Remember(key string, ttl time.Duration, callback func() interface{}) (obj interface{}, err error) {
+func (gr *GRedis) Remember(key string, ttl time.Duration, callback func() (interface{}, error)) (obj interface{}, err error) {
 
 	var value interface{}
 	value, err = gr.Get(key, value)
@@ -265,7 +265,11 @@ func (gr *GRedis) Remember(key string, ttl time.Duration, callback func() interf
 		return value, err
 	}
 
-	value = callback()
+	value, err = callback()
+	if err != nil {
+		return nil, err
+	}
+
 	result := gr.Put(key, value, ttl)
 	if !result {
 		err = errors.New(fmt.Sprintf("remember cache put err, ttl:%d", ttl))

@@ -19,8 +19,8 @@ func Test_Remember(t *testing.T) {
 	}
 
 	//cachedData, err := redisCache.Remember("recordType:Membership__c.Period", SYSTEM_CACHE_TIMEOUT_MONTH*time.Second, func() interface{} {
-	cachedData, err := redisCache.Remember("test.redis", SYSTEM_CACHE_TIMEOUT_MONTH*time.Second, func() interface{} {
-		return data
+	cachedData, err := redisCache.Remember("test.redis", SYSTEM_CACHE_TIMEOUT_MONTH*time.Second, func() (interface{}, error) {
+		return data, nil
 	})
 
 	if !assert.ObjectsAreEqual(data, cachedData) {

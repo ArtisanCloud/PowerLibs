@@ -121,6 +121,6 @@ func (cache *MemCache) Add(key string, value interface{}, ttl time.Duration) (er
 	return nil
 }
 
-func (cache *MemCache) Remember(key string, ttl time.Duration, callback func() interface{}) (obj interface{}, err error) {
+func (cache *MemCache) Remember(key string, ttl time.Duration, callback func() (interface{}, error)) (obj interface{}, err error) {
 	return nil, nil
 }

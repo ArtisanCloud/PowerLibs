@@ -6,7 +6,6 @@ import (
 
 var ACCache CacheInterface
 
-
 type CacheInterface interface {
 
 	//SetOptions(opts interface{}) error
@@ -186,7 +185,7 @@ type CacheInterface interface {
 	//* @param  \Closure  callback
 	//* @return mixed
 	//*/
-	Remember(key string, ttl time.Duration, callback func() interface{}) (obj interface{}, err error)
+	Remember(key string, ttl time.Duration, callback func() (interface{}, error)) (obj interface{}, err error)
 	//
 	///**
 	//* Get an item from the cache, or execute the given Closure and store the result forever.
