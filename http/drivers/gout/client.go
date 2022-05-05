@@ -20,19 +20,18 @@ import (
 const OPTION_SYNCHRONOUS = "synchronous"
 
 type Client struct {
-	Config *object.HashMap
+	Config     *object.HashMap
 	HttpClient *http.Client
-
 }
 
 type TLSConfig struct {
 	CertFile string
-	KeyFile string
+	KeyFile  string
 }
 
 func NewClient(config *object.HashMap, httpClient *http.Client) *Client {
 	client := &Client{
-		Config: config,
+		Config:     config,
 		HttpClient: httpClient,
 	}
 
@@ -238,8 +237,7 @@ func (client *Client) applyOptions(r *dataflow.DataFlow, options *object.HashMap
 				//headers := (*media)["headers"].(string)
 				r.SetForm(gout.H{
 					name: gout.FormFile(value),
-				}).SetHeader(gout.H{
-				})
+				}).SetHeader(gout.H{})
 			} else
 			// load data from memory
 			{
@@ -257,6 +255,7 @@ func (client *Client) applyOptions(r *dataflow.DataFlow, options *object.HashMap
 
 func (client *Client) buildUri(uri *url.URL, config *object.HashMap) *url.URL {
 	var baseUri *url.URL
+	var err error
 
 	// use customer custom url
 	if uri.Host != "" {
@@ -272,7 +271,11 @@ func (client *Client) buildUri(uri *url.URL, config *object.HashMap) *url.URL {
 		} else {
 			// use app config base uri
 			strBaseUri := (*client.Config)["http"].(object.HashMap)["base_uri"].(string)
-			baseUri, _ = url.Parse(strBaseUri)
+			baseUri, err = url.Parse(strBaseUri)
+			if err != nil {
+				print("cannot parse base url, pls make sure base_uri has scheme")
+				print(err.Error())
+			}
 		}
 
 		baseUri.Path = path.Join(baseUri.Path, uri.Path)
@@ -305,7 +308,7 @@ func (client *Client) configureDefaults(config *object.HashMap) {
 
 func (client *Client) QueryWithMethod(method string, url string) (df *dataflow.DataFlow) {
 
-	goutClient:=gout.New(client.HttpClient)
+	goutClient := gout.New(client.HttpClient)
 
 	switch method {
 	case "get":
