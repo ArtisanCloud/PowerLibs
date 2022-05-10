@@ -1,0 +1,64 @@
+package Logger
+
+import (
+	"github.com/ArtisanCloud/PowerLibs/Logger/contract"
+	"github.com/ArtisanCloud/PowerLibs/Logger/drivers/zap"
+	"github.com/ArtisanCloud/PowerLibs/object"
+)
+
+type Logger struct {
+	Driver contract.LoggerInterface
+}
+
+func NewLogger(driver string, config *object.HashMap) (logger *Logger, err error) {
+
+	var driverLogger contract.LoggerInterface
+	if driver == "" || driver == "zap" {
+		driverLogger, err = zap.NewLogger(config)
+	}
+
+	logger = &Logger{
+		Driver: driverLogger,
+	}
+
+	return logger, err
+
+}
+
+func (log *Logger) Debug(msg string, v ...interface{}) {
+	log.Driver.Debug(msg, v)
+}
+func (log *Logger) Info(msg string, v ...interface{}) {
+	log.Driver.Info(msg, v)
+}
+func (log *Logger) Warn(msg string, v ...interface{}) {
+	log.Driver.Warn(msg, v)
+}
+func (log *Logger) Error(msg string, v ...interface{}) {
+	log.Driver.Error(msg, v)
+}
+func (log *Logger) Panic(msg string, v ...interface{}) {
+	log.Driver.Panic(msg, v)
+}
+func (log *Logger) Fatal(msg string, v ...interface{}) {
+	log.Driver.Fatal(msg, v)
+}
+
+func (log *Logger) DebugF(format string, args ...interface{}) {
+	log.Driver.DebugF(format, args)
+}
+func (log *Logger) InfoF(format string, args ...interface{}) {
+	log.Driver.InfoF(format, args)
+}
+func (log *Logger) WarnF(format string, args ...interface{}) {
+	log.Driver.WarnF(format, args)
+}
+func (log *Logger) ErrorF(format string, args ...interface{}) {
+	log.Driver.ErrorF(format, args)
+}
+func (log *Logger) PanicF(format string, args ...interface{}) {
+	log.Driver.PanicF(format, args)
+}
+func (log *Logger) FatalF(format string, args ...interface{}) {
+	log.Driver.FatalF(format, args)
+}
