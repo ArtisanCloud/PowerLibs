@@ -5,21 +5,26 @@ import (
 	"github.com/ArtisanCloud/PowerLibs/object"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"os"
 	"time"
 )
 
 type Logger struct {
 	Logger *zap.Logger
+	sugar  *zap.SugaredLogger
 }
 
 func NewLogger(config *object.HashMap) (logger contract.LoggerInterface, err error) {
 
 	zapLogger, err := newZapLogger(config)
+	defer zapLogger.Sync() // flushes buffer, if any
+
 	if err != nil {
 		return nil, err
 	}
 	logger = &Logger{
 		Logger: zapLogger,
+		sugar:  zapLogger.Sugar(),
 	}
 
 	return logger, err
@@ -34,50 +39,71 @@ func newZapLogger(config *object.HashMap) (logger *zap.Logger, err error) {
 	} else {
 		loggerConfig = zap.NewDevelopmentConfig()
 	}
-	loggerConfig.OutputPaths = []string{(*config)["outputPath"].(string)}
+	outputFile := (*config)["outputPath"].(string)
+	//loggerConfig.OutputPaths = []string{(*config)["outputPath"].(string)}
 	loggerConfig.ErrorOutputPaths = []string{(*config)["errorPath"].(string)}
 	loggerConfig.EncoderConfig.TimeKey = "timestamp"
 	loggerConfig.EncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout(time.RFC3339)
 
-	logger, err = loggerConfig.Build()
+	var file *os.File
+	if _, err = os.Stat(outputFile); os.IsNotExist(err) {
+		file, err = os.Create(outputFile)
+	} else {
+		if file, err = os.OpenFile(outputFile, os.O_APPEND|os.O_WRONLY, os.ModeAppend); err != nil {
+			return nil, err
+		}
+
+	}
+	if err != nil {
+		return nil, err
+	}
+	writeSyncer := zapcore.AddSync(file)
+
+	core := zapcore.NewCore(
+		zapcore.NewJSONEncoder(loggerConfig.EncoderConfig),
+		zapcore.Lock(zapcore.NewMultiWriteSyncer(os.Stdout, writeSyncer)),
+		zapcore.DebugLevel,
+	)
+
+	logger = zap.New(core)
 
 	return logger, err
 }
 
 func (log *Logger) Debug(msg string, v ...interface{}) {
-	log.Logger.Sugar().Debugw(msg, v)
+	log.sugar.Debugw(msg, v)
 }
 func (log *Logger) Info(msg string, v ...interface{}) {
-	log.Logger.Sugar().Infow(msg, v)
+	log.sugar.Infow(msg, v)
 }
 func (log *Logger) Warn(msg string, v ...interface{}) {
-	log.Logger.Sugar().Warnw(msg, v)
+	log.sugar.Warnw(msg, v)
 }
 func (log *Logger) Error(msg string, v ...interface{}) {
-	log.Logger.Sugar().Errorw(msg, v)
+	log.sugar.Errorw(msg, v)
 }
 func (log *Logger) Panic(msg string, v ...interface{}) {
-	log.Logger.Sugar().Panicw(msg, v)
+	log.sugar.Panicw(msg, v)
 }
 func (log *Logger) Fatal(msg string, v ...interface{}) {
-	log.Logger.Sugar().Fatalw(msg, v)
+	log.sugar.Fatalw(msg, v)
 }
 
 func (log *Logger) DebugF(format string, args ...interface{}) {
-	log.Logger.Sugar().Debugf(format, args)
+	log.sugar.Debugf(format, args)
 }
 func (log *Logger) InfoF(format string, args ...interface{}) {
-	log.Logger.Sugar().Infof(format, args)
+	log.sugar.Infof(format, args)
 }
 func (log *Logger) WarnF(format string, args ...interface{}) {
-	log.Logger.Sugar().Warnf(format, args)
+	log.sugar.Warnf(format, args)
 }
 func (log *Logger) ErrorF(format string, args ...interface{}) {
-	log.Logger.Sugar().Errorf(format, args)
+	log.sugar.Errorf(format, args)
 }
 func (log *Logger) PanicF(format string, args ...interface{}) {
-	log.Logger.Sugar().Panicf(format, args)
+	log.sugar.Panicf(format, args)
 }
 func (log *Logger) FatalF(format string, args ...interface{}) {
-	log.Logger.Sugar().Fatalf(format, args)
+	log.sugar.Fatalf(format, args)
 }
