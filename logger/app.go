@@ -1,8 +1,8 @@
-package Logger
+package logger
 
 import (
-	"github.com/ArtisanCloud/PowerLibs/Logger/contract"
-	"github.com/ArtisanCloud/PowerLibs/Logger/drivers/zap"
+	"github.com/ArtisanCloud/PowerLibs/logger/contract"
+	"github.com/ArtisanCloud/PowerLibs/logger/drivers/zap"
 	"github.com/ArtisanCloud/PowerLibs/object"
 )
 
