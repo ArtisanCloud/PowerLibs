@@ -82,3 +82,35 @@ func Test_RSA_ParsePublicKeys(t *testing.T) {
 	}
 
 }
+
+func Test_RSA_EncryptMessage(t *testing.T) {
+	encryptor, err := NewRSAEncryptor(crypto.SHA256)
+	if err != nil {
+		t.Error(err)
+	}
+
+	privateKey, err := encryptor.GenerateKey(2048)
+	if err != nil {
+		t.Error(err)
+	}
+	if privateKey == nil {
+		t.Error(errors.New("private key is nil"))
+	}
+
+	a := "plane text"
+	aBytes := []byte(a)
+
+	digest, err := encryptor.Encrypt(aBytes)
+	if err != nil {
+		t.Error(err)
+	}
+
+	decodeMsg, err := encryptor.Decryption(digest)
+	if err != nil {
+		t.Error(err)
+	}
+
+	fmt.Dump(a, string(decodeMsg))
+	assert.EqualValues(t, a, string(decodeMsg))
+
+}

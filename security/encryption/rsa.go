@@ -7,7 +7,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
-	"hash"
 	"io/ioutil"
 	"os"
 )
@@ -208,12 +207,14 @@ func (encryptor *RSAEncryptor) ParseRSAPublicKeyFromPEM(key []byte) (*rsa.Public
 
 // Encrypt
 // hash recommend use sha256.New() as hash
-func (encryptor *RSAEncryptor) Encrypt(hash hash.Hash, data []byte) ([]byte, error) {
+func (encryptor *RSAEncryptor) Encrypt( data []byte) ([]byte, error) {
+	hash:=encryptor.Hash.New()
 	return rsa.EncryptOAEP(hash, rand.Reader, &(encryptor.PrivateKey.PublicKey), data, nil)
 }
 
 // Decryption
 // optHash recommend use crypto.SHA256 as hash
-func (encryptor *RSAEncryptor) Decryption(ciphertext []byte, optHash crypto.Hash) (plainText []byte, err error) {
+func (encryptor *RSAEncryptor) Decryption(ciphertext []byte) (plainText []byte, err error) {
+	optHash:=encryptor.Hash
 	return encryptor.PrivateKey.Decrypt(nil, ciphertext, &rsa.OAEPOptions{Hash: optHash})
 }
