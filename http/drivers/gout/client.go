@@ -200,14 +200,14 @@ func (client *Client) prepareDefaults(options *object.HashMap) *object.HashMap {
 	if (*options)["headers"] != nil {
 		switch (*options)["headers"].(type) {
 		case *object.HashMap:
-			(*options)["headers"] = object.MergeHashMap(headers, (*options)["headers"].(*object.HashMap))
+			(*options)["headers"] = object.MergeHashMap((*options)["headers"].(*object.HashMap), headers)
 			break
 		default:
 			println("error header ")
 			return nil
 		}
 	}
-	result := object.MergeHashMap(defaultOptions, options)
+	result := object.MergeHashMap(options, defaultOptions)
 
 	return result
 }
