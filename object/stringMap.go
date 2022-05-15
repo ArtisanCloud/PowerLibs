@@ -2,13 +2,12 @@ package object
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
+	"reflect"
 	"sort"
 )
 
 type StringMap map[string]string
-
 
 // ------------------------------- Merge --------------------------------------------
 func MergeStringMap(toStringMap *StringMap, subStringMaps ...*StringMap) *StringMap {
@@ -34,22 +33,34 @@ func ConvertStringMapToString(m *StringMap, separate string) string {
 	return b.String()
 }
 
-
 // ------------------------------- Conversion ---------------------------------------
 
-func StructToStringMap(obj interface{}) (newMap *StringMap, err error) {
-	data, err := json.Marshal(obj) // Convert to a json string
-
-	if err != nil {
-		return
-	}
+func StructToStringMap(obj interface{}, tag string) (newMap *StringMap, err error) {
 
 	newMap = &StringMap{}
-	err = json.Unmarshal(data, newMap) // Convert to a string map
-	return
+
+	if obj==nil{
+		return newMap, err
+	}
+
+	e := reflect.ValueOf(obj).Elem()
+
+	for i := 0; i < e.NumField(); i++ {
+		field := e.Field(i).Interface()
+		var strField string = ""
+
+		strField = fmt.Sprintf("%v", field)
+		key := e.Type().Field(i).Name
+		if tag != "" {
+			key = e.Type().Field(i).Tag.Get(tag)
+		}
+		(*newMap)[key] = strField
+
+	}
+
+	return newMap, err
+
 }
-
-
 
 func GetJoinedWithKSort(params *StringMap) string {
 
@@ -73,7 +84,6 @@ func GetJoinedWithKSort(params *StringMap) string {
 }
 
 // ------------------------------- Search --------------------------------------------
-
 
 func GetStringMapKV(maps StringMap) (keys []string, values []string) {
 	mapLen := len(maps)

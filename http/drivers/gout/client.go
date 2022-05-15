@@ -165,7 +165,7 @@ func (client *Client) GetHttpResponseFrom(returnCode int, outHeader interface{},
 	}
 
 	// copy header
-	mapHeader, _ := object.StructToStringMap(outHeader)
+	mapHeader, _ := object.StructToStringMap(outHeader,"")
 	for key, header := range *mapHeader {
 		rs.Header.Add(key, header)
 	}
