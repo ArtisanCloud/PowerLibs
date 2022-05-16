@@ -2,6 +2,7 @@ package object
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"sort"
@@ -35,7 +36,7 @@ func ConvertStringMapToString(m *StringMap, separate string) string {
 
 // ------------------------------- Conversion ---------------------------------------
 
-func StructToStringMap(obj interface{}, tag string) (newMap *StringMap, err error) {
+func StructToStringMapWithTag(obj interface{}, tag string) (newMap *StringMap, err error) {
 
 	newMap = &StringMap{}
 
@@ -60,6 +61,18 @@ func StructToStringMap(obj interface{}, tag string) (newMap *StringMap, err erro
 
 	return newMap, err
 
+}
+
+func StructToStringMap(obj interface{}) (newMap *StringMap, err error) {
+	data, err := json.Marshal(obj) // Convert to a json string
+
+	if err != nil {
+		return
+	}
+
+	newMap = &StringMap{}
+	err = json.Unmarshal(data, newMap) // Convert to a map
+	return
 }
 
 func GetJoinedWithKSort(params *StringMap) string {

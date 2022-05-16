@@ -2,11 +2,11 @@ package object
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 )
 
 type HashMap map[string]interface{}
-
 
 // ------------------------------- Merge --------------------------------------------
 func MergeHashMap(toMap *HashMap, subMaps ...*HashMap) *HashMap {
@@ -23,9 +23,49 @@ func MergeHashMap(toMap *HashMap, subMaps ...*HashMap) *HashMap {
 	return toMap
 }
 
-
-
 // ------------------------------- Conversion ---------------------------------------
+
+func HashMapToStringMap(obj *HashMap) (newMap *StringMap, err error) {
+
+	newMap = &StringMap{}
+
+	if obj == nil {
+		return newMap, err
+	}
+
+	for k, v := range *obj {
+		(*newMap)[k] = fmt.Sprintf("%v", v)
+	}
+
+	return newMap, err
+
+}
+
+func StructToHashMapWithTag(obj interface{}, tag string) (newMap *HashMap, err error) {
+
+	newMap = &HashMap{}
+
+	if obj == nil {
+		return newMap, err
+	}
+
+	e := reflect.ValueOf(obj).Elem()
+
+	for i := 0; i < e.NumField(); i++ {
+		field := e.Field(i).Interface()
+
+		key := e.Type().Field(i).Name
+		if tag != "" {
+			key = e.Type().Field(i).Tag.Get(tag)
+		}
+		(*newMap)[key] = field
+
+	}
+
+	return newMap, err
+
+}
+
 func StructToHashMap(obj interface{}) (newMap *HashMap, err error) {
 	data, err := json.Marshal(obj) // Convert to a json string
 
@@ -37,8 +77,6 @@ func StructToHashMap(obj interface{}) (newMap *HashMap, err error) {
 	err = json.Unmarshal(data, newMap) // Convert to a map
 	return
 }
-
-
 
 // ------------------------------- Search --------------------------------------------
 func InHash(val interface{}, hash *HashMap) (exists bool, key string) {

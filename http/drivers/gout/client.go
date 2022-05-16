@@ -2,7 +2,10 @@ package gout
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/ArtisanCloud/PowerLibs/http/contract"
 	"github.com/ArtisanCloud/PowerLibs/http/response"
@@ -14,6 +17,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 )
 
@@ -51,7 +55,7 @@ func (client *Client) SendAsync(request contract.RequestInterface, options *obje
 func (client *Client) PrepareRequest(method string, uri string, options *object.HashMap, outBody interface{}) (
 	df *dataflow.DataFlow,
 	queries *object.StringMap, headers interface{}, body interface{},
-	version string, debug bool) {
+	version string, debug bool, err error) {
 
 	(*options)[OPTION_SYNCHRONOUS] = true
 	options = client.prepareDefaults(options)
@@ -80,8 +84,17 @@ func (client *Client) PrepareRequest(method string, uri string, options *object.
 	// load middlewares stack
 	if (*options)["handler"] != nil {
 		middlewares := (*options)["handler"].([]interface{})
-		client.useMiddleware(df, middlewares, outBody)
+		err = client.useMiddleware(df, middlewares, outBody)
+		if err != nil {
+			return df, queries, headers, body, version, debug, err
+		}
 	}
+
+	// apply handle option
+	//df, err = ApplyHandleOptions(df, options)
+	//if err != nil {
+	//	return df, queries, headers, body, version, debug, err
+	//}
 
 	// append query
 	queries = &object.StringMap{}
@@ -100,12 +113,16 @@ func (client *Client) PrepareRequest(method string, uri string, options *object.
 		fmt.Println("wx debug mode open")
 	}
 
-	return df, queries, headers, body, version, debug
+	return df, queries, headers, body, version, debug, err
 }
 
 func (client *Client) Request(method string, uri string, options *object.HashMap, returnRaw bool, outHeader interface{}, outBody interface{}) (contract.ResponseInterface, error) {
 
-	df, queries, headers, body, _, debug := client.PrepareRequest(method, uri, options, outBody)
+	df, queries, headers, body, _, debug, err := client.PrepareRequest(method, uri, options, outBody)
+
+	if err != nil {
+		return nil, err
+	}
 
 	df = client.applyOptions(df, options)
 
@@ -135,7 +152,7 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 		}
 	}
 
-	err := df.Do()
+	err = df.Do()
 	if err != nil {
 		fmt.Printf("http request error:%s \n", err.Error())
 		return nil, err
@@ -165,7 +182,7 @@ func (client *Client) GetHttpResponseFrom(returnCode int, outHeader interface{},
 	}
 
 	// copy header
-	mapHeader, _ := object.StructToStringMap(outHeader,"")
+	mapHeader, _ := object.StructToStringMap(outHeader)
 	for key, header := range *mapHeader {
 		rs.Header.Add(key, header)
 	}
@@ -368,4 +385,71 @@ func (client *Client) handleRetryMiddleware(df *dataflow.DataFlow, retryMiddlewa
 
 	return df, nil
 
+}
+
+func ApplyHandleOptions(df *dataflow.DataFlow, options *object.HashMap) (*dataflow.DataFlow, error) {
+
+	var err error
+	var cert, sslKey string
+	if (*options)["cert"] != nil {
+		cert = (*options)["cert"].(string)
+
+		if _, err = os.Stat(cert); os.IsNotExist(err) {
+			err = errors.New("SSL certificate not found:" + cert)
+			return df, err
+		}
+	}
+	if (*options)["ssl_key"] != nil {
+		sslKey = (*options)["ssl_key"].(string)
+
+		if _, err = os.Stat(cert); os.IsNotExist(err) {
+			err = errors.New("SSL certificate not found:" + cert)
+			return df, err
+		}
+	}
+	if cert == "" || sslKey == "" {
+		return df, nil
+	}
+
+	tlsConfig, err := NewTLSConfig(cert, sslKey, "")
+	if err != nil {
+		return df, err
+	}
+	tr := &http.Transport{TLSClientConfig: tlsConfig}
+
+	df.Client().Transport = tr
+
+	return df, err
+}
+
+func NewTLSConfig(clientCertFile string, clientKeyFile string, caCertFile string) (*tls.Config, error) {
+
+	// Load client cert
+	tlsCert, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
+	if err != nil {
+		return nil, err
+	}
+
+	tlsConfig := tls.Config{
+		Certificates:       []tls.Certificate{tlsCert},
+		InsecureSkipVerify: false,
+		ClientAuth:         tls.RequireAndVerifyClientCert,
+		MinVersion:         tls.VersionTLS12,
+	}
+
+	// Load CA cert
+	if caCertFile != "" {
+		certBytes, err := ioutil.ReadFile(caCertFile)
+		if err != nil {
+			return nil, err
+		}
+		caCertPool := x509.NewCertPool()
+		if ok := caCertPool.AppendCertsFromPEM(certBytes); !ok {
+			return nil, errors.New("Unable to load caCert")
+		}
+		tlsConfig.RootCAs = caCertPool
+		tlsConfig.ClientCAs = caCertPool
+	}
+
+	return &tlsConfig, nil
 }

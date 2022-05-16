@@ -20,11 +20,22 @@ func Map2Xml(obj *HashMap) (strXML string) {
 		switch v.(type) {
 		case string:
 			strXML = strXML + fmt.Sprintf("<%s><![CDATA[%s]]></%s>", k, v, k)
+			break
 		case int:
-			strXML = strXML + fmt.Sprintf("<%s><![CDATA[%d]]></%s>", k, v, k)
+		case int8:
+		case int16:
+		case int32:
+		case int64:
+			strXML = strXML + fmt.Sprintf("<%s>%d</%s>", k, v, k)
+			break
+		case float32:
+		case float64:
+			strXML = strXML + fmt.Sprintf("<%s>%f</%s>", k, v, k)
+			break
 		case interface{}:
 			b, _ := json.Marshal(v)
 			strXML = strXML + fmt.Sprintf("<%s><![CDATA[%s]]></%s>", k, string(b), k)
+			break
 		}
 	}
 	return "<xml>" + strXML + "</xml>"
