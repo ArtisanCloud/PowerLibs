@@ -4,6 +4,7 @@ import (
 	"github.com/ArtisanCloud/PowerLibs/logger/contract"
 	"github.com/ArtisanCloud/PowerLibs/logger/drivers/zap"
 	"github.com/ArtisanCloud/PowerLibs/object"
+	"os"
 )
 
 type Logger struct {
@@ -61,4 +62,29 @@ func (log *Logger) PanicF(format string, args ...interface{}) {
 }
 func (log *Logger) FatalF(format string, args ...interface{}) {
 	log.Driver.FatalF(format, args)
+}
+
+
+
+func InitLogPath(path string, files ...string) (err error) {
+	if _, err = os.Stat(path); os.IsNotExist(err) {
+		err = os.MkdirAll(path, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	} else if os.IsPermission(err) {
+		return err
+	}
+
+	for _, fileName := range files {
+		if _, err = os.Stat(fileName); os.IsNotExist(err) {
+			_, err = os.Create(fileName)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return err
+
 }

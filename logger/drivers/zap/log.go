@@ -71,39 +71,39 @@ func newZapLogger(config *object.HashMap) (logger *zap.Logger, err error) {
 }
 
 func (log *Logger) Debug(msg string, v ...interface{}) {
-	log.sugar.Debugw(msg, v)
+	log.sugar.Debugw(msg, v...)
 }
 func (log *Logger) Info(msg string, v ...interface{}) {
-	log.sugar.Infow(msg, v)
+	log.sugar.Infow(msg, v...)
 }
 func (log *Logger) Warn(msg string, v ...interface{}) {
-	log.sugar.Warnw(msg, v)
+	log.sugar.Warnw(msg, v...)
 }
 func (log *Logger) Error(msg string, v ...interface{}) {
-	log.sugar.Errorw(msg, v)
+	log.sugar.Errorw(msg, v...)
 }
 func (log *Logger) Panic(msg string, v ...interface{}) {
-	log.sugar.Panicw(msg, v)
+	log.sugar.Panicw(msg, v...)
 }
 func (log *Logger) Fatal(msg string, v ...interface{}) {
-	log.sugar.Fatalw(msg, v)
+	log.sugar.Fatalw(msg, v...)
 }
 
 func (log *Logger) DebugF(format string, args ...interface{}) {
-	log.sugar.Debugf(format, args)
+	log.sugar.Debugf(format, args...)
 }
 func (log *Logger) InfoF(format string, args ...interface{}) {
-	log.sugar.Infof(format, args)
+	log.sugar.Infof(format, args...)
 }
 func (log *Logger) WarnF(format string, args ...interface{}) {
-	log.sugar.Warnf(format, args)
+	log.sugar.Warnf(format, args...)
 }
 func (log *Logger) ErrorF(format string, args ...interface{}) {
-	log.sugar.Errorf(format, args)
+	log.sugar.Errorf(format, args...)
 }
 func (log *Logger) PanicF(format string, args ...interface{}) {
-	log.sugar.Panicf(format, args)
+	log.sugar.Panicf(format, args...)
 }
 func (log *Logger) FatalF(format string, args ...interface{}) {
-	log.sugar.Fatalf(format, args)
+	log.sugar.Fatalf(format, args...)
 }

@@ -28,8 +28,8 @@ func NewHttpRequest(config *object.HashMap) *HttpRequest {
 	if (*config)["cert_path"] != nil && (*config)["key_path"] != nil {
 		certPath := (*config)["cert_path"].(string)
 		keyPath := (*config)["key_path"].(string)
-		if certPath!="" && keyPath!=""{
-		var err error
+		if certPath != "" && keyPath != "" {
+			var err error
 			httpClient, err = NewTLSHttpClient(certPath, keyPath)
 			if err != nil {
 				log.Fatalln("New TLS http client error:", err)
@@ -103,7 +103,10 @@ func NewTLSHttpClient(certFile string, keyFile string) (httpClient *http.Client,
 		return nil, err
 	}
 	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cert},
+		Certificates:       []tls.Certificate{cert},
+		InsecureSkipVerify: false,
+		ClientAuth:         tls.RequireAndVerifyClientCert,
+		MinVersion:         tls.VersionTLS12,
 	}
 
 	httpClient = &http.Client{
