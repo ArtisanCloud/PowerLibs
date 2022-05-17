@@ -17,7 +17,7 @@ func MergeHashMap(toMap *HashMap, subMaps ...*HashMap) *HashMap {
 	for _, subMap := range subMaps {
 		if subMap != nil {
 			// 迭代每个HashMap
-			for k, v := range *subMap {
+			for k, v := range (*subMap) {
 				toV := (*toMap)[k]
 
 				// if the key is not exist in toMap
@@ -35,6 +35,24 @@ func MergeHashMap(toMap *HashMap, subMaps ...*HashMap) *HashMap {
 					break
 				}
 
+			}
+		}
+	}
+	return toMap
+}
+
+
+// ------------------------------- Replace --------------------------------------------
+func ReplaceHashMapRecursive(toMap *HashMap, subMaps ...*HashMap) *HashMap {
+	if toMap == nil {
+		toMap = &HashMap{}
+	}
+	// 拍平subMaps
+	for _, subMap := range subMaps {
+		if subMap != nil {
+			// 迭代每个HashMap
+			for k, v := range *subMap {
+				(*toMap)[k] = v
 			}
 		}
 	}

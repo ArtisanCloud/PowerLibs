@@ -287,7 +287,8 @@ func (client *Client) buildUri(uri *url.URL, config *object.HashMap) *url.URL {
 			}
 		} else {
 			// use app config base uri
-			strBaseUri := (*client.Config)["http"].(object.HashMap)["base_uri"].(string)
+			mapHttp := (*client.Config)["http"].(*object.HashMap)
+			strBaseUri := (*mapHttp)["base_uri"].(string)
 			baseUri, err = url.Parse(strBaseUri)
 			if err != nil {
 				print("cannot parse base url, pls make sure base_uri has scheme")

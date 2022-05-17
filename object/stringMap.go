@@ -31,6 +31,24 @@ func MergeStringMap(toStringMap *StringMap, subStringMaps ...*StringMap) *String
 	return toStringMap
 }
 
+
+// ------------------------------- Replace --------------------------------------------
+func ReplaceStringMapRecursive(toMap *StringMap, subMaps ...*StringMap) *StringMap {
+	if toMap == nil {
+		toMap = &StringMap{}
+	}
+	// 拍平subMaps
+	for _, subMap := range subMaps {
+		if subMap != nil {
+			// 迭代每个HashMap
+			for k, v := range *subMap {
+				(*toMap)[k] = v
+			}
+		}
+	}
+	return toMap
+}
+
 func ConvertStringMapToString(m *StringMap, separate string) string {
 	var b bytes.Buffer
 	for key, value := range *m {
