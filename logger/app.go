@@ -27,22 +27,22 @@ func NewLogger(driver string, config *object.HashMap) (logger *Logger, err error
 }
 
 func (log *Logger) Debug(msg string, v ...interface{}) {
-	log.Driver.Debug(msg, v)
+	log.Driver.Debug(msg, v...)
 }
 func (log *Logger) Info(msg string, v ...interface{}) {
-	log.Driver.Info(msg, v)
+	log.Driver.Info(msg, v...)
 }
 func (log *Logger) Warn(msg string, v ...interface{}) {
-	log.Driver.Warn(msg, v)
+	log.Driver.Warn(msg, v...)
 }
 func (log *Logger) Error(msg string, v ...interface{}) {
-	log.Driver.Error(msg, v)
+	log.Driver.Error(msg, v...)
 }
 func (log *Logger) Panic(msg string, v ...interface{}) {
-	log.Driver.Panic(msg, v)
+	log.Driver.Panic(msg, v...)
 }
 func (log *Logger) Fatal(msg string, v ...interface{}) {
-	log.Driver.Fatal(msg, v)
+	log.Driver.Fatal(msg, v...)
 }
 
 func (log *Logger) DebugF(format string, args ...interface{}) {

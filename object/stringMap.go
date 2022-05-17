@@ -17,12 +17,36 @@ func MergeStringMap(toStringMap *StringMap, subStringMaps ...*StringMap) *String
 	}
 	for _, subStringMap := range subStringMaps {
 		if subStringMap != nil {
+			// 迭代每个HashMap
 			for k, v := range *subStringMap {
-				(*toStringMap)[k] = v
+				toV := (*toStringMap)[k]
+				// if the key is not exist in toMap
+				if toV == "" && v != ""{
+					(*toStringMap)[k] = v
+				}
+
 			}
 		}
 	}
 	return toStringMap
+}
+
+
+// ------------------------------- Replace --------------------------------------------
+func ReplaceStringMapRecursive(toMap *StringMap, subMaps ...*StringMap) *StringMap {
+	if toMap == nil {
+		toMap = &StringMap{}
+	}
+	// 拍平subMaps
+	for _, subMap := range subMaps {
+		if subMap != nil {
+			// 迭代每个HashMap
+			for k, v := range *subMap {
+				(*toMap)[k] = v
+			}
+		}
+	}
+	return toMap
 }
 
 func ConvertStringMapToString(m *StringMap, separate string) string {
