@@ -17,8 +17,14 @@ func MergeStringMap(toStringMap *StringMap, subStringMaps ...*StringMap) *String
 	}
 	for _, subStringMap := range subStringMaps {
 		if subStringMap != nil {
+			// 迭代每个HashMap
 			for k, v := range *subStringMap {
-				(*toStringMap)[k] = v
+				toV := (*toStringMap)[k]
+				// if the key is not exist in toMap
+				if toV == "" && v != ""{
+					(*toStringMap)[k] = v
+				}
+
 			}
 		}
 	}
