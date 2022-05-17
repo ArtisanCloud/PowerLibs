@@ -47,8 +47,8 @@ func GetModelTags(t reflect.Type, tagName string) (tags []string) {
 	for i := 0; i < t.NumField(); i++ {
 		// Get the field, returns https://golang.org/pkg/reflect/#StructField
 		field := t.Field(i)
-		kind:=field.Type.Kind().String()
-		if kind == "struct" || kind=="ptr" {
+		kind := field.Type.Kind().String()
+		if kind == "struct" || kind == "ptr" {
 			subTags = GetModelTags(field.Type.Elem(), tagName)
 			tags = append(tags, subTags...)
 
@@ -61,4 +61,8 @@ func GetModelTags(t reflect.Type, tagName string) (tags []string) {
 
 	}
 	return tags
+}
+
+func IsObjectNil(obj interface{}) bool {
+	return obj == nil || (reflect.ValueOf(obj).Kind() == reflect.Ptr && reflect.ValueOf(obj).IsNil())
 }

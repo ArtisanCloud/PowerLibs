@@ -98,7 +98,7 @@ func (client *Client) PrepareRequest(method string, uri string, options *object.
 
 	// append query
 	queries = &object.StringMap{}
-	if (*options)["query"] != nil {
+	if !object.IsObjectNil((*options)["query"]) {
 		queries = (*options)["query"].(*object.StringMap)
 	}
 
@@ -287,8 +287,8 @@ func (client *Client) buildUri(uri *url.URL, config *object.HashMap) *url.URL {
 			}
 		} else {
 			// use app config base uri
-			mapHttp := (*client.Config)["http"].(object.HashMap)
-			strBaseUri := mapHttp["base_uri"].(string)
+			mapHttp := (*client.Config)["http"].(*object.HashMap)
+			strBaseUri := (*mapHttp)["base_uri"].(string)
 			baseUri, err = url.Parse(strBaseUri)
 			if err != nil {
 				print("cannot parse base url, pls make sure base_uri has scheme")
