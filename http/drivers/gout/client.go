@@ -98,7 +98,7 @@ func (client *Client) PrepareRequest(method string, uri string, options *object.
 
 	// append query
 	queries = &object.StringMap{}
-	if (*options)["query"] != nil {
+	if !object.IsObjectNil((*options)["query"]) {
 		queries = (*options)["query"].(*object.StringMap)
 	}
 
