@@ -180,6 +180,8 @@ func (c *Collection) Get(key string, defaultValue interface{}) interface{} {
 				switch hashedObject[segment].(type) {
 				case HashMap:
 					hashedObject = hashedObject[segment].(HashMap)
+				case *HashMap:
+					hashedObject = *(hashedObject[segment].(*HashMap))
 				case map[string]interface{}:
 					hashedObject = hashedObject[segment].(map[string]interface{})
 				default:
