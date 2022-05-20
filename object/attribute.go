@@ -54,7 +54,8 @@ func (attr *Attribute) SetAttribute(name string, value interface{}) *Attribute {
 
 func (attr *Attribute) IsRequired(attributes interface{}) bool {
 
-	has, _ := InHash(attributes, attr.GetRequired().(*HashMap))
+	requiredAttributes := attr.GetRequired().(HashMap)
+	has, _ := InHash(attributes, &requiredAttributes)
 	return has
 }
 
@@ -132,8 +133,9 @@ func (attr *Attribute) Merge(attributes *HashMap) *Attribute {
 }
 
 func (attr *Attribute) CheckRequiredAttributes() error {
-	requiredAttributes := attr.GetRequired().(*HashMap)
-	for attribute, _ := range *requiredAttributes {
+
+	requiredAttributes := attr.GetRequired().(HashMap)
+	for attribute, _ := range requiredAttributes {
 		if attr.GetAttribute(attribute, nil) == nil {
 			return errors.New(fmt.Sprintf("\"%s\" cannot be empty.", attribute))
 		}
