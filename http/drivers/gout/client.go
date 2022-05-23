@@ -232,15 +232,27 @@ func (client *Client) prepareDefaults(options *object.HashMap) *object.HashMap {
 func (client *Client) applyOptions(r *dataflow.DataFlow, options *object.HashMap) *dataflow.DataFlow {
 
 	if (*options)["form_params"] != nil {
-		(*options)["body"], _ = object.StructToMap((*options)["form_params"])
-		(*options)["form_params"] = nil
+		var bodyData interface{}
+		switch (*options)["form_params"].(type) {
+		case string:
+			(*options)["body"], _ = (*options)["form_params"]
+			bodyData = (*options)["body"].(string)
 
+			r.SetBody(bodyData)
+			break
+
+		default:
+			(*options)["body"], _ = object.StructToMap((*options)["form_params"])
+			bodyData = (*options)["body"].(map[string]interface{})
+
+			r.SetJSON(bodyData)
+		}
+		(*options)["form_params"] = nil
 		(*options)["_conditional"] = &object.StringMap{
 			"Content-Type": "application/x-www-form-urlencoded",
 		}
 
-		bodyData := (*options)["body"].(map[string]interface{})
-		r.SetJSON(bodyData)
+
 
 	}
 
