@@ -266,7 +266,8 @@ func (client *Client) applyOptions(r *dataflow.DataFlow, options *object.HashMap
 			// load data from file
 			if (*media)["headers"] != nil {
 				value := (*media)["value"].(string)
-				formData[name] = gout.FormFile(value)
+				headers = (*media)["headers"].(*object.HashMap)
+				formData[name] = gout.FormType{FileName: (*headers)["filename"].(string), File: gout.FormFile(value)}
 
 			} else
 			// load data from memory
