@@ -52,18 +52,18 @@ func (attr *Attribute) SetAttribute(name string, value interface{}) *Attribute {
 	return attr
 }
 
-func (attr *Attribute) IsRequired(attributes interface{}) bool {
+func (attr *Attribute) IsRequired(attribute string) bool {
 
-	requiredAttributes := attr.GetRequired().(HashMap)
-	has, _ := InHash(attributes, &requiredAttributes)
+	requiredAttributes := attr.GetRequired()
+	has := ContainsString(requiredAttributes, attribute)
 	return has
 }
 
-func (attr *Attribute) GetRequired() interface{} {
+func (attr *Attribute) GetRequired() []string {
 	if attr.Attributes["required"] != nil {
-		return attr.Attributes["required"]
+		return attr.Attributes["required"].([]string)
 	} else {
-		return HashMap{}
+		return []string{}
 	}
 }
 
@@ -119,7 +119,7 @@ func (attr *Attribute) Has(key string) bool {
 
 func (attr *Attribute) GetString(attribute string, defaultValue string) string {
 	strResult := attr.Get(attribute, defaultValue).(string)
-	if strResult==""{
+	if strResult == "" {
 		strResult = defaultValue
 	}
 	return strResult
@@ -134,8 +134,8 @@ func (attr *Attribute) Merge(attributes *HashMap) *Attribute {
 
 func (attr *Attribute) CheckRequiredAttributes() error {
 
-	requiredAttributes := attr.GetRequired().(HashMap)
-	for attribute, _ := range requiredAttributes {
+	requiredAttributes := attr.GetRequired()
+	for _, attribute := range requiredAttributes {
 		if attr.GetAttribute(attribute, nil) == nil {
 			return errors.New(fmt.Sprintf("\"%s\" cannot be empty.", attribute))
 		}
