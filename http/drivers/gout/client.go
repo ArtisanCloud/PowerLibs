@@ -54,7 +54,7 @@ func (client *Client) SendAsync(request contract.RequestInterface, options *obje
 
 func (client *Client) PrepareRequest(method string, uri string, options *object.HashMap, outBody interface{}) (
 	df *dataflow.DataFlow,
-	queries *object.StringMap, headers interface{}, body interface{},
+	queries *object.StringMap, headers *object.HashMap, body interface{},
 	version string, debug bool, err error) {
 
 	(*options)[OPTION_SYNCHRONOUS] = true
@@ -63,10 +63,14 @@ func (client *Client) PrepareRequest(method string, uri string, options *object.
 	version = "1.1"
 
 	if (*options)["headers"] != nil {
-		headers = (*options)["headers"]
+		headers = (*options)["headers"].(*object.HashMap)
+	} else {
+		headers = &object.HashMap{}
 	}
 	if (*options)["body"] != nil {
 		body = (*options)["body"]
+	} else {
+		body = nil
 	}
 
 	if (*options)["version"] != nil {
@@ -124,7 +128,7 @@ func (client *Client) Request(method string, uri string, options *object.HashMap
 		return nil, err
 	}
 
-	df = client.applyOptions(df, options)
+	df = client.applyOptions(df, options, headers)
 
 	returnCode := http.StatusOK
 	df = df.
@@ -229,7 +233,7 @@ func (client *Client) prepareDefaults(options *object.HashMap) *object.HashMap {
 	return result
 }
 
-func (client *Client) applyOptions(r *dataflow.DataFlow, options *object.HashMap) *dataflow.DataFlow {
+func (client *Client) applyOptions(r *dataflow.DataFlow, options *object.HashMap, headers *object.HashMap) *dataflow.DataFlow {
 
 	if (*options)["form_params"] != nil {
 		var bodyData interface{}
@@ -254,26 +258,24 @@ func (client *Client) applyOptions(r *dataflow.DataFlow, options *object.HashMap
 	}
 
 	if (*options)["multipart"] != nil {
+		formData := gout.H{}
+
 		for _, media := range (*options)["multipart"].([]*object.HashMap) {
 			name := (*media)["name"].(string)
 
 			// load data from file
 			if (*media)["headers"] != nil {
 				value := (*media)["value"].(string)
-				//headers := (*media)["headers"].(string)
-				r.SetForm(gout.H{
-					name: gout.FormFile(value),
-				}).SetHeader(gout.H{})
+				formData[name] = gout.FormFile(value)
+
 			} else
 			// load data from memory
 			{
 				value := (*media)["value"].([]byte)
-				r.SetForm(gout.H{
-					name: gout.FormMem(value),
-				})
+				formData[name] = gout.FormMem(value)
 			}
 		}
-
+		r.SetForm(formData)
 	}
 
 	return r
