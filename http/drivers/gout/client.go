@@ -251,9 +251,6 @@ func (client *Client) applyOptions(r *dataflow.DataFlow, options *object.HashMap
 		(*options)["_conditional"] = &object.StringMap{
 			"Content-Type": "application/x-www-form-urlencoded",
 		}
-
-
-
 	}
 
 	if (*options)["multipart"] != nil {
