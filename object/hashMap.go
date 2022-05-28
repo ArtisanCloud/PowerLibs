@@ -17,7 +17,7 @@ func MergeHashMap(toMap *HashMap, subMaps ...*HashMap) *HashMap {
 	for _, subMap := range subMaps {
 		if subMap != nil {
 			// 迭代每个HashMap
-			for k, v := range (*subMap) {
+			for k, v := range *subMap {
 				toV := (*toMap)[k]
 
 				// if the key is not exist in toMap
@@ -40,7 +40,6 @@ func MergeHashMap(toMap *HashMap, subMaps ...*HashMap) *HashMap {
 	}
 	return toMap
 }
-
 
 // ------------------------------- Replace --------------------------------------------
 func ReplaceHashMapRecursive(toMap *HashMap, subMaps ...*HashMap) *HashMap {
@@ -77,7 +76,7 @@ func HashMapToStringMap(obj *HashMap) (newMap *StringMap, err error) {
 
 }
 
-func StructToHashMapWithTag(obj interface{}, tag string) (newMap *HashMap, err error) {
+func StructToHashMapWithXML(obj interface{}) (newMap *HashMap, err error) {
 
 	newMap = &HashMap{}
 
@@ -90,10 +89,8 @@ func StructToHashMapWithTag(obj interface{}, tag string) (newMap *HashMap, err e
 	for i := 0; i < e.NumField(); i++ {
 		field := e.Field(i).Interface()
 
-		key := e.Type().Field(i).Name
-		if tag != "" {
-			key = e.Type().Field(i).Tag.Get(tag)
-		}
+		key := e.Type().Field(i).Tag.Get("xml")
+
 		(*newMap)[key] = field
 
 	}
