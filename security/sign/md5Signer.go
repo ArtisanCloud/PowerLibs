@@ -4,7 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
-	"github.com/ArtisanCloud/PowerLibs/object"
+	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"sort"
 )
 

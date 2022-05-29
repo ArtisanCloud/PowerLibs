@@ -3,7 +3,7 @@ package encryption
 import (
 	"crypto"
 	"errors"
-	"github.com/ArtisanCloud/PowerLibs/fmt"
+	"github.com/ArtisanCloud/PowerLibs/v2/fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

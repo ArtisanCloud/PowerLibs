@@ -1,9 +1,9 @@
 package logger
 
 import (
-	"github.com/ArtisanCloud/PowerLibs/logger/contract"
-	"github.com/ArtisanCloud/PowerLibs/logger/drivers/zap"
-	"github.com/ArtisanCloud/PowerLibs/object"
+	"github.com/ArtisanCloud/PowerLibs/v2/logger/contract"
+	"github.com/ArtisanCloud/PowerLibs/v2/logger/drivers/zap"
+	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"os"
 )
 
@@ -63,8 +63,6 @@ func (log *Logger) PanicF(format string, args ...interface{}) {
 func (log *Logger) FatalF(format string, args ...interface{}) {
 	log.Driver.FatalF(format, args)
 }
-
-
 
 func InitLogPath(path string, files ...string) (err error) {
 	if _, err = os.Stat(path); os.IsNotExist(err) {

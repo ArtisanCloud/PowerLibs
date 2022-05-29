@@ -1,8 +1,8 @@
 package zap
 
 import (
-	"github.com/ArtisanCloud/PowerLibs/logger/contract"
-	"github.com/ArtisanCloud/PowerLibs/object"
+	"github.com/ArtisanCloud/PowerLibs/v2/logger/contract"
+	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"

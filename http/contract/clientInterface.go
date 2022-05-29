@@ -1,7 +1,7 @@
 package contract
 
 import (
-	"github.com/ArtisanCloud/PowerLibs/object"
+	"github.com/ArtisanCloud/PowerLibs/v2/object"
 )
 
 type ClientInterface interface {
@@ -13,5 +13,4 @@ type ClientInterface interface {
 
 	SetClientConfig(config *object.HashMap) ClientInterface
 	GetClientConfig() *object.HashMap
-
 }
