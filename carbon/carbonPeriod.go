@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/golang-module/carbon"
 	"reflect"
+	"time"
 )
 
 type CarbonPeriod struct {
@@ -28,6 +29,43 @@ func CreateCarbonPeriod() (p *CarbonPeriod) {
 		0,
 	}
 	//fmt.Printf("%+v \r\n", p)
+	return p
+}
+
+func CreateCarbonPeriodWithCarbon(start *carbon.Carbon, end *carbon.Carbon) (p *CarbonPeriod) {
+
+	p = CreateCarbonPeriod()
+	p.startDatetime = start
+	p.endDatetime = end
+
+	return p
+}
+
+func CreateCarbonPeriodWithTime(start time.Time, end time.Time) (p *CarbonPeriod) {
+
+	startDate := carbon.Time2Carbon(start)
+	endDate := carbon.Time2Carbon(end)
+
+	p = CreateCarbonPeriod()
+	p.startDatetime = &startDate
+	p.endDatetime = &endDate
+
+	return p
+}
+
+func CreateCarbonPeriodWithString(start string, end string, format string) (p *CarbonPeriod) {
+
+	if format == "" {
+		format = DATETIME_FORMAT
+	}
+
+	startDate := carbon.ParseByFormat(start, format)
+	endDate := carbon.ParseByFormat(end, format)
+
+	p = CreateCarbonPeriod()
+	p.startDatetime = &startDate
+	p.endDatetime = &endDate
+
 	return p
 }
 
@@ -93,4 +131,20 @@ func (period *CarbonPeriod) calculateStart() int64 {
 
 func (period *CarbonPeriod) calculateEnd() int64 {
 	return period.endDatetime.ToTimestamp()
+}
+
+func (period *CarbonPeriod) DiffInDays() int64 {
+
+	diffDays := period.startDatetime.DiffInDays(*period.endDatetime)
+
+	return diffDays
+
+}
+
+func (period *CarbonPeriod) IsDiffInDays(inDays int64) bool {
+
+	diffDays := period.startDatetime.DiffInDaysWithAbs(*period.endDatetime)
+
+	return diffDays <= inDays
+
 }

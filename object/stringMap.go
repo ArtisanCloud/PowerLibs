@@ -21,7 +21,7 @@ func MergeStringMap(toStringMap *StringMap, subStringMaps ...*StringMap) *String
 			for k, v := range *subStringMap {
 				toV := (*toStringMap)[k]
 				// if the key is not exist in toMap
-				if toV == "" && v != ""{
+				if toV == "" && v != "" {
 					(*toStringMap)[k] = v
 				}
 
@@ -30,7 +30,6 @@ func MergeStringMap(toStringMap *StringMap, subStringMaps ...*StringMap) *String
 	}
 	return toStringMap
 }
-
 
 // ------------------------------- Replace --------------------------------------------
 func ReplaceStringMapRecursive(toMap *StringMap, subMaps ...*StringMap) *StringMap {
@@ -64,7 +63,7 @@ func StructToStringMapWithTag(obj interface{}, tag string) (newMap *StringMap, e
 
 	newMap = &StringMap{}
 
-	if obj==nil{
+	if obj == nil {
 		return newMap, err
 	}
 
@@ -121,6 +120,22 @@ func GetJoinedWithKSort(params *StringMap) string {
 }
 
 // ------------------------------- Search --------------------------------------------
+
+func InStringMap(val string, maps *StringMap) (exists bool, keys []string) {
+	exists = false
+	mapLen := len(*maps)
+	keys = make([]string, 0, mapLen)
+
+	for k, v := range *maps {
+		if v == val {
+			keys = append(keys, k)
+
+			exists = true
+		}
+	}
+
+	return exists, keys
+}
 
 func GetStringMapKV(maps StringMap) (keys []string, values []string) {
 	mapLen := len(maps)

@@ -285,3 +285,14 @@ func RandStringBytesMask(n int) string {
 
 	return string(b)
 }
+
+
+func ContainsString(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
+}

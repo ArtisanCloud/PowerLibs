@@ -14,7 +14,7 @@ import (
 
 type HttpRequest struct {
 	httpClient contract.ClientInterface
-	baseUri    string
+	BaseURI    string
 
 	Middlewares []interface{}
 }
@@ -87,8 +87,8 @@ func (request *HttpRequest) PerformRequest(url string, method string, options *o
 	options = object.MergeHashMap(options, _defaults, &object.HashMap{"handler": request.GetMiddlewares()})
 
 	// use request baseUri as final
-	if request.baseUri != "" {
-		(*options)["base_uri"] = request.baseUri
+	if request.BaseURI != "" {
+		(*options)["base_uri"] = request.BaseURI
 	}
 
 	// use current http client driver to request
