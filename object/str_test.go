@@ -1,7 +1,7 @@
 package object
 
 import (
-	"github.com/ArtisanCloud/PowerLibs/fmt"
+	"github.com/ArtisanCloud/PowerLibs/v2/fmt"
 	"testing"
 )
 

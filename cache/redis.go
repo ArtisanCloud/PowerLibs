@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	fmt2 "github.com/ArtisanCloud/PowerLibs/fmt"
-	"github.com/ArtisanCloud/PowerLibs/object"
+	fmt2 "github.com/ArtisanCloud/PowerLibs/v2/fmt"
+	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"github.com/go-redis/redis/v8"
 	"time"
 )

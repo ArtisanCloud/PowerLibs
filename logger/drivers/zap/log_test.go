@@ -1,7 +1,7 @@
 package zap
 
 import (
-	"github.com/ArtisanCloud/PowerLibs/object"
+	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"net/http"
 	"testing"
 )

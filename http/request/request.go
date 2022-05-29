@@ -3,9 +3,9 @@ package request
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/ArtisanCloud/PowerLibs/http/contract"
-	"github.com/ArtisanCloud/PowerLibs/http/drivers/gout"
-	"github.com/ArtisanCloud/PowerLibs/object"
+	"github.com/ArtisanCloud/PowerLibs/v2/http/contract"
+	"github.com/ArtisanCloud/PowerLibs/v2/http/drivers/gout"
+	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"log"
 	"net"
 	"net/http"

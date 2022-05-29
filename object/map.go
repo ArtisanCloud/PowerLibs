@@ -2,7 +2,7 @@ package object
 
 import (
 	"encoding/json"
-	"github.com/ArtisanCloud/PowerLibs/fmt"
+	"github.com/ArtisanCloud/PowerLibs/v2/fmt"
 	"reflect"
 )
 

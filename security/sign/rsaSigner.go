@@ -4,7 +4,7 @@ import (
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
-	"github.com/ArtisanCloud/PowerLibs/security/encryption"
+	"github.com/ArtisanCloud/PowerLibs/v2/security/encryption"
 )
 
 type RSASigner struct {
@@ -23,8 +23,6 @@ func NewRSASigner(hash crypto.Hash) (signer *RSASigner, err error) {
 
 	return signer, err
 }
-
-
 
 // ----------------------------------------------------------------------------------------------------
 // Before signing, we need to hash our message
