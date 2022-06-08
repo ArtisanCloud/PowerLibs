@@ -158,6 +158,19 @@ func FilterEmptyHashMap(mapData *HashMap) (filteredMap *HashMap) {
 			case *HashMap:
 				v = FilterEmptyHashMap(v.(*HashMap))
 				break
+			//case []interface{}:
+			//	for _, obj := range v.([]interface{}) {
+			//		switch obj.(type) {
+			//		case map[string]interface{}:
+			//			o, _ := StructToHashMap(obj)
+			//			v = FilterEmptyHashMap(o)
+			//			break
+			//		default:
+			//
+			//		}
+			//	}
+			//	break
+
 			case string:
 				if v.(string) == "" {
 					delete(*filteredMap, k)
