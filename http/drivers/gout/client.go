@@ -378,9 +378,15 @@ func (client *Client) handleRetryMiddleware(df *dataflow.DataFlow, retryMiddlewa
 	delay := retryMiddleware.Delay()
 	df.F().Retry().Attempt(retries).WaitTime(delay).MaxWaitTime(delay).Func(func(c *gout.Context) error {
 
-		mapResponse, err := object.StructToHashMap(outBody)
+		resp, err := c.Response()
+		data, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return err
+			return nil
+		}
+		mapResponse := &object.HashMap{}
+		err = json.Unmarshal(data, mapResponse)
+		if err != nil {
+			return nil
 		}
 		if (*mapResponse)["errcode"] != nil {
 			errCode := (*mapResponse)["errcode"].(int)
@@ -394,7 +400,7 @@ func (client *Client) handleRetryMiddleware(df *dataflow.DataFlow, retryMiddlewa
 		}
 
 		return nil
-	})
+	}).Do()
 
 	return df, nil
 

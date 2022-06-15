@@ -7,7 +7,8 @@ import (
 
 func Test_QuickRandom(t *testing.T) {
 
-	response := QuickRandom(32)
-	fmt.Dump(response)
-
+	for i := 1; i < 5; i++ {
+		response := QuickRandom(4)
+		fmt.Dump(response)
+	}
 }
