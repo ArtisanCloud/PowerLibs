@@ -1,11 +1,15 @@
 package mail
 
 import (
+	"bytes"
 	"crypto/tls"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"mime/multipart"
 	"net"
+	"net/http"
 	"net/mail"
 	"net/smtp"
 	"os"
@@ -79,7 +83,7 @@ func (s *Sender) Send(m *Message) error {
 		bcc += addr.String() + ";"
 	}
 	subj := m.Subject
-	body := m.Body
+	body := m.BodyToBytes()
 	//attachments := m.Attachments
 
 	// Setup headers
@@ -95,7 +99,13 @@ func (s *Sender) Send(m *Message) error {
 	for k, v := range headers {
 		message += fmt.Sprintf("%s: %s\r\n", k, v)
 	}
-	message += "\r\n" + body
+	//message += "\r\n"
+
+	contentData := bytes.Join([][]byte{
+		[]byte(message),
+		body,
+	}, []byte(""))
+	//contentData := body
 
 	// Connect to the SMTP Server
 	servername := s.SMTPConfig.ServerName
@@ -105,7 +115,7 @@ func (s *Sender) Send(m *Message) error {
 	auth := s.auth
 
 	// TLS config
-	tlsconfig := &tls.Config{
+	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true,
 		ServerName:         host,
 	}
@@ -113,7 +123,7 @@ func (s *Sender) Send(m *Message) error {
 	// Here is the key, you need to call tls.Dial instead of smtp.Dial
 	// for smtp servers running on 465 that require an ssl connection
 	// from the very beginning (no starttls)
-	conn, err := tls.Dial("tcp", servername, tlsconfig)
+	conn, err := tls.Dial("tcp", servername, tlsConfig)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -139,17 +149,17 @@ func (s *Sender) Send(m *Message) error {
 		}
 	}
 
-	for _, addr := range m.CC {
-		if err = c.Rcpt(addr.Address); err != nil {
-			log.Panic(err)
-		}
-	}
-
-	for _, addr := range m.BCC {
-		if err = c.Rcpt(addr.Address); err != nil {
-			log.Panic(err)
-		}
-	}
+	//for _, addr := range m.CC {
+	//	if err = c.Rcpt(addr.Address); err != nil {
+	//		log.Panic(err)
+	//	}
+	//}
+	//
+	//for _, addr := range m.BCC {
+	//	if err = c.Rcpt(addr.Address); err != nil {
+	//		log.Panic(err)
+	//	}
+	//}
 
 	// Data
 	w, err := c.Data()
@@ -157,7 +167,7 @@ func (s *Sender) Send(m *Message) error {
 		log.Panic(err)
 	}
 
-	_, err = w.Write([]byte(message))
+	_, err = w.Write(contentData)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -191,50 +201,69 @@ func (m *Message) AttachFile(src string) error {
 	return nil
 }
 
-//func (m *Message) ToBytes() []byte {
-//buf := bytes.NewBuffer(nil)
-//withAttachments := len(m.Attachments) > 0
-//buf.WriteString(fmt.Sprintf("Subject: %s\n", m.Subject))
-//for _, addr := range m.To {
-//	buf.WriteString(fmt.Sprintf("To: %s\n", strings.Join(addr.Address, ",")))
-//}
-//if len(m.CC) > 0 {
-//	for _, addr := range m.To {
-//
-//		buf.WriteString(fmt.Sprintf("Cc: %s\n", strings.Join(addr.Address, ",")))
-//	}
-//}
-//
-//if len(m.BCC) > 0 {
-//	buf.WriteString(fmt.Sprintf("Bcc: %s\n", strings.Join(m.BCC, ",")))
-//}
-//
-//buf.WriteString("MIME-Version: 1.0\n")
-//writer := multipart.NewWriter(buf)
-//boundary := writer.Boundary()
-//if withAttachments {
-//	buf.WriteString(fmt.Sprintf("Content-Type: multipart/mixed; boundary=%s\n", boundary))
-//	buf.WriteString(fmt.Sprintf("--%s\n", boundary))
-//} else {
-//	buf.WriteString("Content-Type: text/plain; charset=utf-8\n")
-//}
-//
-//buf.WriteString(m.Body)
-//if withAttachments {
-//	for k, v := range m.Attachments {
-//		buf.WriteString(fmt.Sprintf("\n\n--%s\n", boundary))
-//		buf.WriteString(fmt.Sprintf("Content-Type: %s\n", http.DetectContentType(v)))
-//		buf.WriteString("Content-Transfer-Encoding: base64\n")
-//		buf.WriteString(fmt.Sprintf("Content-Disposition: attachment; filename=%s\n", k))
-//
-//		b := make([]byte, base64.StdEncoding.EncodedLen(len(v)))
-//		base64.StdEncoding.Encode(b, v)
-//		buf.Write(b)
-//		buf.WriteString(fmt.Sprintf("\n--%s", boundary))
-//	}
-//
-//	buf.WriteString("--")
-//}
-//
-//return buf.Bytes()
-//}
+func (m *Message) BodyToBytes() []byte {
+	buf := bytes.NewBuffer(nil)
+	withAttachments := len(m.Attachments) > 0
+	//buf.WriteString(fmt.Sprintf("From: %s\n", "matrix-x@artisan-cloud.com"))
+	//buf.WriteString(fmt.Sprintf("Subject: %s\n", m.Subject))
+	//
+	//if len(m.To) > 0 {
+	//	addresses := ""
+	//	for _, addr := range m.To {
+	//		addresses += addr.Address + ","
+	//	}
+	//	addresses = addresses[:len(addresses)-1]
+	//	buf.WriteString(fmt.Sprintf("To: %s\n", addresses))
+	//
+	//}
+	//if len(m.CC) > 0 {
+	//	addresses := ""
+	//	for _, addr := range m.CC {
+	//		addresses += addr.Address + ","
+	//	}
+	//	addresses = addresses[:len(addresses)-1]
+	//	buf.WriteString(fmt.Sprintf("Cc: %s\n", addresses))
+	//
+	//}
+	//
+	//if len(m.BCC) > 0 {
+	//	addresses := ""
+	//	for _, addr := range m.BCC {
+	//		addresses += addr.Address + ","
+	//	}
+	//	addresses = addresses[:len(addresses)-1]
+	//	buf.WriteString(fmt.Sprintf("Bcc: %s\n", addresses))
+	//
+	//}
+
+	buf.WriteString("MIME-Version: 1.0\r\n")
+	writer := multipart.NewWriter(buf)
+	boundary := writer.Boundary()
+	if withAttachments {
+		buf.WriteString(fmt.Sprintf("Content-Type: multipart/mixed; boundary=%s\r\n\n", boundary))
+		buf.WriteString(fmt.Sprintf("--%s\n\n", boundary))
+	} else {
+		buf.WriteString("Content-Type: text/plain; charset=utf-8\r\n\n")
+	}
+
+	buf.WriteString(m.Body)
+	buf.WriteString(fmt.Sprintf("\n\n--%s\n", boundary))
+	if withAttachments {
+		for k, v := range m.Attachments {
+			//buf.WriteString(fmt.Sprintf("\n\n--%s\n", boundary))
+			buf.WriteString(fmt.Sprintf("Content-Type: %s\n", http.DetectContentType(v)))
+			buf.WriteString("Content-Transfer-Encoding: base64\n")
+			buf.WriteString(fmt.Sprintf("Content-Disposition: attachment; filename=%s\n\n", k))
+
+			b := make([]byte, base64.StdEncoding.EncodedLen(len(v)))
+			base64.StdEncoding.Encode(b, v)
+			buf.Write(b)
+			buf.WriteString(fmt.Sprintf("\n\n--%s", boundary))
+		}
+
+		buf.WriteString("--")
+	}
+
+	return buf.Bytes()
+
+}

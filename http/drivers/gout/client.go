@@ -400,7 +400,8 @@ func (client *Client) handleRetryMiddleware(df *dataflow.DataFlow, retryMiddlewa
 		}
 
 		return nil
-	}).Do()
+	})
+	//.Do()
 
 	return df, nil
 
