@@ -6,7 +6,6 @@ import (
 	"github.com/ArtisanCloud/PowerLibs/v2/http/contract"
 	"github.com/ArtisanCloud/PowerLibs/v2/http/drivers/gout"
 	"github.com/ArtisanCloud/PowerLibs/v2/object"
-	"log"
 	"net"
 	"net/http"
 	"time"
@@ -21,7 +20,7 @@ type HttpRequest struct {
 
 var _defaults *object.HashMap
 
-func NewHttpRequest(config *object.HashMap) *HttpRequest {
+func NewHttpRequest(config *object.HashMap) (*HttpRequest, error) {
 
 	var httpClient *http.Client
 
@@ -32,15 +31,14 @@ func NewHttpRequest(config *object.HashMap) *HttpRequest {
 			var err error
 			httpClient, err = NewTLSHttpClient(certPath, keyPath)
 			if err != nil {
-				log.Fatalln("New TLS http client error:", err)
-				return nil
+				return nil, err
 			}
 		}
 	}
 
 	return &HttpRequest{
 		httpClient: gout.NewClient(config, httpClient),
-	}
+	}, nil
 }
 
 func SetDefaultOptions(defaults *object.HashMap) {
