@@ -22,7 +22,7 @@ type ModelInterface interface {
 }
 
 type PowerModel struct {
-	ID   int    `gorm:"autoIncrement:true;unique; column:id; ->;<-:create" json:"-"`
+	ID   int32  `gorm:"autoIncrement:true;unique; column:id; ->;<-:create" json:"-"`
 	UUID string `gorm:"primaryKey;autoIncrement:false;unique; column:uuid; ->;<-:create " json:"uuid" sql:"index"`
 
 	CreatedAt time.Time `gorm:"column:created_at; ->;<-:create " json:"createdAt"`
@@ -30,7 +30,7 @@ type PowerModel struct {
 }
 
 type PowerRelationship struct {
-	ID        int       `gorm:"autoIncrement:true;unique; column:id; ->;<-:create" json:"-"`
+	ID        int32     `gorm:"AUTO_INCREMENT;PRIMARY_KEY;not null" json:"-"`
 	CreatedAt time.Time `gorm:"column:created_at; ->;<-:create " json:"createdAt"`
 	UpdatedAt time.Time `gorm:"column:updated_at" json:"updatedAt"`
 }

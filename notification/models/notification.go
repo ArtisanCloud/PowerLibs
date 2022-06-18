@@ -5,6 +5,12 @@ import (
 	"github.com/ArtisanCloud/PowerLibs/v2/object"
 )
 
+// TableName overrides the table name used by User to `profiles`
+func (mdl *Recipient) TableName() string {
+	//return config.DatabaseConn.Schemas["option"] + "." + TABLE_NAME_CAMPAIGN
+	return mdl.GetTableName(true)
+}
+
 type Recipient struct {
 	*database.PowerRelationship
 
@@ -40,4 +46,15 @@ func NewRecipient(mapObject *object.Collection) *Recipient {
 		OwnerID:           object.NewNullString(ownerID, true),
 		OwnerType:         ownerType,
 	}
+}
+
+const TABLE_NAME_RECIPEINT string = "recipients"
+const OBJECT_NAME_RECIPEINT string = "Recipient"
+
+func (mdl *Recipient) GetTableName(needFull bool) string {
+	tableName := TABLE_NAME_RECIPEINT
+	if needFull {
+		tableName = "public." + tableName
+	}
+	return tableName
 }
