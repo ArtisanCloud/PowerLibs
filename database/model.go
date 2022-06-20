@@ -272,3 +272,7 @@ func GetModelFields(model interface{}) (fields []string) {
 func (mdl *PowerModel) IsModelLoaded() bool {
 	return mdl != nil && mdl.UUID != ""
 }
+
+func (mdl *PowerRelationship) IsModelLoaded() bool {
+	return mdl != nil && mdl.ID > 0
+}
