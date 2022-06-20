@@ -30,7 +30,7 @@ type PowerModel struct {
 }
 
 type PowerRelationship struct {
-	ID        int32     `gorm:"AUTO_INCREMENT;PRIMARY_KEY;not null" json:"-"`
+	ID        int32     `gorm:"AUTO_INCREMENT;PRIMARY_KEY;not null" json:"id"`
 	CreatedAt time.Time `gorm:"column:created_at; ->;<-:create " json:"createdAt"`
 	UpdatedAt time.Time `gorm:"column:updated_at" json:"updatedAt"`
 }
