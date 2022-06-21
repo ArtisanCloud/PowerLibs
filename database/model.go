@@ -16,7 +16,9 @@ import (
 
 type ModelInterface interface {
 	GetTableName(needFull bool) string
-	GetID() interface{}
+	GetPowerModel() ModelInterface
+	GetID() int32
+	GetUUID() string
 	GetPrimaryKey() string
 	GetForeignKey() string
 }
@@ -67,7 +69,19 @@ func NewPowerRelationship() *PowerRelationship {
 	}
 }
 
-func (mdl *PowerModel) GetID() interface{} {
+func (mdl *PowerModel) GetID() int32 {
+	return mdl.ID
+}
+
+func (mdl *PowerModel) GetTableName(needFull bool) string {
+	return ""
+}
+
+func (mdl *PowerModel) GetPowerModel() ModelInterface {
+	return mdl
+}
+
+func (mdl *PowerModel) GetUUID() string {
 	return mdl.UUID
 }
 
@@ -78,7 +92,19 @@ func (mdl *PowerModel) GetForeignKey() string {
 	return "model_uuid"
 }
 
-func (mdl *PowerRelationship) GetID() interface{} {
+// --------------------------------------------------------------------
+func (mdl *PowerRelationship) GetTableName(needFull bool) string {
+	return ""
+}
+
+func (mdl *PowerRelationship) GetPowerModel() ModelInterface {
+	return mdl
+}
+func (mdl *PowerRelationship) GetID() int32 {
+	return mdl.ID
+}
+
+func (mdl *PowerRelationship) GetUUID() string {
 	return ""
 }
 
@@ -269,10 +295,37 @@ func GetModelFields(model interface{}) (fields []string) {
 	return fields
 }
 
-func (mdl *PowerModel) IsModelLoaded() bool {
-	return mdl != nil && mdl.UUID != ""
+func IsPowerModelLoaded(mdl ModelInterface) bool {
+	if object.IsObjectNil(mdl) {
+		return false
+	}
+
+	myModel := mdl.GetPowerModel()
+	if object.IsObjectNil(myModel) {
+		return false
+	}
+
+	if mdl.GetUUID() == "" {
+		return false
+	}
+
+	return true
 }
 
-func (mdl *PowerRelationship) IsModelLoaded() bool {
-	return mdl != nil && mdl.ID > 0
+func IsPowerRelationshipLoaded(mdl ModelInterface) bool {
+
+	if object.IsObjectNil(mdl) {
+		return false
+	}
+
+	myModel := mdl.GetPowerModel()
+	if object.IsObjectNil(myModel) {
+		return false
+	}
+
+	if mdl.GetID() > 0 {
+		return false
+	}
+
+	return true
 }

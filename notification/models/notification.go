@@ -58,3 +58,17 @@ func (mdl *Recipient) GetTableName(needFull bool) string {
 	}
 	return tableName
 }
+
+func (mdl *Recipient) GetID() int32 {
+	return mdl.ID
+}
+func (mdl *Recipient) GetUUID() string {
+	return ""
+}
+func (mdl *Recipient) GetPrimaryKey() string {
+	return "id"
+}
+
+func (mdl *Recipient) GetForeignKey() string {
+	return "recipient_id"
+}
