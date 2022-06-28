@@ -53,3 +53,8 @@ func Int64(i int64) *int64 {
 func Int32(i int32) *int32 {
 	return &i
 }
+
+// Int 复制 int 对象，并返回复制体的指针
+func Int(i int) *int {
+	return &i
+}
