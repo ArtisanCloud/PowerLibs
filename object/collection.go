@@ -6,24 +6,24 @@ import (
 )
 
 type Collection struct {
-	items HashMap
+	items *HashMap
 }
 
 func NewCollection(items *HashMap) *Collection {
 	return &Collection{
-		items: *items,
+		items: items,
 	}
 }
 
 func (c *Collection) All() *HashMap {
-	return &c.items
+	return c.items
 }
 
 func (c *Collection) Only(keys []string) (result *HashMap) {
 
 	result = &HashMap{}
 
-	for key, value := range c.items {
+	for key, value := range *c.items {
 		value = c.Get(key, nil)
 		if value != nil {
 			(*result)[key] = value
@@ -63,13 +63,13 @@ func (c *Collection) Set(key string, value interface{}) {
 	var segment string
 	for len(segments) > 1 {
 		segment, segments = segments[0], segments[1:]
-		if newItem[segment] == nil {
-			newItem[segment] = HashMap{}
+		if (*newItem)[segment] == nil {
+			(*newItem)[segment] = &HashMap{}
 		}
-		newItem = newItem[segment].(HashMap)
+		newItem = (*newItem)[segment].(*HashMap)
 	}
 
-	newItem[segments[0]] = value
+	(*newItem)[segments[0]] = value
 }
 
 func (c *Collection) GetBool(key string, defaultValue bool) bool {
@@ -114,7 +114,7 @@ func (c *Collection) GetInt64(key string, defaultValue int64) int64 {
 func (c *Collection) GetString(key string, defaultValue string) string {
 
 	strResult := c.Get(key, defaultValue).(string)
-	if strResult==""{
+	if strResult == "" {
 		strResult = defaultValue
 	}
 	return strResult
@@ -165,8 +165,8 @@ func (c *Collection) Get(key string, defaultValue interface{}) interface{} {
 		return &hashedObject
 	}
 
-	if hashedObject[key] != nil {
-		return hashedObject[key]
+	if (*hashedObject)[key] != nil {
+		return (*hashedObject)[key]
 	} else {
 		result = defaultValue
 	}
@@ -174,18 +174,18 @@ func (c *Collection) Get(key string, defaultValue interface{}) interface{} {
 	segments := strings.Split(key, ".")
 	if len(segments) > 1 {
 		for _, segment := range segments {
-			if hashedObject[segment] == nil {
+			if (*hashedObject)[segment] == nil {
 				return defaultValue
 			} else {
-				switch hashedObject[segment].(type) {
-				case HashMap:
-					hashedObject = hashedObject[segment].(HashMap)
+				switch (*hashedObject)[segment].(type) {
 				case *HashMap:
-					hashedObject = *(hashedObject[segment].(*HashMap))
+					hashedObject = (*hashedObject)[segment].(*HashMap)
+				case HashMap:
+					*hashedObject = (*hashedObject)[segment].(HashMap)
 				case map[string]interface{}:
-					hashedObject = hashedObject[segment].(map[string]interface{})
+					*hashedObject = (*hashedObject)[segment].(map[string]interface{})
 				default:
-					return hashedObject[segment]
+					return (*hashedObject)[segment]
 				}
 			}
 		}
@@ -211,10 +211,10 @@ func (c *Collection) ToString() string {
 }
 
 func (c *Collection) Count() int {
-	return len(c.items)
+	return len(*c.items)
 }
 
-func (c *Collection) Unserialize(serialized string) HashMap {
+func (c *Collection) Unserialize(serialized string) *HashMap {
 
 	return c.items
 }
