@@ -10,6 +10,11 @@ type Collection struct {
 }
 
 func NewCollection(items *HashMap) *Collection {
+
+	if items == nil {
+		items = &HashMap{}
+	}
+
 	return &Collection{
 		items: items,
 	}
