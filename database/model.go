@@ -197,7 +197,7 @@ func GetList(db *gorm.DB, conditions *map[string]interface{},
 	return paginator, nil
 }
 
-func GetDownloadList(db *gorm.DB, conditions *map[string]interface{},
+func GetAllList(db *gorm.DB, conditions *map[string]interface{},
 	models interface{}, preloads []string) (err error) {
 
 	if conditions != nil {
@@ -208,13 +208,15 @@ func GetDownloadList(db *gorm.DB, conditions *map[string]interface{},
 	if len(preloads) > 0 {
 		for _, preload := range preloads {
 			if preload != "" {
-				db.Preload(preload)
+				db = db.Preload(preload)
 			}
 		}
 	}
 
 	// chunk datas
-	result := db.Find(models)
+	result := db.
+		//Debug().
+		Find(models)
 	err = result.Error
 	if err != nil {
 		return err
