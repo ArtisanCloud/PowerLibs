@@ -197,7 +197,7 @@ func GetList(db *gorm.DB, conditions *map[string]interface{},
 	return paginator, nil
 }
 
-func GetDownloadList(db *gorm.DB, conditions *map[string]interface{},
+func GetAllList(db *gorm.DB, conditions *map[string]interface{},
 	models interface{}, preloads []string) (err error) {
 
 	if conditions != nil {
