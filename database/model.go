@@ -215,7 +215,7 @@ func GetAllList(db *gorm.DB, conditions *map[string]interface{},
 
 	// chunk datas
 	result := db.
-		Debug().
+		//Debug().
 		Find(models)
 	err = result.Error
 	if err != nil {
