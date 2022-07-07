@@ -77,6 +77,59 @@ func (c *Collection) Set(key string, value interface{}) {
 	(*newItem)[segments[0]] = value
 }
 
+func (c *Collection) GetBoolPointer(key string, defaultValue bool) *bool {
+	value := c.GetBool(key, defaultValue)
+	return &value
+}
+
+func (c *Collection) GetIntPointer(key string, defaultValue int) *int {
+	value := c.GetInt(key, defaultValue)
+	return &value
+}
+
+func (c *Collection) GetInt8Pointer(key string, defaultValue int8) *int8 {
+	value := c.GetInt8(key, defaultValue)
+	return &value
+}
+
+func (c *Collection) GetInt16Pointer(key string, defaultValue int16) *int16 {
+	value := c.GetInt16(key, defaultValue)
+	return &value
+}
+
+func (c *Collection) GetInt32Pointer(key string, defaultValue int32) *int32 {
+	value := c.GetInt32(key, defaultValue)
+	return &value
+}
+
+func (c *Collection) GetInt64Pointer(key string, defaultValue int64) *int64 {
+	value := c.GetInt64(key, defaultValue)
+	return &value
+}
+
+func (c *Collection) GetStringPointer(key string, defaultValue string) *string {
+	value := c.GetString(key, defaultValue)
+	return &value
+
+}
+
+func (c *Collection) GetFloat64Pointer(key string, defaultValue float64) *float64 {
+	value := c.GetFloat64(key, defaultValue)
+	return &value
+}
+
+func (c *Collection) GetFloat32Pointer(key string, defaultValue float64) *float32 {
+	value := c.GetFloat32(key, defaultValue)
+	return &value
+}
+
+func (c *Collection) GetDateTimePointer(key string, defaultValue time.Time) *time.Time {
+	value := c.GetDateTime(key, defaultValue)
+	return &value
+}
+
+// ----------------------------------------------------------------------------------------
+
 func (c *Collection) GetBool(key string, defaultValue bool) bool {
 	return c.Get(key, defaultValue).(bool)
 }
