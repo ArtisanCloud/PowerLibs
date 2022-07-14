@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"github.com/google/uuid"
@@ -243,6 +244,50 @@ func AssociationRelationship(db *gorm.DB, conditions *map[string]interface{}, md
 	return tx.Association(relationship)
 }
 
+func AppendAssociates(db *gorm.DB, pivot ModelInterface, foreignKey string, foreignValue string, joinKey string, joinValues []string) (err error) {
+	var result *gorm.DB
+
+	err = db.Transaction(func(tx *gorm.DB) error {
+		for i := 0; i < len(joinValues); i++ {
+
+			result = SelectPivot(db, pivot, foreignKey, foreignValue, joinKey, joinValues[i])
+			if result.Error != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				return err
+			}
+			if result.RowsAffected == 0 || result.Error == gorm.ErrRecordNotFound {
+				err = SavePivot(db, pivot, foreignKey, foreignValue, joinKey, joinValues[i])
+				if err != nil {
+					return err
+				}
+			} else {
+				err = UpdatePivot(db, pivot, foreignKey, foreignValue, joinKey, joinValues[i])
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return result.Error
+	})
+
+	return err
+}
+
+func SyncAssociates(db *gorm.DB, pivot ModelInterface, foreignKey string, foreignValue string, joinKey string, joinValues []string) (err error) {
+
+	err = db.Transaction(func(tx *gorm.DB) error {
+
+		err = ClearPivots(db, pivot, foreignKey, foreignValue)
+		if err != nil {
+			return err
+		}
+		err = AppendAssociates(db, pivot, foreignKey, foreignValue, joinKey, joinValues)
+
+		return err
+	})
+
+	return err
+}
+
 func ClearAssociation(db *gorm.DB, object ModelInterface, foreignKey string, pivot ModelInterface) error {
 	result := db.Exec("DELETE FROM "+pivot.GetTableName(true)+" WHERE "+foreignKey+"=?", object.GetID())
 	if result.Error != nil {
@@ -251,6 +296,57 @@ func ClearAssociation(db *gorm.DB, object ModelInterface, foreignKey string, piv
 	return nil
 }
 
+func SelectPivot(db *gorm.DB, pivot ModelInterface, foreignKey string, foreignValue string, joinKey string, joinValue string) (result *gorm.DB) {
+	result = db.
+		Debug().
+		Exec("select * from "+pivot.GetTableName(true)+" where "+foreignKey+" = ? AND "+joinKey+"=?", foreignValue, joinValue)
+	return result
+}
+
+func SavePivot(db *gorm.DB, pivot ModelInterface, foreignKey string, foreignValue string, joinKey string, joinValue string) (err error) {
+	now := time.Now()
+	result := db.
+		Debug().
+		Exec("INSERT INTO "+pivot.GetTableName(true)+
+			" ("+foreignKey+", "+joinKey+", created_at,updated_at ) VALUES (?, ?, ?, ?)",
+			foreignValue,
+			joinValue,
+			now, now,
+		)
+
+	return result.Error
+}
+
+func UpdatePivot(db *gorm.DB, pivot ModelInterface, foreignKey string, foreignValue string, joinKey string, joinValue string) (err error) {
+	now := time.Now()
+	result := db.
+		Debug().
+		Exec("UPDATE "+pivot.GetTableName(true)+
+			" SET updated_at=?"+
+			" WHERE "+foreignKey+"=? AND "+joinKey+"=?",
+			now,
+			foreignValue,
+			joinValue,
+		)
+
+	return result.Error
+}
+
+func ClearPivots(db *gorm.DB, pivot ModelInterface, foreignKey string, foreignValue string) (err error) {
+	result := db.
+		Debug().
+		Exec("DELETE FROM "+pivot.GetTableName(true)+" WHERE "+foreignKey+"=?", foreignValue)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+
+}
+
+/**
+ * Pagination
+ */
 func Paginate(page int, pageSize int) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		if page == 0 {
@@ -269,6 +365,9 @@ func Paginate(page int, pageSize int) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
+/**
+ * model methods
+ */
 func GetModelFields(model interface{}) (fields []string) {
 
 	// check if it has been loaded
