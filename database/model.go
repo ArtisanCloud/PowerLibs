@@ -32,6 +32,13 @@ type PowerModel struct {
 	UpdatedAt time.Time `gorm:"column:updated_at" json:"updatedAt"`
 }
 
+type PowerCompactModel struct {
+	ID int32 `gorm:"primaryKey;autoIncrement:true;unique; column:id; ->;<-:create" json:"-"`
+
+	CreatedAt time.Time `gorm:"column:created_at; ->;<-:create " json:"createdAt"`
+	UpdatedAt time.Time `gorm:"column:updated_at" json:"updatedAt"`
+}
+
 type PowerRelationship struct {
 	ID        int32     `gorm:"AUTO_INCREMENT;PRIMARY_KEY;not null" json:"id"`
 	CreatedAt time.Time `gorm:"column:created_at; ->;<-:create " json:"createdAt"`
@@ -57,6 +64,14 @@ func NewPowerModel() *PowerModel {
 	now := time.Now()
 	return &PowerModel{
 		UUID:      uuid.New().String(),
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+}
+
+func NewPowerCompactModel() *PowerCompactModel {
+	now := time.Now()
+	return &PowerCompactModel{
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
@@ -114,6 +129,15 @@ func (mdl *PowerRelationship) GetPrimaryKey() string {
 }
 func (mdl *PowerRelationship) GetForeignKey() string {
 	return "model_id"
+}
+
+func GetPivotComposedUniqueID(foreignValue string, joinValue string) object.NullString {
+	if foreignValue != "" && joinValue != "" {
+		strUniqueID := foreignValue + "-" + joinValue
+		return object.NewNullString(strUniqueID, true)
+	} else {
+		return object.NewNullString("", false)
+	}
 }
 
 /**
