@@ -46,6 +46,7 @@ type PowerRelationship struct {
 }
 
 const UNIQUE_ID = "uuid"
+const COMPACT_UNIQUE_ID = "id"
 
 const MODEL_STATUS_DRAFT int8 = 0
 const MODEL_STATUS_ACTIVE int8 = 1
