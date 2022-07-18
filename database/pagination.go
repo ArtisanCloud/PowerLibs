@@ -1,24 +1,46 @@
 package database
 
+import "gorm.io/gorm"
 
 type Pagination struct {
-	Limit        int         `json:"limit"`
-	Page         int         `json:"page"`
-	Sort         string      `json:"sort"`
-	TotalRows    int64       `json:"totalRows"`
-	TotalPages   int         `json:"totalPages"`
-	Data         interface{} `json:"data"`
+	Limit      int         `json:"limit"`
+	Page       int         `json:"page"`
+	Sort       string      `json:"sort"`
+	TotalRows  int64       `json:"totalRows"`
+	TotalPages int         `json:"totalPages"`
+	Data       interface{} `json:"data"`
 }
 
 func NewPagination(page int, limit int, sort string) *Pagination {
 
-	p:= &Pagination{}
+	p := &Pagination{}
 	p.SetPage(page)
 	p.SetLimit(limit)
 	p.SetSort(sort)
 
 	return p
 
+}
+
+/**
+ * Pagination
+ */
+func Paginate(page int, pageSize int) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if page == 0 {
+			page = 1
+		}
+
+		switch {
+		case pageSize > 100:
+			pageSize = 100
+		case pageSize <= 0:
+			pageSize = 10
+		}
+
+		offset := (page - 1) * pageSize
+		return db.Offset(offset).Limit(pageSize)
+	}
 }
 
 func (p *Pagination) GetOffset() int {
@@ -31,7 +53,7 @@ func (p *Pagination) SetLimit(limit int) *Pagination {
 		p.Limit = 10
 	}
 
-	p.Limit=  limit
+	p.Limit = limit
 	return p
 }
 func (p *Pagination) GetLimit() int {
@@ -67,4 +89,3 @@ func (p *Pagination) SetSort(sort string) *Pagination {
 func (p *Pagination) GetSort() string {
 	return p.Sort
 }
-
