@@ -2,12 +2,10 @@ package database
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
 	"math"
 	"reflect"
@@ -35,12 +33,6 @@ type PowerModel struct {
 type PowerCompactModel struct {
 	ID int32 `gorm:"primaryKey;autoIncrement:true;unique; column:id; ->;<-:create" json:"-"`
 
-	CreatedAt time.Time `gorm:"column:created_at; ->;<-:create " json:"createdAt"`
-	UpdatedAt time.Time `gorm:"column:updated_at" json:"updatedAt"`
-}
-
-type PowerRelationship struct {
-	ID        int32     `gorm:"AUTO_INCREMENT;PRIMARY_KEY;not null" json:"id"`
 	CreatedAt time.Time `gorm:"column:created_at; ->;<-:create " json:"createdAt"`
 	UpdatedAt time.Time `gorm:"column:updated_at" json:"updatedAt"`
 }
@@ -78,14 +70,6 @@ func NewPowerCompactModel() *PowerCompactModel {
 	}
 }
 
-func NewPowerRelationship() *PowerRelationship {
-	now := time.Now()
-	return &PowerRelationship{
-		CreatedAt: now,
-		UpdatedAt: now,
-	}
-}
-
 func (mdl *PowerModel) GetID() int32 {
 	return mdl.ID
 }
@@ -107,38 +91,6 @@ func (mdl *PowerModel) GetPrimaryKey() string {
 }
 func (mdl *PowerModel) GetForeignKey() string {
 	return "model_uuid"
-}
-
-// --------------------------------------------------------------------
-func (mdl *PowerRelationship) GetTableName(needFull bool) string {
-	return ""
-}
-
-func (mdl *PowerRelationship) GetPowerModel() ModelInterface {
-	return mdl
-}
-func (mdl *PowerRelationship) GetID() int32 {
-	return mdl.ID
-}
-
-func (mdl *PowerRelationship) GetUUID() string {
-	return ""
-}
-
-func (mdl *PowerRelationship) GetPrimaryKey() string {
-	return "id"
-}
-func (mdl *PowerRelationship) GetForeignKey() string {
-	return "model_id"
-}
-
-func GetPivotComposedUniqueID(foreignValue string, joinValue string) object.NullString {
-	if foreignValue != "" && joinValue != "" {
-		strUniqueID := foreignValue + "-" + joinValue
-		return object.NewNullString(strUniqueID, true)
-	} else {
-		return object.NewNullString("", false)
-	}
 }
 
 /**
@@ -249,145 +201,6 @@ func GetAllList(db *gorm.DB, conditions *map[string]interface{},
 	}
 
 	return nil
-}
-
-/**
- * Association Relationship
- */
-func AssociationRelationship(db *gorm.DB, conditions *map[string]interface{}, mdl interface{}, relationship string, withClauseAssociations bool) *gorm.Association {
-
-	tx := db.Model(mdl)
-
-	if withClauseAssociations {
-		tx.Preload(clause.Associations)
-	}
-
-	if conditions != nil {
-		tx = tx.Where(*conditions)
-	}
-
-	return tx.Association(relationship)
-}
-
-func AppendAssociates(db *gorm.DB, pivot ModelInterface, foreignKey string, foreignValue string, joinKey string, joinValues []string) (err error) {
-	var result *gorm.DB
-
-	err = db.Transaction(func(tx *gorm.DB) error {
-		for i := 0; i < len(joinValues); i++ {
-
-			result = SelectPivot(db, pivot, foreignKey, foreignValue, joinKey, joinValues[i])
-			if result.Error != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-				return err
-			}
-			if result.RowsAffected == 0 || result.Error == gorm.ErrRecordNotFound {
-				err = SavePivot(db, pivot, foreignKey, foreignValue, joinKey, joinValues[i])
-				if err != nil {
-					return err
-				}
-			} else {
-				err = UpdatePivot(db, pivot, foreignKey, foreignValue, joinKey, joinValues[i])
-				if err != nil {
-					return err
-				}
-			}
-		}
-		return result.Error
-	})
-
-	return err
-}
-
-func SyncAssociates(db *gorm.DB, pivot ModelInterface, foreignKey string, foreignValue string, joinKey string, joinValues []string) (err error) {
-
-	err = db.Transaction(func(tx *gorm.DB) error {
-
-		err = ClearPivots(db, pivot, foreignKey, foreignValue)
-		if err != nil {
-			return err
-		}
-		err = AppendAssociates(db, pivot, foreignKey, foreignValue, joinKey, joinValues)
-
-		return err
-	})
-
-	return err
-}
-
-func ClearAssociation(db *gorm.DB, object ModelInterface, foreignKey string, pivot ModelInterface) error {
-	result := db.Exec("DELETE FROM "+pivot.GetTableName(true)+" WHERE "+foreignKey+"=?", object.GetID())
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
-}
-
-func SelectPivot(db *gorm.DB, pivot ModelInterface, foreignKey string, foreignValue string, joinKey string, joinValue string) (result *gorm.DB) {
-	result = db.
-		Debug().
-		Exec("select * from "+pivot.GetTableName(true)+" where "+foreignKey+" = ? AND "+joinKey+"=?", foreignValue, joinValue)
-	return result
-}
-
-func SavePivot(db *gorm.DB, pivot ModelInterface, foreignKey string, foreignValue string, joinKey string, joinValue string) (err error) {
-	now := time.Now()
-	result := db.
-		Debug().
-		Exec("INSERT INTO "+pivot.GetTableName(true)+
-			" ("+foreignKey+", "+joinKey+", created_at,updated_at ) VALUES (?, ?, ?, ?)",
-			foreignValue,
-			joinValue,
-			now, now,
-		)
-
-	return result.Error
-}
-
-func UpdatePivot(db *gorm.DB, pivot ModelInterface, foreignKey string, foreignValue string, joinKey string, joinValue string) (err error) {
-	now := time.Now()
-	result := db.
-		Debug().
-		Exec("UPDATE "+pivot.GetTableName(true)+
-			" SET updated_at=?"+
-			" WHERE "+foreignKey+"=? AND "+joinKey+"=?",
-			now,
-			foreignValue,
-			joinValue,
-		)
-
-	return result.Error
-}
-
-func ClearPivots(db *gorm.DB, pivot ModelInterface, foreignKey string, foreignValue string) (err error) {
-	result := db.
-		Debug().
-		Exec("DELETE FROM "+pivot.GetTableName(true)+" WHERE "+foreignKey+"=?", foreignValue)
-	if result.Error != nil {
-		return result.Error
-	}
-
-	return nil
-
-}
-
-/**
- * Pagination
- */
-func Paginate(page int, pageSize int) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		if page == 0 {
-			page = 1
-		}
-
-		switch {
-		case pageSize > 100:
-			pageSize = 100
-		case pageSize <= 0:
-			pageSize = 10
-		}
-
-		offset := (page - 1) * pageSize
-		return db.Offset(offset).Limit(pageSize)
-	}
 }
 
 /**
