@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -19,7 +18,8 @@ type ModelInterface interface {
 	GetID() int32
 	GetUUID() string
 	GetPrimaryKey() string
-	GetForeignKey() string
+	GetForeignRefer() string
+	GetForeignReferValue() string
 }
 
 type PowerModel struct {
@@ -89,8 +89,12 @@ func (mdl *PowerModel) GetUUID() string {
 func (mdl *PowerModel) GetPrimaryKey() string {
 	return "uuid"
 }
-func (mdl *PowerModel) GetForeignKey() string {
-	return "model_uuid"
+
+func (mdl *PowerModel) GetForeignRefer() string {
+	return "uuid"
+}
+func (mdl *PowerModel) GetForeignReferValue() string {
+	return mdl.UUID
 }
 
 /**
@@ -215,7 +219,7 @@ func GetModelFields(model interface{}) (fields []string) {
 		return (*ArrayModelFields)[modelName].([]string)
 	}
 
-	fmt.Printf("parse object ~%s~ model fields \n", modelName)
+	//fmt.Printf("parse object ~%s~ model fields \n", modelName)
 	gormSchema, err := schema.Parse(model, &sync.Map{}, schema.NamingStrategy{})
 	if err != nil {
 		println(err)
@@ -229,9 +233,28 @@ func GetModelFields(model interface{}) (fields []string) {
 		}
 	}
 	(*ArrayModelFields)[modelName] = fields
-	fmt.Printf("parsed object ~%s~ model fields and fields count is %d \n\n", modelName, len(fields))
+	//fmt.Printf("parsed object ~%s~ model fields and fields count is %d \n\n", modelName, len(fields))
 
 	return fields
+}
+
+func GetModelFieldValues(model interface{}) (mapFields *object.HashMap, err error) {
+
+	//fmt.Printf("parse object ~%s~ model fields \n", modelName)
+	gormSchema, err := schema.Parse(model, &sync.Map{}, schema.NamingStrategy{})
+	if err != nil {
+		println(err)
+		return mapFields, err
+	}
+
+	mapFields = &object.HashMap{}
+	for _, field := range gormSchema.Fields {
+		if field.DBName != "" && !field.PrimaryKey && !field.Unique && field.Updatable {
+			(*mapFields)[field.DBName] = field.ValueOf
+		}
+	}
+
+	return mapFields, err
 }
 
 func IsPowerModelLoaded(mdl ModelInterface) bool {
@@ -251,7 +274,7 @@ func IsPowerModelLoaded(mdl ModelInterface) bool {
 	return true
 }
 
-func IsPowerRelationshipLoaded(mdl ModelInterface) bool {
+func IsPowerPivotLoaded(mdl ModelInterface) bool {
 
 	if object.IsObjectNil(mdl) {
 		return false
