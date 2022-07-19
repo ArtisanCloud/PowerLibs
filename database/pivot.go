@@ -2,47 +2,88 @@ package database
 
 import (
 	"errors"
+	fmt2 "fmt"
+	"github.com/ArtisanCloud/PowerLibs/v2/fmt"
 	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"time"
 )
 
-type PowerRelationship struct {
+type PivotInterface interface {
+	ModelInterface
+	GetForeignKey() string
+	GetForeignValue() string
+	GetJoinKey() string
+	GetJoinValue() string
+	GetOwnerKey() string
+	GetOwnerValue() string
+	GetPivotComposedUniqueID() string
+}
+
+type PowerPivot struct {
 	ID        int32     `gorm:"AUTO_INCREMENT;PRIMARY_KEY;not null" json:"id"`
 	CreatedAt time.Time `gorm:"column:created_at; ->;<-:create " json:"createdAt"`
 	UpdatedAt time.Time `gorm:"column:updated_at" json:"updatedAt"`
 }
 
-func NewPowerRelationship() *PowerRelationship {
+func NewPowerPivot() *PowerPivot {
 	now := time.Now()
-	return &PowerRelationship{
+	return &PowerPivot{
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
 }
 
 // --------------------------------------------------------------------
-func (mdl *PowerRelationship) GetTableName(needFull bool) string {
+func (mdl *PowerPivot) GetTableName(needFull bool) string {
 	return ""
 }
 
-func (mdl *PowerRelationship) GetPowerModel() ModelInterface {
+func (mdl *PowerPivot) GetPowerModel() ModelInterface {
 	return mdl
 }
-func (mdl *PowerRelationship) GetID() int32 {
+func (mdl *PowerPivot) GetID() int32 {
 	return mdl.ID
 }
 
-func (mdl *PowerRelationship) GetUUID() string {
+func (mdl *PowerPivot) GetUUID() string {
 	return ""
 }
 
-func (mdl *PowerRelationship) GetPrimaryKey() string {
+func (mdl *PowerPivot) GetPrimaryKey() string {
 	return "id"
 }
-func (mdl *PowerRelationship) GetForeignKey() string {
-	return "model_id"
+func (mdl *PowerPivot) GetForeignRefer() string {
+	return "id"
+}
+func (mdl *PowerPivot) GetForeignReferValue() string {
+	return fmt2.Sprintf("%d", mdl.ID)
+}
+
+func (mdl *PowerPivot) GetForeignKey() string {
+	return "foreign_key"
+}
+func (mdl *PowerPivot) GetForeignValue() string {
+	return "foreign_id"
+}
+
+func (mdl *PowerPivot) GetJoinKey() string {
+	return "join_key"
+}
+func (mdl *PowerPivot) GetJoinValue() string {
+	return "join_id"
+}
+
+func (mdl *PowerPivot) GetOwnerKey() string {
+	return "owner_key"
+}
+func (mdl *PowerPivot) GetOwnerValue() string {
+	return "owner_value"
+}
+
+func (mdl *PowerPivot) GetPivotComposedUniqueID() string {
+	return mdl.GetOwnerValue() + "-" + mdl.GetForeignValue() + "-" + mdl.GetJoinValue()
 }
 
 func GetPivotComposedUniqueID(foreignValue string, joinValue string) object.NullString {
@@ -55,11 +96,13 @@ func GetPivotComposedUniqueID(foreignValue string, joinValue string) object.Null
 }
 
 /**
- * Association Relationship
+ * Association Pivot
  */
 func AssociationRelationship(db *gorm.DB, conditions *map[string]interface{}, mdl interface{}, relationship string, withClauseAssociations bool) *gorm.Association {
 
-	tx := db.Model(mdl)
+	tx := db.
+		Debug().
+		Model(mdl)
 
 	if withClauseAssociations {
 		tx.Preload(clause.Associations)
@@ -72,7 +115,7 @@ func AssociationRelationship(db *gorm.DB, conditions *map[string]interface{}, md
 	return tx.Association(relationship)
 }
 
-func ClearAssociations(db *gorm.DB, object ModelInterface, foreignKey string, pivot ModelInterface) error {
+func ClearAssociations(db *gorm.DB, object ModelInterface, foreignKey string, pivot PivotInterface) error {
 	result := db.Exec("DELETE FROM "+pivot.GetTableName(true)+" WHERE "+foreignKey+"=?", object.GetID())
 	if result.Error != nil {
 		return result.Error
@@ -81,69 +124,28 @@ func ClearAssociations(db *gorm.DB, object ModelInterface, foreignKey string, pi
 }
 
 // --------------------------------------------------------------------
-func AppendAssociates(db *gorm.DB, pivot ModelInterface,
-	foreignKey string, foreignValue string,
-	joinKey string, joinValues []string) (err error) {
 
-	return AppendMorphAssociates(db, pivot, foreignKey, foreignValue, joinKey, joinValues, "", "")
-}
-func SyncAssociates(db *gorm.DB, pivot ModelInterface,
-	foreignKey string, foreignValue string,
-	joinKey string, joinValues []string) (err error) {
-
-	return SyncMorphAssociates(db, pivot, foreignKey, foreignValue, joinKey, joinValues, "", "")
-}
-
-func SelectPivots(db *gorm.DB, pivot ModelInterface,
-	foreignKey string, foreignValue string,
-	joinKey string, joinValue string) (result *gorm.DB) {
-
-	return SelectMorphPivots(db, pivot, foreignKey, foreignValue, "", "")
-}
-
-func SelectPivot(db *gorm.DB, pivot ModelInterface,
-	foreignKey string, foreignValue string,
-	joinKey string, joinValue string) (result *gorm.DB) {
-
-	return SelectMorphPivot(db, pivot, foreignKey, foreignValue, joinKey, joinValue, "", "")
-}
-
-func SavePivot(db *gorm.DB, pivot ModelInterface,
-	foreignKey string, foreignValue string,
-	joinKey string, joinValue string) (err error) {
-	return SaveMorphPivot(db, pivot, foreignKey, foreignValue, joinKey, joinValue, "", "")
-}
-
-func UpdatePivot(db *gorm.DB, pivot ModelInterface,
-	foreignKey string, foreignValue string,
-	joinKey string, joinValue string) (err error) {
-	return UpdateMorphPivot(db, pivot, foreignKey, foreignValue, joinKey, joinValue, "", "")
-}
-
-// --------------------------------------------------------------------
-
-func AppendMorphAssociates(db *gorm.DB, pivot ModelInterface,
-	foreignKey string, foreignValue string,
-	joinKey string, joinValues []string,
-	ownerKey string, ownerValue string,
-) (err error) {
+func AppendMorphPivots(db *gorm.DB, pivots []PivotInterface) (err error) {
 
 	var result = &gorm.DB{}
 
 	err = db.Transaction(func(tx *gorm.DB) error {
-		for i := 0; i < len(joinValues); i++ {
+		for i := 0; i < len(pivots); i++ {
 
-			result = SelectMorphPivot(db, pivot, foreignKey, foreignValue, joinKey, joinValues[i], ownerKey, ownerValue)
+			result = SelectMorphPivot(db, pivots[i])
 			if result.Error != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 				return err
 			}
+
+			//err = UpsertPivots(db, pivots[i].GetPivotComposedUniqueID(), []PivotInterface{pivots[i]}, nil)
+
 			if result.RowsAffected == 0 || result.Error == gorm.ErrRecordNotFound {
-				err = SaveMorphPivot(db, pivot, foreignKey, foreignValue, joinKey, joinValues[i], ownerKey, ownerValue)
+				err = SavePivot(db, pivots[i])
 				if err != nil {
 					return err
 				}
 			} else {
-				err = UpdateMorphPivot(db, pivot, foreignKey, foreignValue, joinKey, joinValues[i], ownerKey, ownerValue)
+				err = UpdatePivot(db, pivots[i])
 				if err != nil {
 					return err
 				}
@@ -155,19 +157,19 @@ func AppendMorphAssociates(db *gorm.DB, pivot ModelInterface,
 	return err
 }
 
-func SyncMorphAssociates(db *gorm.DB, pivot ModelInterface,
-	foreignKey string, foreignValue string,
-	joinKey string, joinValues []string,
-	ownerKey string, ownerValue string,
-) (err error) {
-
+func SyncMorphPivots(db *gorm.DB, pivots []PivotInterface) (err error) {
+	if len(pivots) <= 0 {
+		fmt.Dump("pivots is empty")
+		return nil
+	}
 	err = db.Transaction(func(tx *gorm.DB) error {
 
-		err = ClearPivots(db, pivot, foreignKey, foreignValue)
+		err = ClearPivots(db, pivots[0])
 		if err != nil {
 			return err
 		}
-		err = AppendMorphAssociates(db, pivot, foreignKey, foreignValue, joinKey, joinValues, ownerKey, ownerValue)
+
+		err = AppendMorphPivots(db, pivots)
 
 		return err
 	})
@@ -175,115 +177,96 @@ func SyncMorphAssociates(db *gorm.DB, pivot ModelInterface,
 	return err
 }
 
-// select many pivots with foreign key
-func SelectMorphPivots(db *gorm.DB, pivot ModelInterface,
-	foreignKey string, foreignValue string,
-	ownerKey string, ownerValue string,
-) (result *gorm.DB) {
+// --------------------------------------------------------------------
+func AppendPivots(db *gorm.DB, pivots []PivotInterface) (err error) {
 
-	result = &gorm.DB{}
+	return AppendMorphPivots(db, pivots)
+}
+func SyncPivots(db *gorm.DB, pivots []PivotInterface) (err error) {
+
+	return SyncMorphPivots(db, pivots)
+}
+
+func SelectPivots(db *gorm.DB, pivot PivotInterface) (result *gorm.DB) {
+
+	return SelectMorphPivots(db, pivot)
+}
+
+func SelectPivot(db *gorm.DB, pivot PivotInterface) (result *gorm.DB) {
+
+	return SelectMorphPivot(db, pivot)
+}
+
+// --------------------------------------------------------------------
+
+// select many pivots with foreign key
+func SelectMorphPivots(db *gorm.DB, pivot PivotInterface) (result *gorm.DB) {
+
+	result = db.Model(pivot).
+		Debug().
+		Where(pivot.GetForeignKey(), pivot.GetForeignValue())
 
 	// join foreign type if exists
-	strWhereOwner := ""
-	strWhere := " WHERE " + foreignKey + "=?"
-	if ownerKey != "" && ownerValue != "" {
-		strWhereOwner = " AND " + ownerKey + "=" + ownerValue
-		strWhere += " ?"
-		result = db.
-			Debug().
-			Exec("select * from "+pivot.GetTableName(true)+strWhere, foreignValue, strWhereOwner)
-	} else {
-		result = db.
-			Debug().
-			Exec("select * from "+pivot.GetTableName(true)+strWhere, foreignValue)
+	if pivot.GetOwnerValue() != "" {
+		db = db.Where(pivot.GetOwnerKey(), pivot.GetOwnerValue())
 	}
 
 	return result
 }
 
 // select one pivot with foreign key and join key
-func SelectMorphPivot(db *gorm.DB, pivot ModelInterface,
-	foreignKey string, foreignValue string,
-	joinKey string, joinValue string,
-	ownerKey string, ownerValue string,
-) (result *gorm.DB) {
+func SelectMorphPivot(db *gorm.DB, pivot PivotInterface) (result *gorm.DB) {
 
-	result = &gorm.DB{}
-
-	// join foreign type if exists
-	strWhereOwner := ""
-	strWhere := " WHERE " + foreignKey + "=?" + " AND " + joinKey + "=?"
-	if ownerKey != "" && ownerValue != "" {
-		strWhereOwner = " AND " + ownerKey + "=" + ownerValue
-		strWhere += " ?"
-		result = db.
-			Debug().
-			Exec("select * from "+pivot.GetTableName(true)+strWhere, foreignValue, joinValue, strWhereOwner)
-	} else {
-		result = db.
-			Debug().
-			Exec("select * from "+pivot.GetTableName(true)+strWhere, foreignValue, joinValue)
-	}
+	result = SelectMorphPivots(db, pivot)
+	result = result.Where(pivot.GetJoinKey(), pivot.GetJoinValue()).Find(&pivot)
 
 	return result
 }
 
-// save one pivot with foreign key and join key
-func SaveMorphPivot(db *gorm.DB, pivot ModelInterface,
-	foreignKey string, foreignValue string,
-	joinKey string, joinValue string,
-	ownerKey string, ownerValue string,
-) (err error) {
-	now := time.Now()
+func UpsertPivots(db *gorm.DB, uniqueName string, pivots []PivotInterface, fieldsToUpdate []string) error {
 
-	if ownerKey != "" && ownerValue != "" {
-		strValue := " (" + foreignKey + ", " + joinKey + ", " + ownerKey + ", created_at, updated_at ) VALUES (?, ?, ?, ?, ?)"
-		db = db.
-			Debug().
-			Exec("INSERT INTO "+pivot.GetTableName(true)+strValue, foreignValue, joinValue, ownerValue, now, now)
-	} else {
-		strValue := " (" + foreignKey + ", " + joinKey + ", created_at, updated_at ) VALUES (?, ?, ?, ?)"
-		db = db.
-			Debug().
-			Exec("INSERT INTO "+pivot.GetTableName(true)+strValue, foreignValue, joinValue, now, now)
+	if len(pivots) <= 0 {
+		fmt.Dump("pivots is empty")
+		return nil
 	}
 
-	return db.Error
+	if len(fieldsToUpdate) <= 0 {
+		fieldsToUpdate = GetModelFields(&pivots[0])
+	}
+
+	result := db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: uniqueName}},
+		DoUpdates: clause.AssignmentColumns(fieldsToUpdate),
+	}).
+		Debug().
+		Create(&pivots)
+
+	return result.Error
 }
 
-// update one pivot with foreign key and join key
-func UpdateMorphPivot(db *gorm.DB, pivot ModelInterface,
-	foreignKey string, foreignValue string,
-	joinKey string, joinValue string,
-	ownerKey string, ownerValue string,
-) (err error) {
-	now := time.Now()
+func SavePivot(db *gorm.DB, pivot PivotInterface) error {
+	result := db.
+		Debug().
+		Create(pivot)
 
-	strSet := " SET updated_at = ?"
+	return result.Error
+}
 
-	// join foreign type if exists
-	strWhere := " WHERE " + foreignKey + " = ? AND " + joinKey + "=?"
-	strWhereOwner := ""
-	if ownerKey != "" && ownerValue != "" {
-		strWhereOwner = " AND " + ownerKey + "=" + ownerValue
-		strWhere += " ?"
-		db = db.
-			Debug().
-			Exec("UPDATE "+pivot.GetTableName(true)+strSet+strWhere, now, foreignValue, joinValue, strWhereOwner)
-	} else {
-		db = db.
-			Debug().
-			Exec("UPDATE "+pivot.GetTableName(true)+strSet+strWhere, now, foreignValue, joinValue)
-	}
+func UpdatePivot(db *gorm.DB, pivot PivotInterface) error {
+	result := db.
+		Debug().
+		Save(pivot)
 
-	return db.Error
+	return result.Error
 }
 
 // clear all pivots with foreign key and value
-func ClearPivots(db *gorm.DB, pivot ModelInterface, foreignKey string, foreignValue string) (err error) {
+func ClearPivots(db *gorm.DB, pivot PivotInterface) (err error) {
 	result := db.
 		Debug().
-		Exec("DELETE FROM "+pivot.GetTableName(true)+" WHERE "+foreignKey+"=?", foreignValue)
+		Where(pivot.GetForeignKey(), pivot.GetForeignValue()).
+		Delete(pivot)
+
 	if result.Error != nil {
 		return result.Error
 	}

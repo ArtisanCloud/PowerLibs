@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"gorm.io/gorm"
 )
@@ -12,7 +13,7 @@ func (mdl *RTagToObject) TableName() string {
 
 // r_tag_to_object 数据表结构
 type RTagToObject struct {
-	*PowerRelationship
+	*PowerPivot
 
 	//common fields
 	UniqueID          object.NullString `gorm:"index:index_taggable_object_id;index:index_taggable_id;index;column:index_tag_to_object_id;unique"`
@@ -37,14 +38,54 @@ func (mdl *RTagToObject) GetTableName(needFull bool) string {
 	return tableName
 }
 
-func (mdl *RTagToObject) GetPivots(db *gorm.DB, foreignValue string, joinValue string, ownerValue string) ([]*RTagToObject, error) {
+func (mdl *RTagToObject) GetForeignKey() string {
+	return R_TAG_TO_OJECT_FOREIGN_KEY
+}
+
+func (mdl *RTagToObject) GetForeignValue() string {
+	return mdl.TaggableObjectID.String
+}
+
+func (mdl *RTagToObject) GetJoinKey() string {
+	return R_TAG_TO_OJECT_JOIN_KEY
+}
+
+func (mdl *RTagToObject) GetJoinValue() string {
+	return mdl.TaggableID.String
+}
+
+func (mdl *RTagToObject) GetOwnerKey() string {
+	return R_TAG_TO_OJECT_OWNER_KEY
+}
+
+func (mdl *RTagToObject) GetOwnerValue() string {
+	return mdl.TaggableOwnerType.String
+}
+
+func (mdl *RTagToObject) GetPivotComposedUniqueID() string {
+	return mdl.GetOwnerValue() + "-" + mdl.GetForeignValue() + "-" + mdl.GetJoinValue()
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+
+func (mdl *RTagToObject) MakePivotsFromObjectAndTags(obj ModelInterface, tags []*Tag) ([]PivotInterface, error) {
+	pivots := []PivotInterface{}
+	for _, tag := range tags {
+		pivot := &RTagToObject{
+			TaggableOwnerType: object.NewNullString(obj.GetTableName(true), true),
+			TaggableObjectID:  object.NewNullString(obj.GetForeignRefer(), true),
+			TaggableID:        object.NewNullString(fmt.Sprintf("%d", tag.ID), true),
+		}
+		pivot.UniqueID = object.NewNullString(pivot.GetPivotComposedUniqueID(), true)
+		pivots = append(pivots, pivot)
+	}
+	return pivots, nil
+}
+
+func (mdl *RTagToObject) GetPivots(db *gorm.DB) ([]*RTagToObject, error) {
 	pivots := []*RTagToObject{}
 
-	db = SelectMorphPivot(db, mdl,
-		R_TAG_TO_OJECT_FOREIGN_KEY, foreignValue,
-		R_TAG_TO_OJECT_JOIN_KEY, joinValue,
-		R_TAG_TO_OJECT_OWNER_KEY, ownerValue,
-	)
+	db = SelectMorphPivot(db, mdl)
 
 	result := db.Find(&pivots)
 
