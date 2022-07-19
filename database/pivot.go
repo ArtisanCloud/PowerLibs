@@ -175,22 +175,7 @@ func SyncMorphAssociates(db *gorm.DB, pivot ModelInterface,
 	return err
 }
 
-func SelectMorphPivot(db *gorm.DB, pivot ModelInterface,
-	foreignKey string, foreignValue string,
-	joinKey string, joinValue string,
-	ownerKey string, ownerValue string,
-) (result *gorm.DB) {
-
-	result = &gorm.DB{}
-
-	// join foreign type if exists
-	db = SelectMorphPivots(db, pivot, foreignKey, foreignValue, ownerKey, ownerValue)
-
-	result = db.Where(joinKey, joinValue)
-
-	return result
-}
-
+// select many pivots with foreign key
 func SelectMorphPivots(db *gorm.DB, pivot ModelInterface,
 	foreignKey string, foreignValue string,
 	ownerKey string, ownerValue string,
@@ -216,6 +201,34 @@ func SelectMorphPivots(db *gorm.DB, pivot ModelInterface,
 	return result
 }
 
+// select one pivot with foreign key and join key
+func SelectMorphPivot(db *gorm.DB, pivot ModelInterface,
+	foreignKey string, foreignValue string,
+	joinKey string, joinValue string,
+	ownerKey string, ownerValue string,
+) (result *gorm.DB) {
+
+	result = &gorm.DB{}
+
+	// join foreign type if exists
+	strWhereOwner := ""
+	strWhere := " WHERE " + foreignKey + "=?" + " AND " + joinKey + "=?"
+	if ownerKey != "" && ownerValue != "" {
+		strWhereOwner = " AND " + ownerKey + "=" + ownerValue
+		strWhere += " ?"
+		result = db.
+			Debug().
+			Exec("select * from "+pivot.GetTableName(true)+strWhere, foreignValue, joinValue, strWhereOwner)
+	} else {
+		result = db.
+			Debug().
+			Exec("select * from "+pivot.GetTableName(true)+strWhere, foreignValue, joinValue)
+	}
+
+	return result
+}
+
+// save one pivot with foreign key and join key
 func SaveMorphPivot(db *gorm.DB, pivot ModelInterface,
 	foreignKey string, foreignValue string,
 	joinKey string, joinValue string,
@@ -238,6 +251,7 @@ func SaveMorphPivot(db *gorm.DB, pivot ModelInterface,
 	return db.Error
 }
 
+// update one pivot with foreign key and join key
 func UpdateMorphPivot(db *gorm.DB, pivot ModelInterface,
 	foreignKey string, foreignValue string,
 	joinKey string, joinValue string,
@@ -265,6 +279,7 @@ func UpdateMorphPivot(db *gorm.DB, pivot ModelInterface,
 	return db.Error
 }
 
+// clear all pivots with foreign key and value
 func ClearPivots(db *gorm.DB, pivot ModelInterface, foreignKey string, foreignValue string) (err error) {
 	result := db.
 		Debug().
