@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -95,6 +96,36 @@ func (mdl *PowerModel) GetForeignRefer() string {
 }
 func (mdl *PowerModel) GetForeignReferValue() string {
 	return mdl.UUID
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// PowerCompactModel
+// ---------------------------------------------------------------------------------------------------------------------
+func (mdl *PowerCompactModel) GetID() int32 {
+	return mdl.ID
+}
+
+func (mdl *PowerCompactModel) GetTableName(needFull bool) string {
+	return ""
+}
+
+func (mdl *PowerCompactModel) GetPowerModel() ModelInterface {
+	return mdl
+}
+
+func (mdl *PowerCompactModel) GetUUID() string {
+	return ""
+}
+
+func (mdl *PowerCompactModel) GetPrimaryKey() string {
+	return "id"
+}
+
+func (mdl *PowerCompactModel) GetForeignRefer() string {
+	return "id"
+}
+func (mdl *PowerCompactModel) GetForeignReferValue() string {
+	return fmt.Sprintf("%d", mdl.ID)
 }
 
 /**
