@@ -12,7 +12,7 @@ func (mdl *Recipient) TableName() string {
 }
 
 type Recipient struct {
-	*database.PowerRelationship
+	*database.PowerPivot
 
 	Email string `gorm:"column:email" json:"email"`
 	Phone string `gorm:"column:phone" json:"phone"`
@@ -24,7 +24,7 @@ type Recipient struct {
 
 func NewRecipient(mapObject *object.Collection) *Recipient {
 	if mapObject == nil {
-		mapObject = &object.Collection{}
+		mapObject = object.NewCollection(&object.HashMap{})
 	}
 
 	email := mapObject.GetString("email", "")
@@ -40,11 +40,11 @@ func NewRecipient(mapObject *object.Collection) *Recipient {
 	}
 
 	return &Recipient{
-		PowerRelationship: database.NewPowerRelationship(),
-		Email:             email,
-		Phone:             phone,
-		OwnerID:           object.NewNullString(ownerID, true),
-		OwnerType:         ownerType,
+		PowerPivot: database.NewPowerPivot(),
+		Email:      email,
+		Phone:      phone,
+		OwnerID:    object.NewNullString(ownerID, true),
+		OwnerType:  ownerType,
 	}
 }
 
