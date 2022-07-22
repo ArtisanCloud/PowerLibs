@@ -2,6 +2,7 @@ package tag
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/ArtisanCloud/PowerLibs/v2/database"
 	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"github.com/ArtisanCloud/PowerLibs/v2/security"
@@ -34,6 +35,7 @@ const TABLE_NAME_TAG = "tags"
 const TAG_UNIQUE_ID = "index_tag_id"
 
 const TAG_TYPE_NORMAL int8 = 1
+const TAG_TYPE_STAGE int8 = 2
 
 func NewTag(mapObject *object.Collection) *Tag {
 
@@ -68,7 +70,7 @@ func (mdl *Tag) GetForeignKey() string {
 
 func (mdl *Tag) GetComposedUniqueID() string {
 
-	strKey := mdl.GroupID + "-" + mdl.Name
+	strKey := fmt.Sprintf("%d", mdl.Type) + "-" + mdl.GroupID + "-" + mdl.Name
 	hashKey := security.HashStringData(strKey)
 
 	return hashKey

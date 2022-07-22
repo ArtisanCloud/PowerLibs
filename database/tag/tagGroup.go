@@ -1,9 +1,11 @@
 package tag
 
 import (
+	"errors"
 	"github.com/ArtisanCloud/PowerLibs/v2/database"
 	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"github.com/ArtisanCloud/PowerLibs/v2/security"
+	"gorm.io/gorm"
 )
 
 // TableName overrides the table name used by TagGroup to `profiles`
@@ -23,6 +25,9 @@ type TagGroup struct {
 
 const TABLE_NAME_TAG_GROUP = "tag_groups"
 const TAG_GROUP_UNIQUE_ID = "index_tag_group_id"
+
+const DEFAULT_OWNER_TYPE = "default"
+const DEFAULT_GROUP_NAME = "默认组"
 
 func NewTagGroup(mapObject *object.Collection) *TagGroup {
 	if mapObject == nil {
@@ -44,6 +49,34 @@ func NewTagGroup(mapObject *object.Collection) *TagGroup {
 	tagGroup.UniqueID = tagGroup.GetComposedUniqueID()
 
 	return tagGroup
+}
+
+func GetDefaultTagGroup(db *gorm.DB) (defaultTagGroup *TagGroup, err error) {
+
+	defaultTagGroup = &TagGroup{}
+
+	conditions := &map[string]interface{}{
+		"group_name": DEFAULT_GROUP_NAME,
+		"owner_type": DEFAULT_OWNER_TYPE,
+	}
+
+	err = database.GetFirst(db, conditions, defaultTagGroup, nil)
+
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		defaultTagGroup = &TagGroup{
+			GroupName: DEFAULT_GROUP_NAME,
+			OwnerType: DEFAULT_OWNER_TYPE,
+		}
+		defaultTagGroup.UniqueID = defaultTagGroup.GetComposedUniqueID()
+
+		result := db.Create(defaultTagGroup)
+		err = result.Error
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return defaultTagGroup, err
 }
 
 func (mdl *TagGroup) GetTableName(needFull bool) string {
