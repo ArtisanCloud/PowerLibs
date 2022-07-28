@@ -79,7 +79,7 @@ func (mdl *PowerPivot) GetOwnerKey() string {
 	return "owner_key"
 }
 func (mdl *PowerPivot) GetOwnerValue() string {
-	return "owner_value"
+	return ""
 }
 
 func (mdl *PowerPivot) GetPivotComposedUniqueID() string {
@@ -101,7 +101,7 @@ func GetPivotComposedUniqueID(foreignValue string, joinValue string) object.Null
 func AssociationRelationship(db *gorm.DB, conditions *map[string]interface{}, mdl interface{}, relationship string, withClauseAssociations bool) *gorm.Association {
 
 	tx := db.
-		Debug().
+		//Debug().
 		Model(mdl)
 
 	if withClauseAssociations {
@@ -187,9 +187,9 @@ func SyncPivots(db *gorm.DB, pivots []PivotInterface) (err error) {
 	return SyncMorphPivots(db, pivots)
 }
 
-func SelectPivots(db *gorm.DB, pivot PivotInterface) (result *gorm.DB) {
+func SelectPivots(db *gorm.DB, pivot PivotInterface, byForeignKey bool, byJoinKey bool) (result *gorm.DB) {
 
-	return SelectMorphPivots(db, pivot)
+	return SelectMorphPivots(db, pivot, byForeignKey, byJoinKey)
 }
 
 func SelectPivot(db *gorm.DB, pivot PivotInterface) (result *gorm.DB) {
@@ -200,11 +200,24 @@ func SelectPivot(db *gorm.DB, pivot PivotInterface) (result *gorm.DB) {
 // --------------------------------------------------------------------
 
 // select many pivots with foreign key
-func SelectMorphPivots(db *gorm.DB, pivot PivotInterface) (result *gorm.DB) {
+func SelectMorphPivots(db *gorm.DB, pivot PivotInterface, byForeignKey bool, byJoinKey bool) (result *gorm.DB) {
 
-	result = db.Model(pivot).
-		Debug().
-		Where(pivot.GetForeignKey(), pivot.GetForeignValue())
+	db = db.
+		//Debug().
+		Model(pivot)
+
+	if byForeignKey && byJoinKey {
+		// select via foreign key and join key
+		result = db.
+			Where(pivot.GetJoinKey(), pivot.GetJoinValue()).
+			Where(pivot.GetForeignKey(), pivot.GetForeignValue())
+	} else if byJoinKey {
+		// select via join key
+		result = db.Where(pivot.GetJoinKey(), pivot.GetJoinValue())
+	} else {
+		// select via foreign key
+		result = db.Where(pivot.GetForeignKey(), pivot.GetForeignValue())
+	}
 
 	// join foreign type if exists
 	if pivot.GetOwnerValue() != "" {
@@ -217,8 +230,7 @@ func SelectMorphPivots(db *gorm.DB, pivot PivotInterface) (result *gorm.DB) {
 // select one pivot with foreign key and join key
 func SelectMorphPivot(db *gorm.DB, pivot PivotInterface) (result *gorm.DB) {
 
-	result = SelectMorphPivots(db, pivot)
-	result = result.Where(pivot.GetJoinKey(), pivot.GetJoinValue()).Find(&pivot)
+	result = SelectMorphPivots(db, pivot, true, true)
 
 	return result
 }
@@ -238,7 +250,7 @@ func UpsertPivots(db *gorm.DB, uniqueName string, pivots []PivotInterface, field
 		Columns:   []clause.Column{{Name: uniqueName}},
 		DoUpdates: clause.AssignmentColumns(fieldsToUpdate),
 	}).
-		Debug().
+		//Debug().
 		Create(&pivots)
 
 	return result.Error
@@ -246,7 +258,7 @@ func UpsertPivots(db *gorm.DB, uniqueName string, pivots []PivotInterface, field
 
 func SavePivot(db *gorm.DB, pivot PivotInterface) error {
 	result := db.
-		Debug().
+		//Debug().
 		Create(pivot)
 
 	return result.Error
@@ -254,7 +266,7 @@ func SavePivot(db *gorm.DB, pivot PivotInterface) error {
 
 func UpdatePivot(db *gorm.DB, pivot PivotInterface) error {
 	result := db.
-		Debug().
+		//Debug().
 		Save(pivot)
 
 	return result.Error
@@ -263,7 +275,7 @@ func UpdatePivot(db *gorm.DB, pivot PivotInterface) error {
 // clear all pivots with foreign key and value
 func ClearPivots(db *gorm.DB, pivot PivotInterface) (err error) {
 	result := db.
-		Debug().
+		//Debug().
 		Where(pivot.GetForeignKey(), pivot.GetForeignValue()).
 		Delete(pivot)
 

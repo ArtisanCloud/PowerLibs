@@ -322,3 +322,21 @@ func IsPowerPivotLoaded(mdl ModelInterface) bool {
 
 	return true
 }
+
+// ---------------------------------------------------------------------------------------------------------------------
+func FormatJsonBArrayToWhereInSQL(fields string, arrayValues []string) (sqlWhere string) {
+
+	if fields == "" || len(arrayValues) <= 0 {
+		return ""
+	}
+
+	sqlWhere = fields + " ?| array["
+	for _, value := range arrayValues {
+		if value != "" {
+			sqlWhere += "'" + value + "',"
+		}
+	}
+	sqlWhere = sqlWhere[0:len(sqlWhere)-1] + "]"
+
+	return sqlWhere
+}
