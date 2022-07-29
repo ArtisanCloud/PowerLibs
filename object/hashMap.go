@@ -98,6 +98,16 @@ func StructToHashMapWithXML(obj interface{}) (newMap *HashMap, err error) {
 	return newMap, err
 
 }
+func HashMapToStructure(mapObj *HashMap, obj interface{}) (err error) {
+
+	strObj, err := JsonEncode(mapObj)
+	if err != nil {
+		return err
+	}
+	err = JsonDecode([]byte(strObj), obj)
+
+	return err
+}
 
 func StructToHashMap(obj interface{}) (newMap *HashMap, err error) {
 	data, err := json.Marshal(obj) // Convert to a json string
