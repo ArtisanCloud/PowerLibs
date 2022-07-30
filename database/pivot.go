@@ -4,7 +4,6 @@ import (
 	"errors"
 	fmt2 "fmt"
 	"github.com/ArtisanCloud/PowerLibs/v2/fmt"
-	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"time"
@@ -84,15 +83,6 @@ func (mdl *PowerPivot) GetOwnerValue() string {
 
 func (mdl *PowerPivot) GetPivotComposedUniqueID() string {
 	return mdl.GetOwnerValue() + "-" + mdl.GetForeignValue() + "-" + mdl.GetJoinValue()
-}
-
-func GetPivotComposedUniqueID(foreignValue string, joinValue string) object.NullString {
-	if foreignValue != "" && joinValue != "" {
-		strUniqueID := foreignValue + "-" + joinValue
-		return object.NewNullString(strUniqueID, true)
-	} else {
-		return object.NewNullString("", false)
-	}
 }
 
 /**
