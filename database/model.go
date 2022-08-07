@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+const PAGE_DEFAULT_SIZE = 20
+
 type ModelInterface interface {
 	GetTableName(needFull bool) string
 	GetPowerModel() ModelInterface
@@ -173,6 +175,13 @@ func GetList(db *gorm.DB, conditions *map[string]interface{},
 	models interface{}, preloads []string,
 	page int, pageSize int) (paginator *Pagination, err error) {
 
+	if page < 0 {
+		page = 0
+	}
+	if pageSize <= 0 {
+		pageSize = PAGE_DEFAULT_SIZE
+	}
+	
 	// add pagination
 	paginator = NewPagination(page, pageSize, "")
 	var totalRows int64
