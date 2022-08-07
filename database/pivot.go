@@ -154,7 +154,7 @@ func SyncMorphPivots(db *gorm.DB, pivots []PivotInterface) (err error) {
 	}
 	err = db.Transaction(func(tx *gorm.DB) error {
 
-		err = ClearPivots(db, pivots[0])
+		err = ClearPivots(db, pivots[0], true, false)
 		if err != nil {
 			return err
 		}
@@ -263,10 +263,23 @@ func UpdatePivot(db *gorm.DB, pivot PivotInterface) error {
 }
 
 // clear all pivots with foreign key and value
-func ClearPivots(db *gorm.DB, pivot PivotInterface) (err error) {
+func ClearPivots(db *gorm.DB, pivot PivotInterface, byForeignKey bool, byJoinKey bool) (err error) {
+
+	if byForeignKey && byJoinKey {
+		// select via foreign key and join key
+		db = db.
+			Where(pivot.GetJoinKey(), pivot.GetJoinValue()).
+			Where(pivot.GetForeignKey(), pivot.GetForeignValue())
+	} else if byJoinKey {
+		// select via join key
+		db = db.Where(pivot.GetJoinKey(), pivot.GetJoinValue())
+	} else {
+		// select via foreign key
+		db = db.Where(pivot.GetForeignKey(), pivot.GetForeignValue())
+	}
+
 	result := db.
-		//Debug().
-		Where(pivot.GetForeignKey(), pivot.GetForeignValue()).
+		Debug().
 		Delete(pivot)
 
 	if result.Error != nil {
