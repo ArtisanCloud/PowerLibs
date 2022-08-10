@@ -181,7 +181,7 @@ func GetList(db *gorm.DB, conditions *map[string]interface{},
 	if pageSize <= 0 {
 		pageSize = PAGE_DEFAULT_SIZE
 	}
-	
+
 	// add pagination
 	paginator = NewPagination(page, pageSize, "")
 	var totalRows int64
@@ -220,7 +220,7 @@ func GetList(db *gorm.DB, conditions *map[string]interface{},
 }
 
 func GetAllList(db *gorm.DB, conditions *map[string]interface{},
-	models interface{}, preloads []string) (err error) {
+	items interface{}, preloads []string) (err error) {
 
 	if conditions != nil {
 		db = db.Where(*conditions)
@@ -238,7 +238,7 @@ func GetAllList(db *gorm.DB, conditions *map[string]interface{},
 	// chunk datas
 	result := db.
 		//Debug().
-		Find(models)
+		Find(items)
 	err = result.Error
 	if err != nil {
 		return err
