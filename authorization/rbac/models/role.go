@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"github.com/ArtisanCloud/PowerLibs/v2/database"
 	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"github.com/ArtisanCloud/PowerLibs/v2/security"
@@ -74,28 +73,28 @@ func (mdl *Role) GetForeignValue() string {
 
 func (mdl *Role) GetComposedUniqueID() string {
 
-	strKey := fmt.Sprintf("%d", mdl.ParentID) + "-" + mdl.Name
+	strKey := *mdl.ParentID + "-" + mdl.Name
 	hashKey := security.HashStringData(strKey)
 
 	return hashKey
 }
 
 func (mdl *Role) GetRootComposedUniqueID() string {
-	strKey := fmt.Sprintf("%d", 0) + "-" + ROLE_ROOT_NAME
+	strKey := "" + "-" + ROLE_ROOT_NAME
 	hashKey := security.HashStringData(strKey)
 
 	return hashKey
 }
 
 func (mdl *Role) GetAdminComposedUniqueID() string {
-	strKey := fmt.Sprintf("%d", 0) + "-" + ROLE_ADMIN_NAME
+	strKey := "" + "-" + ROLE_ADMIN_NAME
 	hashKey := security.HashStringData(strKey)
 
 	return hashKey
 }
 
 func (mdl *Role) GetEmployeeComposedUniqueID() string {
-	strKey := fmt.Sprintf("%d", 0) + "-" + ROLE_EMPLOYEE_NAME
+	strKey := "" + "-" + ROLE_EMPLOYEE_NAME
 	hashKey := security.HashStringData(strKey)
 
 	return hashKey
