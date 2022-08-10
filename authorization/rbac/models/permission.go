@@ -5,6 +5,7 @@ import (
 	"github.com/ArtisanCloud/PowerLibs/v2/database"
 	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"github.com/ArtisanCloud/PowerLibs/v2/security"
+	"gorm.io/gorm"
 )
 
 // TableName overrides the table name used by Permission to `profiles`
@@ -78,4 +79,34 @@ func (mdl *Permission) GetComposedUniqueID() string {
 	hashKey := security.HashStringData(strKey)
 
 	return hashKey
+}
+
+func (mdl *Permission) GetTreeList(db *gorm.DB, conditions *map[string]interface{}, preloads []string,
+	parentID *string, needQueryChildren bool,
+) (permissions []*Permission, err error) {
+	permissions = []*Permission{}
+	if parentID != nil {
+		if conditions == nil {
+			conditions = &map[string]interface{}{}
+		}
+		(*conditions)["parent_id"] = parentID
+	}
+
+	err = database.GetAllList(db, conditions, &permissions, preloads)
+	if err != nil {
+		return nil, err
+	}
+
+	if needQueryChildren {
+		for _, permission := range permissions {
+			children, err := mdl.GetTreeList(db, conditions, preloads, &permission.UniqueID, needQueryChildren)
+			if err != nil {
+				return nil, err
+			}
+
+			permission.Children = children
+		}
+	}
+
+	return permissions, err
 }
