@@ -1,8 +1,8 @@
 package models
 
 import (
+	"errors"
 	"github.com/ArtisanCloud/PowerLibs/v2/database"
-	fmt2 "github.com/ArtisanCloud/PowerLibs/v2/fmt"
 	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"github.com/ArtisanCloud/PowerLibs/v2/security"
 	"gorm.io/gorm"
@@ -17,16 +17,14 @@ func (mdl *Permission) TableName() string {
 type Permission struct {
 	*database.PowerCompactModel
 
-	Parent   *Permission   `gorm:"ForeignKey:ParentID;references:UniqueID" json:"parent"`
-	Children []*Permission `gorm:"ForeignKey:ParentID;references:UniqueID" json:"children"`
+	PermissionModule *PermissionModule `gorm:"ForeignKey:ModuleID;references:UniqueID" json:"permissionModule"`
 
 	UniqueID     string  `gorm:"column:index_permission_id;index:,unique" json:"permissionID"`
 	SubjectAlias string  `gorm:"column:subject_alias" json:"subjectAlias"`
 	SubjectValue string  `gorm:"column:subject_value; not null;" json:"subjectValue"`
 	Action       string  `gorm:"column:action; not null;" json:"action"`
 	Description  string  `gorm:"column:description" json:"description"`
-	ParentID     *string `gorm:"column:parent_id;index" json:"parentID"`
-	Type         int8    `gorm:"column:type" json:"type"`
+	ModuleID     *string `gorm:"column:module_id" json:"moduleID"`
 }
 
 const TABLE_NAME_PERMISSION = "rbac_permissions"
@@ -48,8 +46,7 @@ func NewPermission(mapObject *object.Collection) *Permission {
 		SubjectValue:      mapObject.GetString("subjectValue", ""),
 		Action:            mapObject.GetString("action", ""),
 		Description:       mapObject.GetString("description", ""),
-		ParentID:          mapObject.GetStringPointer("parentID", ""),
-		Type:              mapObject.GetInt8("type", PERMISSION_TYPE_NORMAL),
+		ModuleID:          mapObject.GetStringPointer("moduleID", ""),
 	}
 	newPermission.UniqueID = newPermission.GetComposedUniqueID()
 
@@ -76,35 +73,30 @@ func (mdl *Permission) GetForeignValue() string {
 
 func (mdl *Permission) GetComposedUniqueID() string {
 
-	strKey := ""
-	if mdl.Type == PERMISSION_TYPE_MODULE {
-		strKey = *mdl.ParentID + "-" + mdl.Action + "-" +
-			mdl.SubjectAlias + mdl.SubjectValue
-	} else {
-		strKey = *mdl.ParentID + "-" + mdl.Action + "-" +
-			mdl.SubjectAlias + mdl.SubjectValue
-	}
-	fmt2.Dump(strKey)
+	strKey := *mdl.ModuleID + "-" + mdl.Action + "-" + mdl.SubjectValue
+	//fmt2.Dump(strKey)
 	hashKey := security.HashStringData(strKey)
 
 	return hashKey
 }
 
-func (mdl *Permission) GetGroupList(db *gorm.DB, conditions *map[string]interface{}, preloads []string) (groupedPermissions map[string]*Permission, err error) {
-	permissions := []*Permission{}
+func (mdl *Permission) CheckPermissionModuleNameAvailable(db *gorm.DB) (err error) {
 
-	err = database.GetAllList(db, conditions, &permissions, preloads)
-	if err != nil {
-		return nil, err
+	result := db.
+		//Debug().
+		Where("subject_alias", mdl.SubjectAlias).
+		Where("index_permission_id != ?", mdl.UniqueID).
+		First(&Permission{})
+
+	if result.Error != nil && errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil
 	}
 
-	for _, permission := range permissions {
-		if permission.ParentID != nil {
-			groupedPermissions[*permission.ParentID] = permission
-		} else {
-			groupedPermissions["unGrouped"] = permission
-		}
+	if result.Error != nil {
+		return result.Error
 	}
 
-	return groupedPermissions, err
+	err = errors.New("permission name is not available")
+
+	return err
 }
