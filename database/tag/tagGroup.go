@@ -95,6 +95,28 @@ func (mdl *TagGroup) GetComposedUniqueID() string {
 	return hashKey
 }
 
+func (mdl *TagGroup) CheckTagGroupNameAvailable(db *gorm.DB) (err error) {
+
+	result := db.
+		//Debug().
+		Where("group_name", mdl.GroupName).
+		Where("owner_type", mdl.OwnerType).
+		Where("index_tag_group_id != ?", mdl.UniqueID).
+		First(&TagGroup{})
+
+	if result.Error != nil && errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil
+	}
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	err = errors.New("tag group name is not available")
+
+	return err
+}
+
 /**
  *  Relationships
  */
