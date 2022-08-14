@@ -6,6 +6,7 @@ import (
 	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
 	"math"
 	"reflect"
@@ -103,9 +104,6 @@ func (mdl *PowerModel) GetForeignReferValue() string {
 // ---------------------------------------------------------------------------------------------------------------------
 // PowerCompactModel
 // ---------------------------------------------------------------------------------------------------------------------
-func (mdl *PowerCompactModel) GetID() int32 {
-	return mdl.ID
-}
 
 func (mdl *PowerCompactModel) GetTableName(needFull bool) string {
 	return ""
@@ -115,6 +113,9 @@ func (mdl *PowerCompactModel) GetPowerModel() ModelInterface {
 	return mdl
 }
 
+func (mdl *PowerCompactModel) GetID() int32 {
+	return mdl.ID
+}
 func (mdl *PowerCompactModel) GetUUID() string {
 	return ""
 }
@@ -245,6 +246,35 @@ func GetAllList(db *gorm.DB, conditions *map[string]interface{},
 	}
 
 	return nil
+}
+
+func InsertModelsOnUniqueID(db *gorm.DB, mdl interface{}, uniqueName string, models interface{}) error {
+
+	result := db.Model(mdl).
+		Debug().
+		Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: uniqueName}},
+			DoNothing: true,
+		}).Create(models)
+
+	return result.Error
+}
+
+func UpsertModelsOnUniqueID(db *gorm.DB, mdl interface{}, uniqueName string,
+	models interface{}, fieldsToUpdate []string) error {
+
+	if len(fieldsToUpdate) <= 0 {
+		fieldsToUpdate = GetModelFields(mdl)
+	}
+
+	result := db.Model(mdl).
+		Debug().
+		Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: uniqueName}},
+			DoUpdates: clause.AssignmentColumns(fieldsToUpdate),
+		}).Create(models)
+
+	return result.Error
 }
 
 /**

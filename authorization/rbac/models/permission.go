@@ -73,14 +73,14 @@ func (mdl *Permission) GetForeignValue() string {
 
 func (mdl *Permission) GetComposedUniqueID() string {
 
-	strKey := *mdl.ModuleID + "-" + mdl.Action + "-" + mdl.SubjectValue
+	strKey := mdl.Action + "-" + mdl.SubjectValue
 	//fmt2.Dump(strKey)
 	hashKey := security.HashStringData(strKey)
 
 	return hashKey
 }
 
-func (mdl *Permission) CheckPermissionModuleNameAvailable(db *gorm.DB) (err error) {
+func (mdl *Permission) CheckPermissionNameAvailable(db *gorm.DB) (err error) {
 
 	result := db.
 		//Debug().
