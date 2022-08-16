@@ -30,6 +30,7 @@ const TABLE_NAME_ROLE = "roles"
 
 const ROLE_UNIQUE_ID = "index_role_id"
 
+const ROLE_TYPE_ALL int8 = 0
 const ROLE_TYPE_SYSTEM int8 = 1
 const ROLE_TYPE_NORMAL int8 = 2
 
@@ -102,14 +103,19 @@ func (mdl *Role) GetEmployeeComposedUniqueID() string {
 }
 
 func (mdl *Role) GetTreeList(db *gorm.DB, conditions *map[string]interface{}, preloads []string,
-	parentID *string, needQueryChildren bool,
+	roleType int8, parentID *string, needQueryChildren bool,
 ) (roles []*Role, err error) {
 	roles = []*Role{}
+
+	if conditions == nil {
+		conditions = &map[string]interface{}{}
+	}
+
 	if parentID != nil {
-		if conditions == nil {
-			conditions = &map[string]interface{}{}
-		}
 		(*conditions)["parent_id"] = parentID
+	}
+	if roleType != ROLE_TYPE_ALL {
+		(*conditions)["type"] = roleType
 	}
 
 	err = database.GetAllList(db, conditions, &roles, preloads)
@@ -119,7 +125,7 @@ func (mdl *Role) GetTreeList(db *gorm.DB, conditions *map[string]interface{}, pr
 
 	if needQueryChildren {
 		for _, role := range roles {
-			children, err := mdl.GetTreeList(db, conditions, preloads, &role.UniqueID, needQueryChildren)
+			children, err := mdl.GetTreeList(db, conditions, preloads, roleType, &role.UniqueID, needQueryChildren)
 			if err != nil {
 				return nil, err
 			}
