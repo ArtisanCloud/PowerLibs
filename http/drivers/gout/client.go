@@ -67,6 +67,13 @@ func (client *Client) PrepareRequest(method string, uri string, options *object.
 	} else {
 		headers = &object.HashMap{}
 	}
+
+	if (*options)["json"] != nil {
+		(*options)["body"], err = object.JsonEncode((*options)["json"])
+		if err != nil {
+			return nil, nil, nil, nil, "", false, err
+		}
+	}
 	if (*options)["body"] != nil {
 		body = (*options)["body"]
 	} else {

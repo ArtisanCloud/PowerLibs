@@ -19,12 +19,12 @@ type Permission struct {
 
 	PermissionModule *PermissionModule `gorm:"ForeignKey:ModuleID;references:UniqueID" json:"permissionModule"`
 
-	UniqueID     string  `gorm:"column:index_permission_id;index:,unique" json:"permissionID"`
-	SubjectAlias string  `gorm:"column:subject_alias" json:"subjectAlias"`
-	SubjectValue string  `gorm:"column:subject_value; not null;" json:"subjectValue"`
-	Action       string  `gorm:"column:action; not null;" json:"action"`
-	Description  string  `gorm:"column:description" json:"description"`
-	ModuleID     *string `gorm:"column:module_id" json:"moduleID"`
+	UniqueID    string  `gorm:"column:index_permission_id;index:,unique" json:"permissionID"`
+	ObjectAlias string  `gorm:"column:object_alias" json:"objectAlias"`
+	ObjectValue string  `gorm:"column:object_value; not null;" json:"objectValue"`
+	Action      string  `gorm:"column:action; not null;" json:"action"`
+	Description string  `gorm:"column:description" json:"description"`
+	ModuleID    *string `gorm:"column:module_id" json:"moduleID"`
 }
 
 const TABLE_NAME_PERMISSION = "rbac_permissions"
@@ -42,8 +42,8 @@ func NewPermission(mapObject *object.Collection) *Permission {
 
 	newPermission := &Permission{
 		PowerCompactModel: database.NewPowerCompactModel(),
-		SubjectAlias:      mapObject.GetString("subjectAlias", ""),
-		SubjectValue:      mapObject.GetString("subjectValue", ""),
+		ObjectAlias:       mapObject.GetString("objectAlias", ""),
+		ObjectValue:       mapObject.GetString("objectValue", ""),
 		Action:            mapObject.GetString("action", ""),
 		Description:       mapObject.GetString("description", ""),
 		ModuleID:          mapObject.GetStringPointer("moduleID", ""),
@@ -73,7 +73,7 @@ func (mdl *Permission) GetForeignValue() string {
 
 func (mdl *Permission) GetComposedUniqueID() string {
 
-	strKey := mdl.Action + "-" + mdl.SubjectValue
+	strKey := mdl.Action + "-" + mdl.ObjectValue
 	//fmt2.Dump(strKey)
 	hashKey := security.HashStringData(strKey)
 
@@ -84,7 +84,7 @@ func (mdl *Permission) CheckPermissionNameAvailable(db *gorm.DB) (err error) {
 
 	result := db.
 		//Debug().
-		Where("subject_alias", mdl.SubjectAlias).
+		Where("object_alias", mdl.ObjectAlias).
 		Where("index_permission_id != ?", mdl.UniqueID).
 		First(&Permission{})
 
