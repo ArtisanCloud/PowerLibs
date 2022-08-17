@@ -316,6 +316,7 @@ func (client *Client) buildUri(uri *url.URL, config *object.HashMap) *url.URL {
 		}
 
 		baseUri.Path = path.Join(baseUri.Path, uri.Path)
+		baseUri.RawQuery = uri.RawQuery
 		//uri = baseUri.ResolveReference(uri)
 		uri = baseUri
 	}
