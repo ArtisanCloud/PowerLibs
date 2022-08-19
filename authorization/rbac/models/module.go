@@ -3,7 +3,6 @@ package models
 import (
 	"errors"
 	"github.com/ArtisanCloud/PowerLibs/v2/database"
-	fmt2 "github.com/ArtisanCloud/PowerLibs/v2/fmt"
 	"github.com/ArtisanCloud/PowerLibs/v2/object"
 	"github.com/ArtisanCloud/PowerLibs/v2/security"
 	"gorm.io/gorm"
@@ -70,10 +69,16 @@ func (mdl *PermissionModule) GetForeignValue() string {
 func (mdl *PermissionModule) GetComposedUniqueID() string {
 
 	strKey := *mdl.ParentID + "-" + mdl.Name
-	fmt2.Dump(strKey)
+	//fmt2.Dump(strKey)
 	hashKey := security.HashStringData(strKey)
 
 	return hashKey
+}
+
+func (mdl *PermissionModule) GetRBACRuleName() string {
+
+	return mdl.Name + "-" + mdl.UniqueID[0:5]
+
 }
 
 func (mdl *PermissionModule) GetGroupList(db *gorm.DB, conditions *map[string]interface{}, preloads []string) (permissionModules []*PermissionModule, err error) {
@@ -90,7 +95,7 @@ func (mdl *PermissionModule) GetGroupList(db *gorm.DB, conditions *map[string]in
 		(*conditions)["parent_id"] = ""
 	}
 
-	db = db.Debug()
+	//db = db.Debug()
 	err = database.GetAllList(db, conditions, &permissionModules, preloads)
 	if err != nil {
 		return nil, err

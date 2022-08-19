@@ -8,6 +8,14 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	RBAC_CONTROL_ALL    = "all"
+	RBAC_CONTROL_WRITE  = "write"
+	RBAC_CONTROL_READ   = "read"
+	RBAC_CONTROL_DELETE = "read"
+	RBAC_CONTROL_NONE   = "none"
+)
+
 // TableName overrides the table name used by Permission to `profiles`
 func (mdl *Permission) TableName() string {
 	return mdl.GetTableName(true)
@@ -20,10 +28,10 @@ type Permission struct {
 	PermissionModule *PermissionModule `gorm:"ForeignKey:ModuleID;references:UniqueID" json:"permissionModule"`
 
 	UniqueID    string  `gorm:"column:index_permission_id;index:,unique" json:"permissionID"`
-	ObjectAlias string  `gorm:"column:object_alias" json:"objectAlias"`
+	ObjectAlias *string `gorm:"column:object_alias" json:"objectAlias"`
 	ObjectValue string  `gorm:"column:object_value; not null;" json:"objectValue"`
 	Action      string  `gorm:"column:action; not null;" json:"action"`
-	Description string  `gorm:"column:description" json:"description"`
+	Description *string `gorm:"column:description" json:"description"`
 	ModuleID    *string `gorm:"column:module_id" json:"moduleID"`
 }
 
@@ -42,10 +50,10 @@ func NewPermission(mapObject *object.Collection) *Permission {
 
 	newPermission := &Permission{
 		PowerCompactModel: database.NewPowerCompactModel(),
-		ObjectAlias:       mapObject.GetString("objectAlias", ""),
+		ObjectAlias:       mapObject.GetStringPointer("objectAlias", ""),
 		ObjectValue:       mapObject.GetString("objectValue", ""),
 		Action:            mapObject.GetString("action", ""),
-		Description:       mapObject.GetString("description", ""),
+		Description:       mapObject.GetStringPointer("description", ""),
 		ModuleID:          mapObject.GetStringPointer("moduleID", ""),
 	}
 	newPermission.UniqueID = newPermission.GetComposedUniqueID()
@@ -78,6 +86,12 @@ func (mdl *Permission) GetComposedUniqueID() string {
 	hashKey := security.HashStringData(strKey)
 
 	return hashKey
+}
+
+func (mdl *Permission) GetRBACRuleName() string {
+
+	return *mdl.ObjectAlias + "-" + mdl.UniqueID[0:5]
+
 }
 
 func (mdl *Permission) CheckPermissionNameAvailable(db *gorm.DB) (err error) {
