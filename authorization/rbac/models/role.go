@@ -34,7 +34,7 @@ const ROLE_TYPE_ALL int8 = 0
 const ROLE_TYPE_SYSTEM int8 = 1
 const ROLE_TYPE_NORMAL int8 = 2
 
-const ROLE_ROOT_NAME string = "超级管理员"
+const ROLE_SUPER_ADMIN_NAME string = "超级管理员"
 const ROLE_ADMIN_NAME string = "管理员"
 const ROLE_EMPLOYEE_NAME string = "普通员工"
 
@@ -82,7 +82,7 @@ func (mdl *Role) GetComposedUniqueID() string {
 }
 
 func (mdl *Role) GetRootComposedUniqueID() string {
-	strKey := "" + "-" + ROLE_ROOT_NAME
+	strKey := "" + "-" + ROLE_SUPER_ADMIN_NAME
 	hashKey := security.HashStringData(strKey)
 
 	return hashKey
@@ -100,6 +100,12 @@ func (mdl *Role) GetEmployeeComposedUniqueID() string {
 	hashKey := security.HashStringData(strKey)
 
 	return hashKey
+}
+
+func (mdl *Role) GetRBACRuleName() string {
+
+	return mdl.Name + "-" + mdl.UniqueID[0:5]
+
 }
 
 func (mdl *Role) GetTreeList(db *gorm.DB, conditions *map[string]interface{}, preloads []string,

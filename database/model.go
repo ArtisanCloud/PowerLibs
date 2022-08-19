@@ -251,7 +251,7 @@ func GetAllList(db *gorm.DB, conditions *map[string]interface{},
 func InsertModelsOnUniqueID(db *gorm.DB, mdl interface{}, uniqueName string, models interface{}) error {
 
 	result := db.Model(mdl).
-		Debug().
+		//Debug().
 		Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: uniqueName}},
 			DoNothing: true,
@@ -268,7 +268,7 @@ func UpsertModelsOnUniqueID(db *gorm.DB, mdl interface{}, uniqueName string,
 	}
 
 	result := db.Model(mdl).
-		Debug().
+		//Debug().
 		Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: uniqueName}},
 			DoUpdates: clause.AssignmentColumns(fieldsToUpdate),
