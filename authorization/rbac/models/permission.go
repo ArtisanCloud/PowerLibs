@@ -8,14 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	RBAC_CONTROL_ALL    = "all"
-	RBAC_CONTROL_WRITE  = "write"
-	RBAC_CONTROL_READ   = "read"
-	RBAC_CONTROL_DELETE = "read"
-	RBAC_CONTROL_NONE   = "none"
-)
-
 // TableName overrides the table name used by Permission to `profiles`
 func (mdl *Permission) TableName() string {
 	return mdl.GetTableName(true)

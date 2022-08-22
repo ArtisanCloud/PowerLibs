@@ -17,11 +17,11 @@ func CSVEncode(arrayCSV [][]string) ([]byte, error) {
 
 }
 
-func CSVEncodeToFile(arrayCSV [][]string, file *os.File) ( error) {
+func CSVEncodeToFile(arrayCSV [][]string, file *os.File) (err error) {
 
 	writer := csv.NewWriter(file)
 
-	err := writer.WriteAll(arrayCSV)
+	err = writer.WriteAll(arrayCSV)
 
 	return err
 
