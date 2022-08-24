@@ -34,6 +34,8 @@ const TABLE_NAME_TAG = "tags"
 
 const TAG_UNIQUE_ID = "index_tag_id"
 
+var TABLE_FULL_NAME_TAG string = "public.ac_" + TABLE_NAME_TAG
+
 const TAG_TYPE_NORMAL int8 = 1
 const TAG_TYPE_STAGE int8 = 2
 
@@ -57,11 +59,15 @@ func NewTag(mapObject *object.Collection) *Tag {
 
 // 获取当前 Model 的数据库表名称
 func (mdl *Tag) GetTableName(needFull bool) string {
-	tableName := TABLE_NAME_TAG
 	if needFull {
-		tableName = "public." + tableName
+		return TABLE_FULL_NAME_TAG
+	} else {
+		return TABLE_NAME_TAG
 	}
-	return tableName
+}
+
+func (mdl *Tag) SetTableFullName(tableName string) {
+	TABLE_FULL_NAME_TAG = tableName
 }
 
 func (mdl *Tag) GetForeignKey() string {

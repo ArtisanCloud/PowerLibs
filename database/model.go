@@ -16,6 +16,8 @@ import (
 
 const PAGE_DEFAULT_SIZE = 20
 
+var TABLE_PREFIX string
+
 type ModelInterface interface {
 	GetTableName(needFull bool) string
 	GetPowerModel() ModelInterface
@@ -280,6 +282,14 @@ func UpsertModelsOnUniqueID(db *gorm.DB, mdl interface{}, uniqueName string,
 /**
  * model methods
  */
+
+func GetTableFullName(schema string, prefix string, tableName string) (fullName string) {
+
+	fullName = schema + "." + prefix + tableName
+
+	return fullName
+}
+
 func GetModelFields(model interface{}) (fields []string) {
 
 	// check if it has been loaded

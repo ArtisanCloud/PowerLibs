@@ -30,6 +30,8 @@ const TABLE_NAME_ROLE = "roles"
 
 const ROLE_UNIQUE_ID = "index_role_id"
 
+var TABLE_FULL_NAME_ROLE string = "public.ac_" + TABLE_NAME_ROLE
+
 const ROLE_TYPE_ALL int8 = 0
 const ROLE_TYPE_SYSTEM int8 = 1
 const ROLE_TYPE_NORMAL int8 = 2
@@ -58,11 +60,14 @@ func NewRole(mapObject *object.Collection) *Role {
 
 // 获取当前 Model 的数据库表名称
 func (mdl *Role) GetTableName(needFull bool) string {
-	tableName := TABLE_NAME_ROLE
 	if needFull {
-		tableName = "public." + tableName
+		return TABLE_FULL_NAME_ROLE
+	} else {
+		return TABLE_NAME_ROLE
 	}
-	return tableName
+}
+func (mdl *Role) SetTableFullName(tableName string) {
+	TABLE_FULL_NAME_ROLE = tableName
 }
 
 func (mdl *Role) GetForeignKey() string {

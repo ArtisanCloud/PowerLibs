@@ -62,7 +62,7 @@ func NewPowerOperationLog(mapObject *object.Collection) *PowerOperationLog {
 func (mdl *PowerOperationLog) GetTableName(needFull bool) string {
 	tableName := TABLE_NAME_OPERATION_LOG
 	if needFull {
-		tableName = "public." + tableName
+		tableName = "public.ac_" + tableName
 	}
 	return tableName
 }
