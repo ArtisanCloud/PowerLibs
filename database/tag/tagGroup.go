@@ -26,6 +26,8 @@ type TagGroup struct {
 const TABLE_NAME_TAG_GROUP = "tag_groups"
 const TAG_GROUP_UNIQUE_ID = "index_tag_group_id"
 
+var TABLE_FULL_NAME_TAG_GROUP = "public.ac_" + TABLE_NAME_TAG_GROUP
+
 const DEFAULT_OWNER_TYPE = "default"
 const DEFAULT_GROUP_NAME = "默认组"
 
@@ -79,12 +81,17 @@ func GetDefaultTagGroup(db *gorm.DB) (defaultTagGroup *TagGroup, err error) {
 	return defaultTagGroup, err
 }
 
+// 获取当前 Model 的数据库表名称
 func (mdl *TagGroup) GetTableName(needFull bool) string {
-	tableName := TABLE_NAME_TAG_GROUP
 	if needFull {
-		tableName = "public" + "." + tableName
+		return TABLE_FULL_NAME_TAG_GROUP
+	} else {
+		return TABLE_NAME_TAG_GROUP
 	}
-	return tableName
+}
+
+func (mdl *TagGroup) SetTableFullName(tableName string) {
+	TABLE_FULL_NAME_TAG_GROUP = tableName
 }
 
 func (mdl *TagGroup) GetComposedUniqueID() string {

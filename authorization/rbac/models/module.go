@@ -31,6 +31,8 @@ const TABLE_NAME_PERMISSION_MODULE = "rbac_permission_modules"
 
 const PERMISSION_MODULE_UNIQUE_ID = "index_permission_module_id"
 
+var TABLE_FULL_NAME_PERMISSION_MODULE string = "public.ac_" + TABLE_NAME_PERMISSION_MODULE
+
 func NewPermissionModule(mapObject *object.Collection) *PermissionModule {
 
 	if mapObject == nil {
@@ -51,11 +53,14 @@ func NewPermissionModule(mapObject *object.Collection) *PermissionModule {
 
 // 获取当前 Model 的数据库表名称
 func (mdl *PermissionModule) GetTableName(needFull bool) string {
-	tableName := TABLE_NAME_PERMISSION_MODULE
 	if needFull {
-		tableName = "public." + tableName
+		return TABLE_FULL_NAME_PERMISSION_MODULE
+	} else {
+		return TABLE_NAME_PERMISSION_MODULE
 	}
-	return tableName
+}
+func (mdl *PermissionModule) SetTableFullName(tableName string) {
+	TABLE_FULL_NAME_PERMISSION_MODULE = tableName
 }
 
 func (mdl *PermissionModule) GetForeignKey() string {

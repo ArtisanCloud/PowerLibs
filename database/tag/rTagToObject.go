@@ -27,16 +27,22 @@ const TABLE_NAME_R_TAG_TO_OBJECT = "r_tag_to_object"
 
 const R_TAG_TO_OJECT_UNIQUE_ID = "index_tag_to_object_id"
 
+var TABLE_FULL_NAME_R_TAG_TO_OBJECT string = "public.ac_" + TABLE_NAME_R_TAG_TO_OBJECT
+
 const R_TAG_TO_OJECT_FOREIGN_KEY = "taggable_object_id"
 const R_TAG_TO_OJECT_OWNER_KEY = "taggable_owner_type"
 const R_TAG_TO_OJECT_JOIN_KEY = "tag_id"
 
 func (mdl *RTagToObject) GetTableName(needFull bool) string {
-	tableName := TABLE_NAME_R_TAG_TO_OBJECT
 	if needFull {
-		tableName = "public" + "." + tableName
+		return TABLE_FULL_NAME_R_TAG_TO_OBJECT
+	} else {
+		return TABLE_NAME_R_TAG_TO_OBJECT
 	}
-	return tableName
+}
+
+func (mdl *RTagToObject) SetTableFullName(tableName string) {
+	TABLE_FULL_NAME_R_TAG_TO_OBJECT = tableName
 }
 
 func (mdl *RTagToObject) GetForeignKey() string {
