@@ -82,7 +82,8 @@ func (mdl *PermissionModule) GetComposedUniqueID() string {
 
 func (mdl *PermissionModule) GetRBACRuleName() string {
 
-	return mdl.Name + "-" + mdl.UniqueID[0:5]
+	//return mdl.Name + "-" + mdl.UniqueID[0:5]
+	return mdl.UniqueID
 
 }
 
