@@ -109,7 +109,8 @@ func (mdl *Role) GetEmployeeComposedUniqueID() string {
 
 func (mdl *Role) GetRBACRuleName() string {
 
-	return mdl.Name + "-" + mdl.UniqueID[0:5]
+	//return mdl.Name + "-" + mdl.UniqueID[0:5]
+	return mdl.UniqueID
 
 }
 
