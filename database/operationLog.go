@@ -74,8 +74,15 @@ func (mdl *PowerOperationLog) SaveOps(db *gorm.DB,
 	result int8,
 ) error {
 
-	operatorTable := operator.GetTableName(true)
-	operatorID := operator.GetID()
+	operatorTable := ""
+	var operatorID int32 = 0
+	if operator != nil {
+		operatorTable = operator.GetTableName(true)
+		operatorID = operator.GetID()
+	}
+	if operatorName == "" {
+		operatorName = "system"
+	}
 
 	objectTable := object.GetTableName(true)
 	objectID := object.GetID()
