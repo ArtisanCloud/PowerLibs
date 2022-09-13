@@ -27,32 +27,34 @@ const SYSTEM_CACHE_TIMEOUT_SEASON = 60 * 60 * 24 * 30 * 3
 const SYSTEM_CACHE_TIMEOUT_YEAR = 60 * 60 * 24 * 30 * 3 * 12
 
 const (
-	defaultMaxIdle        = 5
-	defaultMaxActive      = 0
-	defaultTimeoutIdle    = 240
-	defaultTimeoutConnect = 10000
-	defaultTimeoutRead    = 5000
-	defaultTimeoutWrite   = 5000
-	defaultAddr           = "localhost:6379"
-	defaultProtocol       = "tcp"
-	defaultRetryThreshold = 5
+	defaultMaxIdle            = 5
+	defaultMaxActive          = 0
+	defaultTimeoutIdle        = 240
+	defaultTimeoutConnect     = 10000
+	defaultTimeoutRead        = 5000
+	defaultTimeoutWrite       = 5000
+	defaultAddr               = "localhost:6379"
+	defaultProtocol           = "tcp"
+	defaultRetryThreshold     = 5
+	defaultIdleCheckFrequency = time.Minute
 )
 
 const SCRIPT_SETEX = `return redis.call('exists',KEYS[1])<1 and redis.call('setex',KEYS[1],ARGV[2],ARGV[1])`
 
 type RedisOptions struct {
-	MaxIdle        int
-	MaxActive      int
-	Protocol       string
-	Addr           string
-	Password       string
-	DB             int
-	SSLEnabled     bool
-	Expiration     time.Duration
-	TimeoutConnect int
-	TimeoutRead    int
-	TimeoutWrite   int
-	TimeoutIdle    int
+	MaxIdle            int
+	MaxActive          int
+	Protocol           string
+	Addr               string
+	Password           string
+	DB                 int
+	SSLEnabled         bool
+	Expiration         time.Duration
+	TimeoutConnect     int
+	TimeoutRead        int
+	TimeoutWrite       int
+	TimeoutIdle        int
+	IdleCheckFrequency time.Duration
 }
 
 var CTXRedis = context.Background()
@@ -77,7 +79,7 @@ func NewGRedis(opts interface{}) (gr *GRedis) {
 			PoolTimeout:        30 * time.Second,
 			IdleTimeout:        toI,
 			Password:           options.Password,
-			IdleCheckFrequency: 500 * time.Millisecond,
+			IdleCheckFrequency: options.IdleCheckFrequency,
 		}
 
 		if options.SSLEnabled {
@@ -130,6 +132,10 @@ func (r *RedisOptions) initDefaults() *RedisOptions {
 
 	if r.Protocol == "" {
 		r.Protocol = defaultProtocol
+	}
+
+	if r.IdleCheckFrequency == 0 {
+		r.IdleCheckFrequency = time.Minute
 	}
 
 	return r
