@@ -17,11 +17,12 @@ type Logger struct {
 func NewLogger(config *object.HashMap) (logger contract.LoggerInterface, err error) {
 
 	zapLogger, err := newZapLogger(config)
-	defer zapLogger.Sync() // flushes buffer, if any
-
 	if err != nil {
 		return nil, err
 	}
+
+	defer zapLogger.Sync() // flushes buffer, if any
+
 	logger = &Logger{
 		Logger: zapLogger,
 		sugar:  zapLogger.Sugar(),
