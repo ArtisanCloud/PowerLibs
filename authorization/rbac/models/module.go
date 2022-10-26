@@ -23,6 +23,9 @@ type PermissionModule struct {
 
 	UniqueID    string  `gorm:"column:index_permission_module_id;index:,unique" json:"permissionModuleID"`
 	Name        string  `gorm:"column:name" json:"name"`
+	URI         string  `gorm:"column:uri" json:"uri"`
+	Component   string  `gorm:"column:component" json:"component"`
+	Icon        string  `gorm:"column:icon" json:"icon"`
 	Description string  `gorm:"column:description" json:"description"`
 	ParentID    *string `gorm:"column:parent_id;index" json:"parentID"`
 }
