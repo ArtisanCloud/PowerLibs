@@ -45,6 +45,9 @@ func NewPermissionModule(mapObject *object.Collection) *PermissionModule {
 	newPermissionModule := &PermissionModule{
 		PowerCompactModel: database.NewPowerCompactModel(),
 		Name:              mapObject.GetString("name", ""),
+		URI:               mapObject.GetString("uri", ""),
+		Component:         mapObject.GetString("component", ""),
+		Icon:              mapObject.GetString("icon", ""),
 		Description:       mapObject.GetString("description", ""),
 		ParentID:          mapObject.GetStringPointer("parentID", ""),
 	}
