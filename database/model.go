@@ -241,6 +241,7 @@ func GetAllList(db *gorm.DB, conditions *map[string]interface{},
 	// chunk datas
 	result := db.
 		//Debug().
+		Order("id ASC").
 		Find(items)
 	err = result.Error
 	if err != nil {
