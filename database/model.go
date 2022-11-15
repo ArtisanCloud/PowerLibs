@@ -271,8 +271,8 @@ func UpsertModelsOnUniqueID(db *gorm.DB, mdl interface{}, uniqueName string,
 	}
 
 	result := db.Model(mdl).
-		Debug().
-		//Omit(clause.Associations).
+		//Debug().
+		Omit(clause.Associations).
 		Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: uniqueName}},
 			DoUpdates: clause.AssignmentColumns(fieldsToUpdate),
