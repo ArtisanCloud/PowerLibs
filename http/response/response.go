@@ -34,13 +34,13 @@ func (rs HttpResponse) GetBody() io.ReadCloser {
 }
 
 func (rs HttpResponse) GetBodyData() ([]byte, error) {
-	body, err := ioutil.ReadAll(rs.Request.Body)
+	body, err := ioutil.ReadAll(rs.Response.Body)
 	if err != nil {
-		return nil, fmt.Errorf("read request body err: %v", err)
+		return nil, fmt.Errorf("read Response body err: %v", err)
 	}
 
-	_ = rs.Request.Body.Close()
-	rs.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+	_ = rs.Response.Body.Close()
+	rs.Response.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 
 	return body, nil
 }
@@ -59,7 +59,7 @@ func (rs HttpResponse) Send(writer http.ResponseWriter) (err error) {
 
 	// set write body
 	body, err := ioutil.ReadAll(rs.GetBody())
-	if err!=nil{
+	if err != nil {
 		return err
 	}
 	_, err = writer.Write(body)
