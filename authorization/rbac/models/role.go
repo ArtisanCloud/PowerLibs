@@ -149,23 +149,21 @@ func (mdl *Role) GetTreeList(db *gorm.DB, conditions *map[string]interface{}, pr
 	return roles, err
 }
 
-func (mdl *Role) CheckRoleNameAvailable(db *gorm.DB) (err error) {
+func (mdl *Role) DoesRoleExist(db *gorm.DB) (bool, error) {
 
 	result := db.
 		//Debug().
 		Where("name", mdl.Name).
-		Where("index_role_id != ?", mdl.UniqueID).
+		Where("index_role_id = ?", mdl.UniqueID).
 		First(&Role{})
 
 	if result.Error != nil && errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return nil
+		return false, nil
 	}
 
 	if result.Error != nil {
-		return result.Error
+		return false, result.Error
 	}
 
-	err = errors.New("role name is not available")
-
-	return err
+	return true, nil
 }
