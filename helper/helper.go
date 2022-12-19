@@ -3,9 +3,9 @@ package helper
 import (
 	"crypto/sha256"
 	"fmt"
+	fmt2 "github.com/ArtisanCloud/PowerLibs/v2/fmt"
 	. "github.com/ArtisanCloud/PowerLibs/v2/object"
 	"golang.org/x/crypto/bcrypt"
-	"log"
 	"reflect"
 )
 
@@ -82,44 +82,47 @@ func TransformArrayKeysToSnake(arrayData interface{}) HashMap {
 //	return res
 //}
 
-func HashPassword(plainPassword string) (hashedPassword string) {
+func EncodePassword(plainPassword string) (encodedPassword string, err error) {
 
-	hashed := sha256.Sum256([]byte(plainPassword))
-	strHashed := fmt.Sprintf("%x", hashed)
+	encoded := sha256.Sum256([]byte(plainPassword))
+	encodedPassword = fmt.Sprintf("%x", encoded)
 
-	//fmt.Println("Hashed password", strHashed)
+	//fmt.Println("encoded password", encodedPassword)
 
-	return strHashed
+	return encodedPassword, err
 
 }
 
-func EncodePassword(hashedPassword string) (encodedPassword string) {
+func HashPassword(encodedPassword string) (hashedPassword string, err error) {
 
-	encoded, err := bcrypt.GenerateFromPassword([]byte(hashedPassword), bcrypt.DefaultCost)
+	hashed, err := bcrypt.GenerateFromPassword([]byte(encodedPassword), bcrypt.DefaultCost)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
-	//fmt.Println("Hashed password", string(encoded))
+	//fmt.Println("Hashed password", string(hashed))
 
-	return string(encoded)
+	return string(hashed), err
 }
 
-func EncodePlainPassword(plainPassword string) (encodedPassword string) {
-	hashedPassword := HashPassword(plainPassword)
-	encodedPassword = EncodePassword(hashedPassword)
+func EncodePlainPassword(plainPassword string) (hashedPassword string, err error) {
+	encodedPassword, err := EncodePassword(plainPassword)
+	if err != nil {
+		return encodedPassword, err
+	}
+	hashedPassword, err = HashPassword(encodedPassword)
 
-	return encodedPassword
+	return hashedPassword, err
 }
 
-func CheckPassword(hashedPassword string, password string) (isPasswordValid bool) {
+func CheckPassword(hashedPassword string, encodedPassword string) (isPasswordValid bool, err error) {
 
 	//fmt.Printf("hashedPassword %s\r\n", hashedPassword)
 	//fmt.Printf("password %s\n", password)
 
-	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
-		fmt.Printf("%x", err)
-		return false
+	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(encodedPassword)); err != nil {
+		fmt2.Dump(err.Error())
+		return false, err
 	}
 
-	return true
+	return true, nil
 }
