@@ -1,4 +1,4 @@
-module github.com/ArtisanCloud/PowerLibs/v2
+module github.com/ArtisanCloud/PowerLibs/v3
 
 go 1.17
 

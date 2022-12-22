@@ -1,9 +1,9 @@
 package tag
 
 import (
-	"github.com/ArtisanCloud/PowerLibs/v2/database"
-	"github.com/ArtisanCloud/PowerLibs/v2/object"
-	"github.com/ArtisanCloud/PowerLibs/v2/security"
+	"github.com/ArtisanCloud/PowerLibs/v3/database"
+	"github.com/ArtisanCloud/PowerLibs/v3/object"
+	"github.com/ArtisanCloud/PowerLibs/v3/security"
 	"gorm.io/gorm"
 )
 

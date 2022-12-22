@@ -4,7 +4,7 @@ import (
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
-	"github.com/ArtisanCloud/PowerLibs/v2/security/encryption"
+	"github.com/ArtisanCloud/PowerLibs/v3/security/encryption"
 )
 
 type RSASigner struct {

@@ -1,9 +1,9 @@
 package helper
 
 import (
-	"github.com/ArtisanCloud/PowerLibs/v2/http/contract"
-	"github.com/ArtisanCloud/PowerLibs/v2/http/dataflow"
-	"github.com/ArtisanCloud/PowerLibs/v2/http/drivers/http"
+	"github.com/ArtisanCloud/PowerLibs/v3/http/contract"
+	"github.com/ArtisanCloud/PowerLibs/v3/http/dataflow"
+	"github.com/ArtisanCloud/PowerLibs/v3/http/drivers/http"
 )
 
 type RequestHelper struct {

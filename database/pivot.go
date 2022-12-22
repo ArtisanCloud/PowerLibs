@@ -3,7 +3,7 @@ package database
 import (
 	"errors"
 	fmt2 "fmt"
-	"github.com/ArtisanCloud/PowerLibs/v2/fmt"
+	"github.com/ArtisanCloud/PowerLibs/v3/fmt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"time"

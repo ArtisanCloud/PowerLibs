@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/ArtisanCloud/PowerLibs/v2/database"
-	"github.com/ArtisanCloud/PowerLibs/v2/object"
+	"github.com/ArtisanCloud/PowerLibs/v3/database"
+	"github.com/ArtisanCloud/PowerLibs/v3/object"
 )
 
 // TableName overrides the table name used by User to `profiles`

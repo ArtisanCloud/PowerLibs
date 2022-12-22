@@ -1,7 +1,7 @@
 package sign
 
 import (
-	"github.com/ArtisanCloud/PowerLibs/v2/object"
+	"github.com/ArtisanCloud/PowerLibs/v3/object"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
