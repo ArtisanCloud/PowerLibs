@@ -2,7 +2,7 @@ package tests
 
 import (
 	"fmt"
-	. "github.com/ArtisanCloud/PowerLibs/v2/datetime/carbon"
+	. "github.com/ArtisanCloud/PowerLibs/v3/datetime/carbon"
 	"github.com/golang-module/carbon"
 	"testing"
 )

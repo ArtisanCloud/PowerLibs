@@ -1,7 +1,7 @@
 package sms
 
 import (
-	"github.com/ArtisanCloud/PowerLibs/v2/notification/contract"
+	"github.com/ArtisanCloud/PowerLibs/v3/notification/contract"
 )
 
 type Message struct {

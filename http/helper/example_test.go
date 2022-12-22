@@ -2,7 +2,7 @@ package helper
 
 import (
 	"fmt"
-	"github.com/ArtisanCloud/PowerLibs/v2/http/contract"
+	"github.com/ArtisanCloud/PowerLibs/v3/http/contract"
 	"log"
 	"net/http"
 )

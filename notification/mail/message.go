@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"github.com/ArtisanCloud/PowerLibs/v2/notification/contract"
+	"github.com/ArtisanCloud/PowerLibs/v3/notification/contract"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"

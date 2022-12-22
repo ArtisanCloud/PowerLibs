@@ -1,7 +1,7 @@
 package database
 
 import (
-	"github.com/ArtisanCloud/PowerLibs/v2/object"
+	"github.com/ArtisanCloud/PowerLibs/v3/object"
 	"gorm.io/gorm"
 )
 

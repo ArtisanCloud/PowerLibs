@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/ArtisanCloud/PowerLibs/v2/object"
+	"github.com/ArtisanCloud/PowerLibs/v3/object"
 )
 
 func main() {
