@@ -1,10 +1,22 @@
 package helper
 
 import (
+	"bytes"
+	"encoding/xml"
 	"github.com/ArtisanCloud/PowerLibs/v3/http/contract"
 	"github.com/ArtisanCloud/PowerLibs/v3/http/dataflow"
 	"github.com/ArtisanCloud/PowerLibs/v3/http/drivers/http"
+	"github.com/ArtisanCloud/PowerLibs/v3/object"
+	"io"
+	"io/ioutil"
+	http2 "net/http"
 )
+
+type RequestDownload struct {
+	HashType    string `json:"hash_type""`
+	HashValue   string `json:"hash_value""`
+	DownloadURL string `json:"download_url""`
+}
 
 type RequestHelper struct {
 	client           contract.ClientInterface
@@ -58,4 +70,31 @@ func (r *RequestHelper) Df() contract.RequestDataflowInterface {
 	return dataflow.NewDataflow(r.client, r.middlewareHandle, &dataflow.Option{
 		BaseUrl: r.config.BaseUrl,
 	})
+}
+
+func (r *RequestHelper) ParseResponseBodyContent(rs *http2.Response, outBody interface{}) error {
+
+	b, err := io.ReadAll(rs.Body)
+	if err != nil {
+		return err
+	}
+	rs.Body = ioutil.NopCloser(bytes.NewBuffer(b))
+
+	content := string(b)
+
+	if content[0:1] == "<" {
+		err = xml.Unmarshal(b, outBody)
+		if err != nil {
+			return err
+		}
+	} else {
+		// Handle JSON format.
+		err = object.JsonDecode(b, outBody)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+
 }
