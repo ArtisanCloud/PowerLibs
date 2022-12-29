@@ -23,6 +23,7 @@ type RequestDataflowInterface interface {
 	Json(jsonAny interface{}) RequestDataflowInterface
 	Body(body io.Reader) RequestDataflowInterface
 	Any(data BodyEncoder) RequestDataflowInterface
+	Xml(xmlAny interface{}) RequestDataflowInterface
 
 	Err() error
 
