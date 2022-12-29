@@ -72,6 +72,33 @@ func (r *RequestHelper) Df() contract.RequestDataflowInterface {
 	})
 }
 
+func (r *RequestHelper) ParseResponseBodyToMap(rs *http2.Response, outBody *object.HashMap) error {
+
+	b, err := io.ReadAll(rs.Body)
+	if err != nil {
+		return err
+	}
+	rs.Body = ioutil.NopCloser(bytes.NewBuffer(b))
+
+	content := string(b)
+
+	if content[0:1] == "<" {
+		*outBody, err = object.Xml2Map(b)
+		if err != nil {
+			return err
+		}
+	} else {
+		// Handle JSON format.
+		err = object.JsonDecode(b, outBody)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+
+}
+
 func (r *RequestHelper) ParseResponseBodyContent(rs *http2.Response, outBody interface{}) error {
 
 	b, err := io.ReadAll(rs.Body)
