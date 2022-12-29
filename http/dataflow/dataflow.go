@@ -168,6 +168,9 @@ func (d *Dataflow) Any(data contract.BodyEncoder) contract.RequestDataflowInterf
 }
 
 func (d *Dataflow) Xml(xmlAny interface{}) contract.RequestDataflowInterface {
+	// 设置 Header
+	d.Header("content-type", "application/xml")
+
 	var buf bytes.Buffer
 	encoder := xml.NewEncoder(&buf)
 	err := encoder.Encode(xmlAny)
