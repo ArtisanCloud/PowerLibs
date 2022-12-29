@@ -3,6 +3,7 @@ package dataflow
 import (
 	"context"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"github.com/ArtisanCloud/PowerLibs/v3/http/contract"
 	"github.com/ArtisanCloud/PowerLibs/v3/http/drivers/http"
@@ -84,5 +85,39 @@ func TestDataflow_Json(t *testing.T) {
 	// trim body 控制字符
 	if string(jsonBytes) != strings.TrimSpace(string(bodyBytes)) {
 		t.Error("json body failed")
+	}
+}
+
+type CaseXmlNode struct {
+	A string   `xml:"a"`
+	B []string `xml:"b"`
+}
+
+type CaseXmlDoc struct {
+	Node1 CaseXmlNode `xml:"node1"`
+	Node2 CaseXmlNode `xml:"node2"`
+}
+
+func TestDataflow_Xml(t *testing.T) {
+	df := InitBaseDataflow()
+
+	data := CaseXmlDoc{
+		Node1: CaseXmlNode{
+			A: "1",
+			B: []string{"1", "2"},
+		},
+		Node2: CaseXmlNode{
+			A: "3",
+			B: []string{"3", "4"},
+		},
+	}
+	df.Xml(data)
+
+	xmlBytes, _ := xml.Marshal(data)
+	bodyBytes, _ := io.ReadAll(df.request.Body)
+
+	// trim body 控制字符
+	if string(xmlBytes) != strings.TrimSpace(string(bodyBytes)) {
+		t.Error("xml body failed")
 	}
 }

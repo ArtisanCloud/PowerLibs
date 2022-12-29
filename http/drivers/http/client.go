@@ -2,6 +2,7 @@ package http
 
 import (
 	"crypto/tls"
+	"github.com/ArtisanCloud/PowerLibs/v3/fmt"
 	"github.com/ArtisanCloud/PowerLibs/v3/http/contract"
 	"github.com/pkg/errors"
 	"net/http"
@@ -42,6 +43,22 @@ func (c *Client) SetConfig(config *contract.ClientConfig) {
 		c.conf = config
 	}
 	// todo set coreClient
+	if config.Cert.CertFile != "" && config.Cert.KeyFile != "" {
+		coreClient := http.Client{
+			Timeout: config.Timeout,
+		}
+		certPair, err := tls.LoadX509KeyPair(config.Cert.CertFile, config.Cert.KeyFile)
+		if err != nil {
+			err = errors.Wrap(err, "failed to load certificate")
+			fmt.Dump(err)
+			return
+		}
+		coreClient.Transport = &http.Transport{TLSClientConfig: &tls.Config{
+			Certificates: []tls.Certificate{certPair},
+		}}
+		c.coreClient = &coreClient
+	}
+
 }
 
 // GetConfig 返回配置副本
