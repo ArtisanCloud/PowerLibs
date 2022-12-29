@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"encoding/xml"
 	"github.com/ArtisanCloud/PowerLibs/v3/http/contract"
 	"github.com/pkg/errors"
 	"io"
@@ -163,6 +164,17 @@ func (d *Dataflow) Any(data contract.BodyEncoder) contract.RequestDataflowInterf
 		d.err = append(d.err, errors.Wrap(err, "body encode failed"))
 	}
 	d.request.Body = io.NopCloser(body)
+	return d
+}
+
+func (d *Dataflow) Xml(xmlAny interface{}) contract.RequestDataflowInterface {
+	var buf bytes.Buffer
+	encoder := xml.NewEncoder(&buf)
+	err := encoder.Encode(xmlAny)
+	if err != nil {
+		d.err = append(d.err, err)
+	}
+	d.request.Body = io.NopCloser(&buf)
 	return d
 }
 
