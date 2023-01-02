@@ -32,8 +32,17 @@ type RequestDataflowInterface interface {
 
 	Request() (response *http.Response, err error)
 	Result(result interface{}) (err error)
+	RequestResHelper() (response ResponseHelper, err error)
 }
 
 type BodyEncoder interface {
 	Encode() (io.Reader, error)
+}
+
+type ResponseHelper interface {
+	GetStatusCode() int
+	GetHeader(key string) string
+	GetBody() io.Reader
+	GetBodyBytes() ([]byte, error)
+	GetBodyJsonAsMap() (map[string]interface{}, error)
 }

@@ -227,3 +227,53 @@ func (d *Dataflow) Result(result interface{}) (err error) {
 	}
 	return nil
 }
+
+type Response struct {
+	res *http.Response
+}
+
+func (r *Response) GetStatusCode() int {
+	return r.res.StatusCode
+}
+
+func (r *Response) GetHeader(key string) string {
+	return r.res.Header.Get(key)
+}
+
+func (r *Response) GetBody() io.Reader {
+	return r.res.Body
+}
+
+func (r *Response) GetBodyBytes() ([]byte, error) {
+	if r.res.Body == nil {
+		return nil, nil
+	}
+	body, err := io.ReadAll(r.res.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "read body failed")
+	}
+	return body, nil
+}
+
+func (r *Response) GetBodyJsonAsMap() (map[string]interface{}, error) {
+	data := make(map[string]interface{})
+	if r.res.Body == nil {
+		return data, nil
+	}
+	decoder := json.NewDecoder(r.res.Body)
+	err := decoder.Decode(&data)
+	if err != nil {
+		return nil, errors.Wrap(err, "decode body failed")
+	}
+	return data, nil
+}
+
+func (d *Dataflow) RequestResHelper() (response contract.ResponseHelper, err error) {
+	resp, err := d.Request()
+	if err != nil {
+		return nil, err
+	}
+	return &Response{
+		res: resp,
+	}, nil
+}

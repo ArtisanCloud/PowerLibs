@@ -106,5 +106,57 @@ func ExampleRequestHelper_Df() {
 		log.Fatalln(err)
 	}
 	fmt.Println(result)
-	// Output: {success}
+
+	// mock server response: {"status":"success"}
+	res, err := helper.Df().Method(http.MethodGet).
+		Url("http://localhost:3000/do-testing").
+		Header("a", "b").
+		Query("a[]", "b", "c").
+		Json(map[string]interface{}{
+			"a": "b",
+		}).
+		RequestResHelper()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(res.GetBodyJsonAsMap())
+
+	// Output:
+	// {success}
+	// map[status:success] <nil>
+}
+
+func ExampleHttpDebugMiddleware() {
+	// 初始化 helper
+	helper, err := NewRequestHelper(&Config{})
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	config := struct {
+		Debug bool
+	}{
+		Debug: true,
+	}
+
+	helper.WithMiddleware(HttpDebugMiddleware(config.Debug))
+
+	body := map[string]string{
+		"a": "b",
+		"c": "d",
+	}
+
+	helper.Df().Method("GET").Url("http://localhost:3000/do-testing").Json(body).Request()
+	// Output:
+	//GET http://localhost:3000/do-testing {"a":"b","c":"d"}
+	//HTTP/1.1 200 OK
+	//Content-Length: 25
+	//Connection: keep-alive
+	//Content-Type: application/json; charset=utf-8
+	//Date: Mon, 02 Jan 2023 02:17:18 GMT
+	//Keep-Alive: timeout=5
+	//
+	//{
+	//  "status": "success"
+	//}
 }
