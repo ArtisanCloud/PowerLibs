@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"strings"
 )
 
 type Dataflow struct {
@@ -35,8 +36,13 @@ func NewDataflow(client contract.ClientInterface, middlewareHandle contract.Requ
 	df := Dataflow{
 		client:           client,
 		middlewareHandle: middlewareHandle,
-		request:          &http.Request{},
-		option:           option,
+		request: &http.Request{
+			Proto:      "HTTP/1.1",
+			ProtoMajor: 1,
+			ProtoMinor: 1,
+			Header:     make(http.Header),
+		},
+		option: option,
 	}
 	if option == nil {
 		return &df
@@ -47,6 +53,7 @@ func NewDataflow(client contract.ClientInterface, middlewareHandle contract.Requ
 			df.err = append(df.err, errors.Wrap(err, "base url invalid"))
 		}
 		df.request.URL = u
+		df.request.Host = u.Host
 	}
 	return &df
 }
@@ -141,19 +148,48 @@ func (d *Dataflow) Json(jsonAny interface{}) contract.RequestDataflowInterface {
 	d.Header("content-type", "application/json")
 	// 标准库Json编码 body reader
 	var buf bytes.Buffer
-	reader := io.NopCloser(&buf)
 	encoder := json.NewEncoder(&buf)
-	d.request.Body = reader
 	if err := encoder.Encode(jsonAny); err != nil {
 		d.err = append(d.err, errors.Wrap(err, "json body encode failed"))
 		return d
 	}
+	d.Body(&buf)
 	return d
 }
 
 func (d *Dataflow) Body(body io.Reader) contract.RequestDataflowInterface {
 	if body != nil {
 		d.request.Body = io.NopCloser(body)
+
+		switch v := body.(type) {
+		case *bytes.Buffer:
+			d.request.ContentLength = int64(v.Len())
+			buf := v.Bytes()
+			d.request.GetBody = func() (io.ReadCloser, error) {
+				r := bytes.NewReader(buf)
+				return io.NopCloser(r), nil
+			}
+		case *bytes.Reader:
+			d.request.ContentLength = int64(v.Len())
+			snapshot := *v
+			d.request.GetBody = func() (io.ReadCloser, error) {
+				r := snapshot
+				return io.NopCloser(&r), nil
+			}
+		case *strings.Reader:
+			d.request.ContentLength = int64(v.Len())
+			snapshot := *v
+			d.request.GetBody = func() (io.ReadCloser, error) {
+				r := snapshot
+				return io.NopCloser(&r), nil
+			}
+		default:
+		}
+
+		if d.request.GetBody != nil && d.request.ContentLength == 0 {
+			d.request.Body = http.NoBody
+			d.request.GetBody = func() (io.ReadCloser, error) { return http.NoBody, nil }
+		}
 	}
 	return d
 }
@@ -163,7 +199,7 @@ func (d *Dataflow) Any(data contract.BodyEncoder) contract.RequestDataflowInterf
 	if err != nil {
 		d.err = append(d.err, errors.Wrap(err, "body encode failed"))
 	}
-	d.request.Body = io.NopCloser(body)
+	d.Body(body)
 	return d
 }
 
@@ -177,7 +213,7 @@ func (d *Dataflow) Xml(xmlAny interface{}) contract.RequestDataflowInterface {
 	if err != nil {
 		d.err = append(d.err, err)
 	}
-	d.request.Body = io.NopCloser(&buf)
+	d.Body(&buf)
 	return d
 }
 
