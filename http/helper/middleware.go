@@ -39,6 +39,9 @@ func HttpDebugMiddleware(debug bool) contract.RequestMiddleware {
 			}
 
 			response, err = handle(request)
+			if err != nil {
+				return response, err
+			}
 
 			if debug {
 
