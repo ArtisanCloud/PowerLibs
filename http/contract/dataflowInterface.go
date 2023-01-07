@@ -52,6 +52,7 @@ type ResponseHelper interface {
 type MultipartDfInterface interface {
 	Boundary(b string) MultipartDfInterface
 	FileByPath(fieldName string, filePath string) MultipartDfInterface
+	FileMem(fieldName string, fileName string, reader io.Reader) MultipartDfInterface
 	Part(header textproto.MIMEHeader, reader io.Reader) MultipartDfInterface
 	FieldValue(fieldName string, value string) MultipartDfInterface
 	Field(fieldName string, reader io.Reader) MultipartDfInterface
