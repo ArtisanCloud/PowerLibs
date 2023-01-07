@@ -55,6 +55,23 @@ func (m *MultipartDf) FileByPath(fieldName string, filePath string) contract.Mul
 	return m
 }
 
+func (m *MultipartDf) FileMem(fieldName string, fileName string, reader io.Reader) contract.MultipartDfInterface {
+	writer, err := m.mWriter.CreateFormFile(fieldName, fileName)
+	if err != nil {
+		m.errs = append(m.errs, errors.Wrap(err, "create file part failed"))
+	}
+	var buf bytes.Buffer
+	_, err = buf.ReadFrom(reader)
+	if err != nil {
+		m.errs = append(m.errs, errors.Wrap(err, "create file part failed"))
+	}
+	_, err = buf.WriteTo(writer)
+	if err != nil {
+		m.errs = append(m.errs, errors.Wrap(err, "create file part failed"))
+	}
+	return m
+}
+
 func (m *MultipartDf) Part(header textproto.MIMEHeader, reader io.Reader) contract.MultipartDfInterface {
 	writer, err := m.mWriter.CreatePart(header)
 	if err != nil {
