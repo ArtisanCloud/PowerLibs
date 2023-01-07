@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"net/textproto"
 )
 
 // RequestDataflowInterface 是一个 Http 请求构建器, 建议将注释中的私有方法实现到内部
@@ -24,6 +25,7 @@ type RequestDataflowInterface interface {
 	Body(body io.Reader) RequestDataflowInterface
 	Any(data BodyEncoder) RequestDataflowInterface
 	Xml(xmlAny interface{}) RequestDataflowInterface
+	Multipart(multipartDf func(multipart MultipartDfInterface)) RequestDataflowInterface
 
 	Err() error
 
@@ -45,4 +47,16 @@ type ResponseHelper interface {
 	GetBody() io.Reader
 	GetBodyBytes() ([]byte, error)
 	GetBodyJsonAsMap() (map[string]interface{}, error)
+}
+
+type MultipartDfInterface interface {
+	Boundary(b string) MultipartDfInterface
+	FileByPath(fieldName string, filePath string) MultipartDfInterface
+	Part(header textproto.MIMEHeader, reader io.Reader) MultipartDfInterface
+	FieldValue(fieldName string, value string) MultipartDfInterface
+	Field(fieldName string, reader io.Reader) MultipartDfInterface
+	GetBoundary() string
+	GetReader() io.Reader
+	GetContentType() string
+	Err() error
 }
