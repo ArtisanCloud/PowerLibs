@@ -56,6 +56,7 @@ type MultipartDfInterface interface {
 	Part(header textproto.MIMEHeader, reader io.Reader) MultipartDfInterface
 	FieldValue(fieldName string, value string) MultipartDfInterface
 	Field(fieldName string, reader io.Reader) MultipartDfInterface
+	Close() error
 	GetBoundary() string
 	GetReader() io.Reader
 	GetContentType() string

@@ -120,6 +120,10 @@ func (m *MultipartDf) Field(fieldName string, reader io.Reader) contract.Multipa
 	return m
 }
 
+func (m *MultipartDf) Close() error {
+	return m.mWriter.Close()
+}
+
 func (m *MultipartDf) GetBoundary() string {
 	return m.mWriter.Boundary()
 }

@@ -220,7 +220,12 @@ func (d *Dataflow) Xml(xmlAny interface{}) contract.RequestDataflowInterface {
 func (d *Dataflow) Multipart(multipartDf func(multipart contract.MultipartDfInterface)) contract.RequestDataflowInterface {
 	multipart := NewMultipartHelper()
 	multipartDf(multipart)
-	err := multipart.Err()
+	err := multipart.Close()
+	if err != nil {
+		d.err = append(d.err, err)
+		return d
+	}
+	err = multipart.Err()
 	if err != nil {
 		d.err = append(d.err, err)
 		return d
