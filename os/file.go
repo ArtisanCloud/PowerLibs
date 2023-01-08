@@ -50,7 +50,7 @@ func ConvertFileHandleToReader(obj interface{}) (data io.Reader, err error) {
 		return obj.(io.Reader), nil
 
 	default:
-		return nil, errors.New("not support file data")
+		return nil, errors.New("not support file handle data")
 	}
 
 }
