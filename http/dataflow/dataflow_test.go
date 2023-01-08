@@ -121,3 +121,22 @@ func TestDataflow_Xml(t *testing.T) {
 		t.Error("xml body failed")
 	}
 }
+
+func TestDataflow_Multipart(t *testing.T) {
+	df := InitBaseDataflow()
+
+	df.Multipart(func(multipart contract.MultipartDfInterface) {
+		mpDataflow := NewMultipartHelper()
+		mpDataflow.Boundary("test-boundary")
+		mpDataflow.FieldValue("param1", "value1")
+		data := strings.NewReader("it's a string reader")
+		mpDataflow.Field("data", data)
+		if mpDataflow.Err() != nil {
+			t.Error(mpDataflow.Err())
+		}
+	})
+
+	if df.Err() != nil {
+		t.Error(df.Err())
+	}
+}

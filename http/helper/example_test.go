@@ -5,6 +5,8 @@ import (
 	"github.com/ArtisanCloud/PowerLibs/v3/http/contract"
 	"log"
 	"net/http"
+	"strings"
+	"testing"
 )
 
 func ExampleRequestHelper_WithMiddleware() {
@@ -159,4 +161,26 @@ func ExampleHttpDebugMiddleware() {
 	//{
 	//  "status": "success"
 	//}
+}
+
+func TestRequestHelper_Df_Multipart(t *testing.T) {
+	helper, err := NewRequestHelper(&Config{})
+	if err != nil {
+		t.Error(err)
+	}
+
+	_, err = helper.Df().Method(http.MethodPost).
+		Url("https://typedwebhook.tools/webhook").
+		Multipart(func(multipart contract.MultipartDfInterface) {
+			data := strings.NewReader("test data")
+			multipart.Boundary("test-boundary").
+				//FileByPath("file", "README.md").
+				FieldValue("param1", "value1").
+				FieldValue("param2", "value2").
+				Field("data", data)
+		}).Request()
+
+	if err != nil {
+		t.Error(err)
+	}
 }

@@ -217,6 +217,24 @@ func (d *Dataflow) Xml(xmlAny interface{}) contract.RequestDataflowInterface {
 	return d
 }
 
+func (d *Dataflow) Multipart(multipartDf func(multipart contract.MultipartDfInterface)) contract.RequestDataflowInterface {
+	multipart := NewMultipartHelper()
+	multipartDf(multipart)
+	err := multipart.Close()
+	if err != nil {
+		d.err = append(d.err, err)
+		return d
+	}
+	err = multipart.Err()
+	if err != nil {
+		d.err = append(d.err, err)
+		return d
+	}
+	d.Header("content-type", multipart.GetContentType())
+	d.Body(multipart.GetReader())
+	return d
+}
+
 func (d *Dataflow) Err() error {
 	if len(d.err) > 0 {
 		return d.err[0]
