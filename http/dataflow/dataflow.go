@@ -102,6 +102,7 @@ func (d *Dataflow) Url(requestUrl string) contract.RequestDataflowInterface {
 		return d
 	}
 	d.request.URL = u
+	d.request.Host = u.Host
 	return d
 }
 
