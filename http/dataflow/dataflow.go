@@ -147,6 +147,8 @@ func (d *Dataflow) Query(key string, values ...string) contract.RequestDataflowI
 func (d *Dataflow) Json(jsonAny interface{}) contract.RequestDataflowInterface {
 	// 设置 Header
 	d.Header("content-type", "application/json")
+	d.Header("Accept", "*/*")
+
 	// 标准库Json编码 body reader
 	var buf bytes.Buffer
 	encoder := json.NewEncoder(&buf)
@@ -247,6 +249,8 @@ func (d *Dataflow) Request() (response *http.Response, err error) {
 	if d.Err() != nil {
 		return nil, d.Err()
 	}
+
+	d.Header("Accept", "*/*")
 
 	handle := d.middlewareHandle(func(request *http.Request) (response *http.Response, err error) {
 		return d.client.DoRequest(request)
