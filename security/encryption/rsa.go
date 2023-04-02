@@ -79,7 +79,7 @@ func (encryptor *RSAEncryptor) SavePrivateKeyByPath(path string) (err error) {
 	if err != nil {
 		return err
 	}
-	err = privateKeyFile.Close()
+	//err = privateKeyFile.Close()
 
 	return err
 }
@@ -115,7 +115,7 @@ func (encryptor *RSAEncryptor) SavePublicKeyByPath(path string) (err error) {
 	if err != nil {
 		return err
 	}
-	err = publicKeyFile.Close()
+	//err = publicKeyFile.Close()
 
 	return err
 }
@@ -207,14 +207,15 @@ func (encryptor *RSAEncryptor) ParseRSAPublicKeyFromPEM(key []byte) (*rsa.Public
 
 // Encrypt
 // hash recommend use sha256.New() as hash
-func (encryptor *RSAEncryptor) Encrypt( data []byte) ([]byte, error) {
-	hash:=encryptor.Hash.New()
-	return rsa.EncryptOAEP(hash, rand.Reader, &(encryptor.PrivateKey.PublicKey), data, nil)
+func (encryptor *RSAEncryptor) Encrypt(data []byte) ([]byte, error) {
+	//hash := encryptor.Hash.New()
+	return rsa.EncryptOAEP(encryptor.Hash.New(), rand.Reader, encryptor.PublicKey, data, nil)
+	//return rsa.EncryptOAEP(hash, rand.Reader, &(encryptor.PrivateKey.PublicKey), data, nil)
 }
 
 // Decryption
 // optHash recommend use crypto.SHA256 as hash
 func (encryptor *RSAEncryptor) Decryption(ciphertext []byte) (plainText []byte, err error) {
-	optHash:=encryptor.Hash
+	optHash := encryptor.Hash
 	return encryptor.PrivateKey.Decrypt(nil, ciphertext, &rsa.OAEPOptions{Hash: optHash})
 }
