@@ -14,23 +14,26 @@ func Str2Xml(in string) string {
 	return b.String()
 }
 
-func Map2Xml(obj *HashMap) (strXML string) {
+func Map2Xml(obj *HashMap, isSub bool) (strXML string) {
 
 	for k, v := range *obj {
 		switch v.(type) {
 		case string:
 			strXML = strXML + fmt.Sprintf("<%s><![CDATA[%s]]></%s>", k, v, k)
 			break
-		case int:
-		case int8:
-		case int16:
-		case int32:
-		case int64:
+		case int, int8, int16, int32, int64:
 			strXML = strXML + fmt.Sprintf("<%s>%d</%s>", k, v, k)
 			break
 		case float32:
 		case float64:
 			strXML = strXML + fmt.Sprintf("<%s>%f</%s>", k, v, k)
+			break
+		case *HashMap:
+			strXML = strXML + fmt.Sprintf("<%s>%s</%s>", k, Map2Xml(v.(*HashMap), true), k)
+			break
+		case HashMap:
+			val := v.(HashMap)
+			strXML = strXML + fmt.Sprintf("<%s>%s</%s>", k, Map2Xml(&val, true), k)
 			break
 		case interface{}:
 			b, _ := json.Marshal(v)
@@ -38,7 +41,11 @@ func Map2Xml(obj *HashMap) (strXML string) {
 			break
 		}
 	}
-	return "<xml>" + strXML + "</xml>"
+	if isSub {
+		return strXML
+	} else {
+		return "<xml>" + strXML + "</xml>"
+	}
 }
 
 func StringMap2Xml(obj *StringMap) (strXML string) {
@@ -48,7 +55,6 @@ func StringMap2Xml(obj *StringMap) (strXML string) {
 	}
 	return "<xml>" + strXML + "</xml>"
 }
-
 
 func Xml2Map(b []byte) (m HashMap, err error) {
 
