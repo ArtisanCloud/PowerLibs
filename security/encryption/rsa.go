@@ -189,6 +189,14 @@ func (encryptor *RSAEncryptor) ParseRSAPublicKeyFromPEM(key []byte) (*rsa.Public
 	// Parse the key
 	var parsedKey interface{}
 	if parsedKey, err = x509.ParsePKIXPublicKey(block.Bytes); err != nil {
+
+		// 兼容 x509.ParsePKCS1PublicKey的key
+		parsedKey, err = x509.ParsePKCS1PublicKey(block.Bytes)
+		if err == nil && parsedKey != nil {
+			return parsedKey.(*rsa.PublicKey), nil
+		}
+
+		// 尝试其他的证书格式 x509.ParseCertificate
 		if cert, err := x509.ParseCertificate(block.Bytes); err == nil {
 			parsedKey = cert.PublicKey
 		} else {
