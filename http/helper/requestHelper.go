@@ -3,7 +3,6 @@ package helper
 import (
 	"bytes"
 	"encoding/xml"
-	"github.com/ArtisanCloud/PowerLibs/v3/fmt"
 	"github.com/ArtisanCloud/PowerLibs/v3/http/contract"
 	"github.com/ArtisanCloud/PowerLibs/v3/http/dataflow"
 	"github.com/ArtisanCloud/PowerLibs/v3/http/drivers/http"
@@ -11,6 +10,7 @@ import (
 	"io"
 	"io/ioutil"
 	http2 "net/http"
+	"strings"
 )
 
 type RequestDownload struct {
@@ -82,14 +82,15 @@ func (r *RequestHelper) ParseResponseBodyToMap(rs *http2.Response, outBody *obje
 	rs.Body = ioutil.NopCloser(bytes.NewBuffer(b))
 
 	contentType := rs.Header.Get("Content-Type")
-	fmt.Dump(123213, contentType)
-	//if content[0:1] == "<" {
-	if contentType == "application/xml" || contentType == "text/xml" {
+
+	//fmt.Dump(123, contentType)
+
+	if strings.Contains(contentType, "application/xml") || strings.Contains(contentType, "text/xml") {
 		*outBody, err = object.Xml2Map(b)
 		if err != nil {
 			return err
 		}
-	} else if contentType == "application/json" || contentType == "text/json" {
+	} else {
 		// Handle JSON format.
 		err = object.JsonDecode(b, outBody)
 		if err != nil {
@@ -109,9 +110,10 @@ func (r *RequestHelper) ParseResponseBodyContent(rs *http2.Response, outBody int
 	}
 	rs.Body = ioutil.NopCloser(bytes.NewBuffer(b))
 
-	content := string(b)
+	contentType := rs.Header.Get("Content-Type")
 
-	if content[0:1] == "<" {
+	//fmt.Dump(456, contentType)
+	if strings.Contains(contentType, "application/xml") || strings.Contains(contentType, "text/xml") {
 		err = xml.Unmarshal(b, outBody)
 		if err != nil {
 			return err
