@@ -3,6 +3,7 @@ package helper
 import (
 	"bytes"
 	"encoding/xml"
+	"github.com/ArtisanCloud/PowerLibs/v3/fmt"
 	"github.com/ArtisanCloud/PowerLibs/v3/http/contract"
 	"github.com/ArtisanCloud/PowerLibs/v3/http/dataflow"
 	"github.com/ArtisanCloud/PowerLibs/v3/http/drivers/http"
@@ -80,14 +81,15 @@ func (r *RequestHelper) ParseResponseBodyToMap(rs *http2.Response, outBody *obje
 	}
 	rs.Body = ioutil.NopCloser(bytes.NewBuffer(b))
 
-	content := string(b)
-
-	if content[0:1] == "<" {
+	contentType := rs.Header.Get("Content-Type")
+	fmt.Dump(123213, contentType)
+	//if content[0:1] == "<" {
+	if contentType == "application/xml" || contentType == "text/xml" {
 		*outBody, err = object.Xml2Map(b)
 		if err != nil {
 			return err
 		}
-	} else {
+	} else if contentType == "application/json" || contentType == "text/json" {
 		// Handle JSON format.
 		err = object.JsonDecode(b, outBody)
 		if err != nil {
