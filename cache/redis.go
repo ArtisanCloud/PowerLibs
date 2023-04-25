@@ -2,13 +2,12 @@ package cache
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
 	fmt2 "github.com/ArtisanCloud/PowerLibs/v3/fmt"
 	"github.com/ArtisanCloud/PowerLibs/v3/object"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"time"
 )
 
@@ -41,104 +40,20 @@ const (
 
 const SCRIPT_SETEX = `return redis.call('exists',KEYS[1])<1 and redis.call('setex',KEYS[1],ARGV[2],ARGV[1])`
 
-type RedisOptions struct {
-	MaxIdle            int
-	MaxActive          int
-	Protocol           string
-	Addr               string
-	Password           string
-	DB                 int
-	SSLEnabled         bool
-	Expiration         time.Duration
-	TimeoutConnect     int
-	TimeoutRead        int
-	TimeoutWrite       int
-	TimeoutIdle        int
-	IdleCheckFrequency time.Duration
-}
-
 var CTXRedis = context.Background()
 
 const lockRetries = 5
 
-func NewGRedis(opts interface{}) (gr *GRedis) {
+func NewGRedis(opts *redis.Options) (gr *GRedis) {
 
-	if options, ok := opts.(*RedisOptions); ok {
-		options = options.initDefaults()
-		toD := time.Millisecond * time.Duration(options.TimeoutConnect)
-		toR := time.Millisecond * time.Duration(options.TimeoutRead)
-		toW := time.Millisecond * time.Duration(options.TimeoutWrite)
-		toI := time.Duration(options.TimeoutIdle) * time.Second
-		option := &redis.Options{
-			Addr:               options.Addr,
-			DB:                 options.DB,
-			DialTimeout:        toD,
-			ReadTimeout:        toR,
-			WriteTimeout:       toW,
-			PoolSize:           options.MaxActive,
-			PoolTimeout:        30 * time.Second,
-			IdleTimeout:        toI,
-			Password:           options.Password,
-			IdleCheckFrequency: options.IdleCheckFrequency,
-		}
-
-		if options.SSLEnabled {
-			option.TLSConfig = &tls.Config{
-				InsecureSkipVerify: true,
-			}
-		}
-
-		c := redis.NewClient(option)
-		gr = &GRedis{
-			Pool:        c,
-			lockRetries: lockRetries,
-		}
-		return gr
-
+	c := redis.NewClient(opts)
+	gr = &GRedis{
+		Pool:        c,
+		lockRetries: lockRetries,
 	}
 
 	return gr
 
-}
-
-func (r *RedisOptions) initDefaults() *RedisOptions {
-	if r.MaxIdle == 0 {
-		r.MaxIdle = defaultMaxIdle
-	}
-
-	if r.MaxActive == 0 {
-		r.MaxActive = defaultMaxActive
-	}
-
-	if r.TimeoutConnect == 0 {
-		r.TimeoutConnect = defaultTimeoutConnect
-	}
-
-	if r.TimeoutIdle == 0 {
-		r.TimeoutIdle = defaultTimeoutIdle
-	}
-
-	if r.TimeoutRead == 0 {
-		r.TimeoutRead = defaultTimeoutRead
-	}
-
-	if r.TimeoutWrite == 0 {
-		r.TimeoutWrite = defaultTimeoutWrite
-	}
-
-	if r.Addr == "" {
-		r.Addr = defaultAddr
-	}
-
-	if r.Protocol == "" {
-		r.Protocol = defaultProtocol
-	}
-
-	if r.IdleCheckFrequency == 0 {
-		r.IdleCheckFrequency = time.Minute
-	}
-
-	return r
 }
 
 func (gr *GRedis) AddNX(key string, value interface{}, ttl time.Duration) bool {
@@ -187,8 +102,8 @@ func (gr *GRedis) SetEx(key string, value interface{}, expires time.Duration) er
 	//fmt.Printf("result:%s \r\n",cmd.String())
 	//fmt.Printf("err:%s \r\n", cmd.Err())
 
-	connPool := gr.Pool.Conn(gr.Pool.Context())
-	cmd := connPool.SetEX(CTXRedis, key, mValue, expires)
+	connPool := gr.Pool.Conn()
+	cmd := connPool.SetEx(CTXRedis, key, mValue, expires)
 	//fmt2.Dump(connPool.Pipeline())
 	//fmt.Printf("result:", cmd.String())
 
