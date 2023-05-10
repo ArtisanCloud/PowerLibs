@@ -28,6 +28,16 @@ func Map2Xml(obj *HashMap, isSub bool) (strXML string) {
 		case float64:
 			strXML = strXML + fmt.Sprintf("<%s>%f</%s>", k, v, k)
 			break
+		case []*HashMap:
+			for _, subV := range v.([]*HashMap) {
+				strXML = strXML + fmt.Sprintf("<%s>%s</%s>", k, Map2Xml(subV, true), k)
+			}
+			break
+		case []HashMap:
+			for _, subV := range v.([]HashMap) {
+				strXML = strXML + fmt.Sprintf("<%s>%s</%s>", k, Map2Xml(&subV, true), k)
+			}
+			break
 		case *HashMap:
 			strXML = strXML + fmt.Sprintf("<%s>%s</%s>", k, Map2Xml(v.(*HashMap), true), k)
 			break
