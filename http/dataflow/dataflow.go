@@ -152,6 +152,7 @@ func (d *Dataflow) Json(jsonAny interface{}) contract.RequestDataflowInterface {
 	// 标准库Json编码 body reader
 	var buf bytes.Buffer
 	encoder := json.NewEncoder(&buf)
+	encoder.SetEscapeHTML(false)
 	if err := encoder.Encode(jsonAny); err != nil {
 		d.err = append(d.err, errors.Wrap(err, "json body encode failed"))
 		return d
