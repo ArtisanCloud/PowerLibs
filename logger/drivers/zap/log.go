@@ -41,7 +41,7 @@ func newZapLogger(config *object.HashMap) (logger *zap.Logger, err error) {
 		loggerConfig = zap.NewDevelopmentConfig()
 	}
 	outputFile := (*config)["outputPath"].(string)
-	//loggerConfig.OutputPaths = []string{(*config)["outputPath"].(string)}
+	loggerConfig.OutputPaths = []string{(*config)["outputPath"].(string)}
 	loggerConfig.ErrorOutputPaths = []string{(*config)["errorPath"].(string)}
 	loggerConfig.EncoderConfig.TimeKey = "timestamp"
 	loggerConfig.EncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout(time.RFC3339)
