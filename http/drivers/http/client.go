@@ -27,9 +27,12 @@ func NewHttpClient(config *contract.ClientConfig) (*Client, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to load certificate")
 		}
-		coreClient.Transport = &http.Transport{TLSClientConfig: &tls.Config{
-			Certificates: []tls.Certificate{certPair},
-		}}
+		coreClient.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{
+				Certificates: []tls.Certificate{certPair},
+			},
+			Proxy: http.ProxyFromEnvironment,
+		}
 	}
 	return &Client{
 		conf:       config,
