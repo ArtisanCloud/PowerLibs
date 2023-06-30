@@ -32,7 +32,6 @@ func NewLogger(config *object.HashMap) (logger contract.LoggerInterface, err err
 }
 
 func newZapLogger(config *object.HashMap) (logger *zap.Logger, err error) {
-
 	env := (*config)["env"].(string)
 	var loggerConfig zap.Config
 	if env == "production" {
@@ -40,30 +39,44 @@ func newZapLogger(config *object.HashMap) (logger *zap.Logger, err error) {
 	} else {
 		loggerConfig = zap.NewDevelopmentConfig()
 	}
+
 	outputFile := (*config)["outputPath"].(string)
-	loggerConfig.OutputPaths = []string{(*config)["outputPath"].(string)}
-	loggerConfig.ErrorOutputPaths = []string{(*config)["errorPath"].(string)}
+	errorFile := (*config)["errorPath"].(string)
+
+	loggerConfig.OutputPaths = []string{outputFile}
+	loggerConfig.ErrorOutputPaths = []string{errorFile}
 	loggerConfig.EncoderConfig.TimeKey = "timestamp"
 	loggerConfig.EncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout(time.RFC3339)
 
-	var file *os.File
-	if _, err = os.Stat(outputFile); os.IsNotExist(err) {
-		file, err = os.Create(outputFile)
-	} else {
-		if file, err = os.OpenFile(outputFile, os.O_APPEND|os.O_WRONLY, os.ModeAppend); err != nil {
-			return nil, err
-		}
-
-	}
+	outputSyncer, err := newFileWriteSyncer(outputFile)
 	if err != nil {
 		return nil, err
 	}
-	writeSyncer := zapcore.AddSync(file)
 
-	core := zapcore.NewCore(
-		zapcore.NewJSONEncoder(loggerConfig.EncoderConfig),
-		zapcore.Lock(zapcore.NewMultiWriteSyncer(os.Stdout, writeSyncer)),
-		zapcore.DebugLevel,
+	errorSyncer, err := newFileWriteSyncer(errorFile)
+	if err != nil {
+		return nil, err
+	}
+
+	infoLevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+		return lvl < zapcore.ErrorLevel
+	})
+
+	errorLevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+		return lvl >= zapcore.ErrorLevel
+	})
+
+	core := zapcore.NewTee(
+		zapcore.NewCore(
+			zapcore.NewJSONEncoder(loggerConfig.EncoderConfig),
+			zapcore.Lock(outputSyncer),
+			infoLevel,
+		),
+		zapcore.NewCore(
+			zapcore.NewJSONEncoder(loggerConfig.EncoderConfig),
+			zapcore.Lock(errorSyncer),
+			errorLevel,
+		),
 	)
 
 	logger = zap.New(core)
@@ -71,6 +84,13 @@ func newZapLogger(config *object.HashMap) (logger *zap.Logger, err error) {
 	return logger, err
 }
 
+func newFileWriteSyncer(filename string) (zapcore.WriteSyncer, error) {
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		return nil, err
+	}
+	return zapcore.AddSync(file), nil
+}
 func (log *Logger) Debug(msg string, v ...interface{}) {
 	log.sugar.Debugw(msg, v...)
 }
