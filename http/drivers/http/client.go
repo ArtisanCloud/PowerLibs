@@ -5,7 +5,6 @@ import (
 	"github.com/ArtisanCloud/PowerLibs/v3/fmt"
 	"github.com/ArtisanCloud/PowerLibs/v3/http/contract"
 	"github.com/pkg/errors"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -26,7 +25,6 @@ func NewHttpClient(config *contract.ClientConfig) (*Client, error) {
 		Timeout: config.Timeout,
 	}
 	proxyStr := os.Getenv("MY_HTTP_PROXY")
-	log.Println(proxyStr)
 	var proxy func(*http.Request) (*url.URL, error)
 	if proxyStr != "" {
 		p, _ := url.Parse(proxyStr)
@@ -41,6 +39,10 @@ func NewHttpClient(config *contract.ClientConfig) (*Client, error) {
 			TLSClientConfig: &tls.Config{
 				Certificates: []tls.Certificate{certPair},
 			},
+			Proxy: proxy,
+		}
+	} else {
+		coreClient.Transport = &http.Transport{
 			Proxy: proxy,
 		}
 	}
