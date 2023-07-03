@@ -6,6 +6,8 @@ import (
 	"github.com/ArtisanCloud/PowerLibs/v3/http/contract"
 	"github.com/pkg/errors"
 	"net/http"
+	"net/url"
+	"os"
 )
 
 // Client 是 net/http 的封装
@@ -22,6 +24,12 @@ func NewHttpClient(config *contract.ClientConfig) (*Client, error) {
 	coreClient := http.Client{
 		Timeout: config.Timeout,
 	}
+	proxyStr := os.Getenv("MY_HTTP_PROXY")
+	var proxy func(*http.Request) (*url.URL, error)
+	if proxyStr != "" {
+		p, _ := url.Parse(proxyStr)
+		proxy = http.ProxyURL(p)
+	}
 	if config.Cert.CertFile != "" && config.Cert.KeyFile != "" {
 		certPair, err := tls.LoadX509KeyPair(config.Cert.CertFile, config.Cert.KeyFile)
 		if err != nil {
@@ -31,7 +39,7 @@ func NewHttpClient(config *contract.ClientConfig) (*Client, error) {
 			TLSClientConfig: &tls.Config{
 				Certificates: []tls.Certificate{certPair},
 			},
-			Proxy: http.ProxyFromEnvironment,
+			Proxy: proxy,
 		}
 	}
 	return &Client{
