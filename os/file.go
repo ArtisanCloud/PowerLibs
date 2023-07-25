@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -53,4 +54,12 @@ func ConvertFileHandleToReader(obj interface{}) (data io.Reader, err error) {
 		return nil, errors.New("not support file handle data")
 	}
 
+}
+
+func CreateDirectoriesForFiles(outputFile string) error {
+	dir := filepath.Dir(outputFile)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+	return nil
 }

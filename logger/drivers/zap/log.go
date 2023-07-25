@@ -3,6 +3,7 @@ package zap
 import (
 	"github.com/ArtisanCloud/PowerLibs/v3/logger/contract"
 	"github.com/ArtisanCloud/PowerLibs/v3/object"
+	os2 "github.com/ArtisanCloud/PowerLibs/v3/os"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
@@ -42,6 +43,15 @@ func newZapLogger(config *object.HashMap) (logger *zap.Logger, err error) {
 
 	outputFile := (*config)["outputPath"].(string)
 	errorFile := (*config)["errorPath"].(string)
+
+	err = os2.CreateDirectoriesForFiles(outputFile)
+	if err != nil {
+		return nil, err
+	}
+	err = os2.CreateDirectoriesForFiles(errorFile)
+	if err != nil {
+		return nil, err
+	}
 
 	loggerConfig.OutputPaths = []string{outputFile}
 	loggerConfig.ErrorOutputPaths = []string{errorFile}
