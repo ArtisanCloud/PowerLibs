@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"errors"
 	"github.com/ArtisanCloud/PowerLibs/v3/logger/contract"
 	"github.com/ArtisanCloud/PowerLibs/v3/logger/drivers/zap"
 	"github.com/ArtisanCloud/PowerLibs/v3/object"
@@ -11,10 +12,16 @@ type Logger struct {
 	Driver contract.LoggerInterface
 }
 
-func NewLogger(driver string, config *object.HashMap) (logger *Logger, err error) {
+func NewLogger(driver interface{}, config *object.HashMap) (logger *Logger, err error) {
 
 	var driverLogger contract.LoggerInterface
-	if driver == "" || driver == "zap" {
+	if driver != nil {
+		d, ok := driver.(contract.LoggerInterface)
+		if !ok {
+			return nil, errors.New("driver is not of type contract.LoggerInterface")
+		}
+		driverLogger = d
+	} else {
 		driverLogger, err = zap.NewLogger(config)
 	}
 
