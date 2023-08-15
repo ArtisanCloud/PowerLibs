@@ -37,6 +37,7 @@ func (m *MultipartDf) FileByPath(fieldName string, filePath string) contract.Mul
 	if err != nil {
 		m.errs = append(m.errs, errors.Wrap(err, "create file part failed"))
 	}
+	defer file.Close()
 	_, fileName := path.Split(filePath)
 
 	writer, err := m.mWriter.CreateFormFile(fieldName, fileName)
