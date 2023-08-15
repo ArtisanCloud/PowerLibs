@@ -8,6 +8,10 @@ import (
 
 type HashMap map[string]interface{}
 
+func (m *HashMap) Get(key string) interface{} {
+	return (*m)[key]
+}
+
 // ------------------------------- Merge --------------------------------------------
 func MergeHashMap(toMap *HashMap, subMaps ...*HashMap) *HashMap {
 	if toMap == nil {
