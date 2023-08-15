@@ -1,6 +1,7 @@
 package object
 
 import (
+	fmt2 "fmt"
 	"github.com/ArtisanCloud/PowerLibs/v3/fmt"
 	"testing"
 )
@@ -75,4 +76,13 @@ func Test_StringMap2Xml(t *testing.T) {
 	println(xmlObj)
 	fmt.Dump(xmlObj)
 
+}
+func Test_DumpXML(t *testing.T) {
+	//str := `<?xml version="1.0" encoding="UTF-8" ?>
+	//<test>中文</test>`
+	str := `<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<book>\n  <title>中文来的</title>\n
+	<author>J.K. 中文来的</author>\n  <publisher>中文来的</publisher>\n
+	<publishedYear>1997</publishedYear>\n</book>"`
+	fmt2.Println(str)
+	//fmt.Dump(str)
 }
