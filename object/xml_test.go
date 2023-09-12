@@ -3,6 +3,7 @@ package object
 import (
 	fmt2 "fmt"
 	"github.com/ArtisanCloud/PowerLibs/v3/fmt"
+	"reflect"
 	"testing"
 )
 
@@ -77,6 +78,45 @@ func Test_StringMap2Xml(t *testing.T) {
 	fmt.Dump(xmlObj)
 
 }
+
+func Test_Xml2HashMap(t *testing.T) {
+	xmlData := []byte(`
+        <root>
+            <person1>
+                <name>John</name>
+                <age>30</age>
+            </person1>
+            <person2>
+                <name>Alice</name>
+                <age>25</age>
+            </person2>
+        </root>
+    `)
+
+	result, err := Xml2Map(xmlData)
+
+	if err != nil {
+		t.Errorf("Xml2Map error: %v", err)
+	}
+
+	expected := HashMap{
+		"root": HashMap{
+			"person1": HashMap{
+				"name": "John",
+				"age":  "30",
+			},
+			"person2": HashMap{
+				"name": "Alice",
+				"age":  "25",
+			},
+		},
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Result mismatch.\nExpected: %#v\nActual: %#v", expected, result)
+	}
+}
+
 func Test_DumpXML(t *testing.T) {
 	//str := `<?xml version="1.0" encoding="UTF-8" ?>
 	//<test>中文</test>`
