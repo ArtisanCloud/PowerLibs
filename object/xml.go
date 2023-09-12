@@ -66,6 +66,16 @@ func StringMap2Xml(obj *StringMap) (strXML string) {
 	return "<xml>" + strXML + "</xml>"
 }
 
+func Xml2HashMap(b []byte) (m HashMap, err error) {
+	var result map[string]interface{}
+	err = xml.Unmarshal(b, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return HashMap(result), nil
+}
+
 func Xml2Map(b []byte) (m HashMap, err error) {
 
 	decoder := xml.NewDecoder(bytes.NewReader(b))
