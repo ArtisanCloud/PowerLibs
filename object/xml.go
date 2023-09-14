@@ -72,6 +72,11 @@ func Xml2HashMap(b []byte) (m map[string]interface{}, err error) {
 	mv, err := mxj.NewMapXml(b) // unmarshal
 	m = map[string]interface{}(mv)
 
+	// 我觉得这个判断加上是不是更好一点，因为我需要的数据其实是xml对象里面的，不然的话使用者还需要额外处理一下，感觉没必要
+	if _, ok := m["xml"]; ok {
+		m = m["xml"].(map[string]interface{})
+	}
+
 	return m, err
 }
 

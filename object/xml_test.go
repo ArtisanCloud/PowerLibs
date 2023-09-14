@@ -164,24 +164,23 @@ func Test_Xml2HashMap2(t *testing.T) {
 	}
 
 	expected := map[string]interface{}{
-		"xml": map[string]interface{}{
-			"ToUserName":   "gh_123456789abc",
-			"FromUserName": "otFpruAK8D-E6EfStSYonYSBZ8_4",
-			"CreateTime":   "1610969440",
-			"MsgType":      "event",
-			"Event":        "subscribe_msg_popup_event",
-			"SubscribeMsgPopupEvent": map[string]interface{}{
-				"List": []interface{}{
-					map[string]interface{}{
-						"TemplateId":            "VRR0UEO9VJOLs0MHlU0OilqX6MVFDwH3_3gz3Oc0NIc",
-						"SubscribeStatusString": "accept",
-						"PopupScene":            "2",
-					},
-					map[string]interface{}{
-						"TemplateId":            "9nLIlbOQZC5Y89AZteFEux3WCXRRRG5Wfzkpssu4bLI",
-						"SubscribeStatusString": "reject",
-						"PopupScene":            "2",
-					},
+
+		"ToUserName":   "gh_123456789abc",
+		"FromUserName": "otFpruAK8D-E6EfStSYonYSBZ8_4",
+		"CreateTime":   "1610969440",
+		"MsgType":      "event",
+		"Event":        "subscribe_msg_popup_event",
+		"SubscribeMsgPopupEvent": map[string]interface{}{
+			"List": []interface{}{
+				map[string]interface{}{
+					"TemplateId":            "VRR0UEO9VJOLs0MHlU0OilqX6MVFDwH3_3gz3Oc0NIc",
+					"SubscribeStatusString": "accept",
+					"PopupScene":            "2",
+				},
+				map[string]interface{}{
+					"TemplateId":            "9nLIlbOQZC5Y89AZteFEux3WCXRRRG5Wfzkpssu4bLI",
+					"SubscribeStatusString": "reject",
+					"PopupScene":            "2",
 				},
 			},
 		},
