@@ -3,6 +3,7 @@ package object
 import (
 	fmt2 "fmt"
 	"github.com/ArtisanCloud/PowerLibs/v3/fmt"
+	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
 )
@@ -93,19 +94,19 @@ func Test_Xml2HashMap(t *testing.T) {
         </root>
     `)
 
-	result, err := Xml2Map(xmlData)
+	result, err := Xml2HashMap(xmlData)
 
 	if err != nil {
 		t.Errorf("Xml2Map error: %v", err)
 	}
 
-	expected := HashMap{
-		"root": HashMap{
-			"person1": HashMap{
+	expected := map[string]interface{}{
+		"root": map[string]interface{}{
+			"person1": map[string]interface{}{
 				"name": "John",
 				"age":  "30",
 			},
-			"person2": HashMap{
+			"person2": map[string]interface{}{
 				"name": "Alice",
 				"age":  "25",
 			},
@@ -113,6 +114,79 @@ func Test_Xml2HashMap(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Result mismatch.\nExpected: %#v\nActual: %#v", expected, result)
+	}
+}
+
+func Test_Xml2HashMap2(t *testing.T) {
+	xmlData := []byte(`
+        <xml>
+    <ToUserName>
+        <![CDATA[gh_123456789abc]]>
+    </ToUserName>
+    <FromUserName>
+        <![CDATA[otFpruAK8D-E6EfStSYonYSBZ8_4]]>
+    </FromUserName>
+    <CreateTime>1610969440</CreateTime>
+    <MsgType>
+        <![CDATA[event]]>
+    </MsgType>
+    <Event>
+        <![CDATA[subscribe_msg_popup_event]]>
+    </Event>
+    <SubscribeMsgPopupEvent>
+        <List>
+            <TemplateId>
+                <![CDATA[VRR0UEO9VJOLs0MHlU0OilqX6MVFDwH3_3gz3Oc0NIc]]>
+            </TemplateId>
+            <SubscribeStatusString>
+                <![CDATA[accept]]>
+            </SubscribeStatusString>
+            <PopupScene>2</PopupScene>
+        </List>
+        <List>
+            <TemplateId>
+                <![CDATA[9nLIlbOQZC5Y89AZteFEux3WCXRRRG5Wfzkpssu4bLI]]>
+            </TemplateId>
+            <SubscribeStatusString>
+                <![CDATA[reject]]>
+            </SubscribeStatusString>
+            <PopupScene>2</PopupScene>
+        </List>
+    </SubscribeMsgPopupEvent>
+</xml>
+    `)
+
+	result, err := Xml2HashMap(xmlData)
+
+	if err != nil {
+		t.Errorf("Xml2Map error: %v", err)
+	}
+
+	expected := map[string]interface{}{
+
+		"ToUserName":   "gh_123456789abc",
+		"FromUserName": "otFpruAK8D-E6EfStSYonYSBZ8_4",
+		"CreateTime":   "1610969440",
+		"MsgType":      "event",
+		"Event":        "subscribe_msg_popup_event",
+		"SubscribeMsgPopupEvent": map[string]interface{}{
+			"List": []interface{}{
+				map[string]interface{}{
+					"TemplateId":            "VRR0UEO9VJOLs0MHlU0OilqX6MVFDwH3_3gz3Oc0NIc",
+					"SubscribeStatusString": "accept",
+					"PopupScene":            "2",
+				},
+				map[string]interface{}{
+					"TemplateId":            "9nLIlbOQZC5Y89AZteFEux3WCXRRRG5Wfzkpssu4bLI",
+					"SubscribeStatusString": "reject",
+					"PopupScene":            "2",
+				},
+			},
+		},
+	}
+
+	if !assert.Equal(t, result, expected) {
 		t.Errorf("Result mismatch.\nExpected: %#v\nActual: %#v", expected, result)
 	}
 }

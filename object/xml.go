@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	fmt2 "github.com/ArtisanCloud/PowerLibs/v3/fmt"
+	"github.com/clbanning/mxj/v2"
 	"strings"
 )
 
@@ -66,14 +68,16 @@ func StringMap2Xml(obj *StringMap) (strXML string) {
 	return "<xml>" + strXML + "</xml>"
 }
 
-func Xml2HashMap(b []byte) (m HashMap, err error) {
-	var result map[string]interface{}
-	err = xml.Unmarshal(b, &result)
-	if err != nil {
-		return nil, err
+func Xml2HashMap(b []byte) (m map[string]interface{}, err error) {
+	mv, err := mxj.NewMapXml(b) // unmarshal
+	m = map[string]interface{}(mv)
+
+	// 我觉得这个判断加上是不是更好一点，因为我需要的数据其实是xml对象里面的，不然的话使用者还需要额外处理一下，感觉没必要
+	if _, ok := m["xml"]; ok {
+		m = m["xml"].(map[string]interface{})
 	}
 
-	return HashMap(result), nil
+	return m, err
 }
 
 func Xml2Map(b []byte) (m HashMap, err error) {
@@ -99,6 +103,7 @@ func Xml2Map(b []byte) (m HashMap, err error) {
 			break
 		case xml.CharData:
 			data := strings.TrimSpace(string(t))
+			fmt2.Dump(data)
 			if len(data) != 0 {
 				m[tag] = data
 			}
