@@ -6,6 +6,7 @@ import (
 	os2 "github.com/ArtisanCloud/PowerLibs/v3/os"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
 	"time"
 )
@@ -58,15 +59,29 @@ func newZapLogger(config *object.HashMap) (logger *zap.Logger, err error) {
 	loggerConfig.EncoderConfig.TimeKey = "timestamp"
 	loggerConfig.EncoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout(time.RFC3339)
 
-	outputSyncer, err := newFileWriteSyncer(outputFile)
-	if err != nil {
-		return nil, err
-	}
+	//outputSyncer, err := newFileWriteSyncer(outputFile)
+	//if err != nil {
+	//	return nil, err
+	//}
+	outputWriter := zapcore.AddSync(&lumberjack.Logger{
+		Filename:   outputFile,
+		MaxSize:    100, // megabytes
+		MaxBackups: 3,
+		MaxAge:     28,   // days
+		Compress:   true, // disabled by default
+	})
 
-	errorSyncer, err := newFileWriteSyncer(errorFile)
-	if err != nil {
-		return nil, err
-	}
+	//errorSyncer, err := newFileWriteSyncer(errorFile)
+	//if err != nil {
+	//	return nil, err
+	//}
+	errorWriter := zapcore.AddSync(&lumberjack.Logger{
+		Filename:   errorFile,
+		MaxSize:    50, // megabytes
+		MaxBackups: 3,
+		MaxAge:     28,   // days
+		Compress:   true, // disabled by default
+	})
 
 	infoLevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl < zapcore.ErrorLevel
@@ -79,12 +94,14 @@ func newZapLogger(config *object.HashMap) (logger *zap.Logger, err error) {
 	core := zapcore.NewTee(
 		zapcore.NewCore(
 			zapcore.NewJSONEncoder(loggerConfig.EncoderConfig),
-			zapcore.Lock(outputSyncer),
+			//zapcore.Lock(outputSyncer),
+			outputWriter,
 			infoLevel,
 		),
 		zapcore.NewCore(
 			zapcore.NewJSONEncoder(loggerConfig.EncoderConfig),
-			zapcore.Lock(errorSyncer),
+			//zapcore.Lock(errorSyncer),
+			errorWriter,
 			errorLevel,
 		),
 	)
