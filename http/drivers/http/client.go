@@ -2,10 +2,12 @@ package http
 
 import (
 	"crypto/tls"
+	"net/http"
+	"net/url"
+
 	"github.com/ArtisanCloud/PowerLibs/v3/fmt"
 	"github.com/ArtisanCloud/PowerLibs/v3/http/contract"
 	"github.com/pkg/errors"
-	"net/http"
 )
 
 // Client 是 net/http 的封装
@@ -22,14 +24,23 @@ func NewHttpClient(config *contract.ClientConfig) (*Client, error) {
 	coreClient := http.Client{
 		Timeout: config.Timeout,
 	}
+	var proxy func(*http.Request) (*url.URL, error)
+	if config.ProxyURI != "" {
+		if proxyURL, err := url.Parse(config.ProxyURI); err == nil {
+			proxy = http.ProxyURL(proxyURL)
+		}
+	}
 	if config.Cert.CertFile != "" && config.Cert.KeyFile != "" {
 		certPair, err := tls.LoadX509KeyPair(config.Cert.CertFile, config.Cert.KeyFile)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to load certificate")
 		}
-		coreClient.Transport = &http.Transport{TLSClientConfig: &tls.Config{
-			Certificates: []tls.Certificate{certPair},
-		}}
+		coreClient.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{
+				Certificates: []tls.Certificate{certPair},
+			}, Proxy: proxy}
+	} else if proxy != nil {
+		coreClient.Transport = &http.Transport{Proxy: proxy}
 	}
 	return &Client{
 		conf:       config,
