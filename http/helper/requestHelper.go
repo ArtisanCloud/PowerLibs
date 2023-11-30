@@ -3,20 +3,20 @@ package helper
 import (
 	"bytes"
 	"encoding/xml"
+	"io"
+	http2 "net/http"
+	"strings"
+
 	"github.com/ArtisanCloud/PowerLibs/v3/http/contract"
 	"github.com/ArtisanCloud/PowerLibs/v3/http/dataflow"
 	"github.com/ArtisanCloud/PowerLibs/v3/http/drivers/http"
 	"github.com/ArtisanCloud/PowerLibs/v3/object"
-	"io"
-	"io/ioutil"
-	http2 "net/http"
-	"strings"
 )
 
 type RequestDownload struct {
-	HashType    string `json:"hash_type""`
-	HashValue   string `json:"hash_value""`
-	DownloadURL string `json:"download_url""`
+	HashType    string `json:"hash_type"`
+	HashValue   string `json:"hash_value"`
+	DownloadURL string `json:"download_url"`
 }
 
 type RequestHelper struct {
@@ -79,7 +79,7 @@ func (r *RequestHelper) ParseResponseBodyToMap(rs *http2.Response, outBody *obje
 	if err != nil {
 		return err
 	}
-	rs.Body = ioutil.NopCloser(bytes.NewBuffer(b))
+	rs.Body = io.NopCloser(bytes.NewBuffer(b))
 
 	contentType := rs.Header.Get("Content-Type")
 
@@ -108,7 +108,7 @@ func (r *RequestHelper) ParseResponseBodyContent(rs *http2.Response, outBody int
 	if err != nil {
 		return err
 	}
-	rs.Body = ioutil.NopCloser(bytes.NewBuffer(b))
+	rs.Body = io.NopCloser(bytes.NewBuffer(b))
 
 	contentType := rs.Header.Get("Content-Type")
 
@@ -136,7 +136,7 @@ func HttpResponseSend(rs *http2.Response, writer http2.ResponseWriter) (err erro
 	writer.WriteHeader(rs.StatusCode)
 
 	// set write body
-	body, err := ioutil.ReadAll(rs.Body)
+	body, err := io.ReadAll(rs.Body)
 	if err != nil {
 		return err
 	}
