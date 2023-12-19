@@ -1,6 +1,7 @@
 package zap
 
 import (
+	"github.com/ArtisanCloud/PowerLibs/v3/fmt"
 	"github.com/ArtisanCloud/PowerLibs/v3/logger/contract"
 	"github.com/ArtisanCloud/PowerLibs/v3/object"
 	os2 "github.com/ArtisanCloud/PowerLibs/v3/os"
@@ -65,7 +66,7 @@ func newZapLogger(config *object.HashMap) (logger *zap.Logger, err error) {
 	//}
 	outputWriter := zapcore.AddSync(&lumberjack.Logger{
 		Filename:   outputFile,
-		MaxSize:    100, // megabytes
+		MaxSize:    50, // megabytes
 		MaxBackups: 3,
 		MaxAge:     28,   // days
 		Compress:   true, // disabled by default
@@ -90,6 +91,27 @@ func newZapLogger(config *object.HashMap) (logger *zap.Logger, err error) {
 	errorLevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl >= zapcore.ErrorLevel
 	})
+
+	// 添加 level 字段
+	level, ok := (*config)["level"].(string)
+	fmt.Dump(level, ok)
+	if ok {
+		switch level {
+		case "debug":
+			infoLevel = zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+				return lvl < zapcore.ErrorLevel
+			})
+		//case "info":
+		//	infoLevel = zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+		//		return lvl < zapcore.ErrorLevel
+		//	})
+		case "error":
+			infoLevel = zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+				return false // 禁用 info 级别
+			})
+		default:
+		}
+	}
 
 	core := zapcore.NewTee(
 		zapcore.NewCore(
