@@ -6,8 +6,9 @@ import (
 )
 
 type ClientConfig struct {
-	Timeout time.Duration
-	Cert    CertConfig
+	Timeout  time.Duration
+	Cert     CertConfig
+	ProxyURI string
 	// 如果需要定制化tls, 设置该属性, 否则请使用Cert
 	// TlsConfig *tls.Config
 }
