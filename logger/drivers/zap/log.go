@@ -1,7 +1,6 @@
 package zap
 
 import (
-	"github.com/ArtisanCloud/PowerLibs/v3/fmt"
 	"github.com/ArtisanCloud/PowerLibs/v3/logger/contract"
 	"github.com/ArtisanCloud/PowerLibs/v3/object"
 	os2 "github.com/ArtisanCloud/PowerLibs/v3/os"
@@ -94,7 +93,7 @@ func newZapLogger(config *object.HashMap) (logger *zap.Logger, err error) {
 
 	// 添加 level 字段
 	level, ok := (*config)["level"].(string)
-	fmt.Dump(level, ok)
+	//fmt.Dump(level, ok)
 	if ok {
 		switch level {
 		case "debug":
