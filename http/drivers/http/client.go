@@ -40,7 +40,9 @@ func NewHttpClient(config *contract.ClientConfig) (*Client, error) {
 				Certificates: []tls.Certificate{certPair},
 			}, Proxy: proxy}
 	} else if proxy != nil {
-		coreClient.Transport = &http.Transport{Proxy: proxy}
+		coreClient.Transport = &http.Transport{TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		}, Proxy: proxy}
 	}
 	return &Client{
 		conf:       config,
