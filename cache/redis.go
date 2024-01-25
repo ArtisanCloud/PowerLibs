@@ -5,14 +5,27 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	fmt2 "github.com/ArtisanCloud/PowerLibs/v3/fmt"
 	"github.com/ArtisanCloud/PowerLibs/v3/object"
 	"github.com/redis/go-redis/v9"
-	"time"
 )
 
+type clienter interface {
+	Get(ctx context.Context, key string) *redis.StringCmd
+	MGet(ctx context.Context, keys ...string) *redis.SliceCmd
+	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd
+	SetNX(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.BoolCmd
+	Expire(ctx context.Context, key string, expiration time.Duration) *redis.BoolCmd
+	Exists(ctx context.Context, keys ...string) *redis.IntCmd
+	TxPipeline() redis.Pipeliner
+	Del(ctx context.Context, keys ...string) *redis.IntCmd
+	Close() error
+}
+
 type GRedis struct {
-	Pool              *redis.Client
+	cli               clienter
 	defaultExpiration time.Duration
 	lockRetries       int
 }
@@ -45,19 +58,27 @@ var CTXRedis = context.Background()
 const lockRetries = 5
 
 func NewGRedis(opts *redis.Options) (gr *GRedis) {
-
 	c := redis.NewClient(opts)
 	gr = &GRedis{
-		Pool:        c,
+		cli:         c,
 		lockRetries: lockRetries,
 	}
 
 	return gr
+}
 
+func NewGRedisCluster(opts *redis.ClusterOptions) (gr *GRedis) {
+	c := redis.NewClusterClient(opts)
+	gr = &GRedis{
+		cli:         c,
+		lockRetries: lockRetries,
+	}
+
+	return gr
 }
 
 func (gr *GRedis) AddNX(key string, value interface{}, ttl time.Duration) bool {
-	cmd := gr.Pool.SetNX(CTXRedis, key, value, ttl)
+	cmd := gr.cli.SetNX(CTXRedis, key, value, ttl)
 	r, err := cmd.Result()
 	//fmt.Printf("r:%b \r\n", r)
 	if err != nil {
@@ -86,32 +107,23 @@ func (gr *GRedis) Set(key string, value interface{}, expires time.Duration) erro
 		return err
 	}
 
-	result := gr.Pool.Set(CTXRedis, key, mValue, expires)
+	result := gr.cli.Set(CTXRedis, key, mValue, expires)
 	return result.Err()
 }
 
 func (gr *GRedis) SetEx(key string, value interface{}, expires time.Duration) error {
 	mValue, err := json.Marshal(value)
-	//mExpire, err := json.Marshal(expires)
 	if err != nil {
 		return err
 	}
 
-	//luaScript := redis.NewScript(SCRIPT_SETEX)
-	//cmd := luaScript.Run(gr.Pool.Context(),gr.Pool, []string{key}, mExpire, mValue)
-	//fmt.Printf("result:%s \r\n",cmd.String())
-	//fmt.Printf("err:%s \r\n", cmd.Err())
-
-	connPool := gr.Pool.Conn()
-	cmd := connPool.SetEx(CTXRedis, key, mValue, expires)
-	//fmt2.Dump(connPool.Pipeline())
-	//fmt.Printf("result:", cmd.String())
-
+	// 使用Set()方法并传递SetOptions设置过期时间
+	cmd := gr.cli.Set(CTXRedis, key, mValue, expires)
 	return cmd.Err()
 }
 
 func (gr *GRedis) Get(key string, ptrValue interface{}) (returnValue interface{}, err error) {
-	b, err := gr.Pool.Get(CTXRedis, key).Bytes()
+	b, err := gr.cli.Get(CTXRedis, key).Bytes()
 	if err == redis.Nil {
 		return nil, ErrCacheMiss
 	}
@@ -134,7 +146,7 @@ func (gr *GRedis) Has(key string) bool {
 }
 
 func (gr *GRedis) GetMulti(keys ...string) (object.HashMap, error) {
-	res, err := gr.Pool.MGet(CTXRedis, keys...).Result()
+	res, err := gr.cli.MGet(CTXRedis, keys...).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -151,15 +163,64 @@ func (gr *GRedis) GetMulti(keys ...string) (object.HashMap, error) {
 }
 
 func (gr *GRedis) Delete(key string) error {
-	return gr.Pool.Del(CTXRedis, key).Err()
+	return gr.cli.Del(CTXRedis, key).Err()
 }
 
 func (gr *GRedis) Keys() ([]string, error) {
-	return gr.Pool.Keys(CTXRedis, "*").Result()
+	// if client is a redis.ClusterClient
+	if cli, ok := gr.cli.(*redis.ClusterClient); ok {
+		var keys []string
+		slots, err := cli.ClusterSlots(CTXRedis).Result()
+		if err != nil {
+			return nil, err
+		}
+		for _, slot := range slots {
+			for _, node := range slot.Nodes {
+				client := redis.NewClient(&redis.Options{
+					Addr: node.Addr,
+				})
+				nodeKeys, err := client.Keys(CTXRedis, "*").Result()
+				if err != nil {
+					return nil, err
+				}
+				keys = append(keys, nodeKeys...)
+				client.Close()
+			}
+		}
+		return keys, nil
+	} else if cli, ok := gr.cli.(*redis.Client); ok {
+		// code to be executed if client is a redis.Client
+		return cli.Keys(CTXRedis, "*").Result()
+	}
+
+	return nil, nil
 }
 
 func (gr *GRedis) Flush() error {
-	return gr.Pool.FlushAll(CTXRedis).Err()
+	if cli, ok := gr.cli.(*redis.ClusterClient); ok {
+		// 在集群环境下，FlushAll命令需要对每个主节点分别执行
+		slots, err := cli.ClusterSlots(CTXRedis).Result()
+		if err != nil {
+			return err
+		}
+		for _, slot := range slots {
+			for _, node := range slot.Nodes {
+				client := redis.NewClient(&redis.Options{
+					Addr: node.Addr,
+				})
+				if err := client.FlushAll(CTXRedis).Err(); err != nil {
+					return err
+				}
+				client.Close()
+			}
+		}
+		return nil
+	} else if cli, ok := gr.cli.(*redis.Client); ok {
+		// code to be executed if client is a redis.Client
+		return cli.FlushAll(CTXRedis).Err()
+	}
+
+	return nil
 }
 
 /**
@@ -223,7 +284,7 @@ func (gr *GRedis) Put(key interface{}, value interface{}, ttl time.Duration) boo
 	//	return gr.Delete(key)
 	//}
 
-	//result = gr.Pool.Put(gr.itemKey(key), value, seconds)
+	//result = gr.cli.Put(gr.itemKey(key), value, seconds)
 
 	err := gr.SetEx(key.(string), value, ttl)
 	if err != nil {
@@ -250,10 +311,10 @@ func (gr *GRedis) PutMany(values object.Array, ttl time.Duration) bool {
 	//seconds := gr.GetSeconds(ttl)
 	//
 	//if seconds <= 0 {
-	//	return gr.Pool.Del(array_keys(values))
+	//	return gr.cli.Del(array_keys(values))
 	//}
 	//
-	//gr.Pool.
+	//gr.cli.
 
 	return false
 }
@@ -299,7 +360,7 @@ func (gr *GRedis) GetSeconds(ttl time.Duration) int {
 }
 
 func (gr *GRedis) SetByTags(key string, val interface{}, tags []string, expiry time.Duration) error {
-	pipe := gr.Pool.TxPipeline()
+	pipe := gr.cli.TxPipeline()
 	for _, tag := range tags {
 		pipe.SAdd(CTXRedis, tag, key)
 		pipe.Expire(CTXRedis, tag, expiry)
@@ -311,12 +372,35 @@ func (gr *GRedis) SetByTags(key string, val interface{}, tags []string, expiry t
 	return errExec
 }
 
-func (gr *GRedis) Invalidate(tags []string) {
-	keys := make([]string, 0)
-	for _, tag := range tags {
-		k, _ := gr.Pool.SMembers(CTXRedis, tag).Result()
-		keys = append(keys, tag)
-		keys = append(keys, k...)
+func (gr *GRedis) Invalidate(tags []string) error {
+	if cli, ok := gr.cli.(*redis.ClusterClient); ok {
+		// Redis集群模式下，删除操作需要确保键在同一个节点(slot)上。
+		for _, tag := range tags {
+			// 首先获取集群中，tag对应的所有成员
+			keys, err := cli.SMembers(CTXRedis, tag).Result()
+			if err != nil {
+				return err
+			}
+			keys = append(keys, tag) // 也需要删除tag键本身
+
+			// 在集群模式下，删除操作需要单独对每个键进行处理
+			for _, key := range keys {
+				_, err := cli.Del(CTXRedis, key).Result()
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	} else if cli, ok := gr.cli.(*redis.Client); ok {
+		keys := make([]string, 0)
+		for _, tag := range tags {
+			k, _ := cli.SMembers(CTXRedis, tag).Result()
+			keys = append(keys, tag)
+			keys = append(keys, k...)
+		}
+		cli.Del(CTXRedis, keys...)
 	}
-	gr.Pool.Del(CTXRedis, keys...)
+
+	return nil
 }
