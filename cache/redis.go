@@ -5,14 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	fmt2 "github.com/ArtisanCloud/PowerLibs/v3/fmt"
 	"github.com/ArtisanCloud/PowerLibs/v3/object"
 	"github.com/redis/go-redis/v9"
-	"time"
 )
 
 type GRedis struct {
-	Pool              *redis.Client
+	Pool              redis.UniversalClient
 	defaultExpiration time.Duration
 	lockRetries       int
 }
@@ -44,9 +45,9 @@ var CTXRedis = context.Background()
 
 const lockRetries = 5
 
-func NewGRedis(opts *redis.Options) (gr *GRedis) {
+func NewGRedis(opts *redis.UniversalOptions) (gr *GRedis) {
 
-	c := redis.NewClient(opts)
+	c := redis.NewUniversalClient(opts)
 	gr = &GRedis{
 		Pool:        c,
 		lockRetries: lockRetries,
@@ -102,8 +103,8 @@ func (gr *GRedis) SetEx(key string, value interface{}, expires time.Duration) er
 	//fmt.Printf("result:%s \r\n",cmd.String())
 	//fmt.Printf("err:%s \r\n", cmd.Err())
 
-	connPool := gr.Pool.Conn()
-	cmd := connPool.SetEx(CTXRedis, key, mValue, expires)
+	// connPool := gr.Pool.Conn()
+	cmd := gr.Pool.SetEx(CTXRedis, key, mValue, expires)
 	//fmt2.Dump(connPool.Pipeline())
 	//fmt.Printf("result:", cmd.String())
 
