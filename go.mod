@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/clbanning/mxj/v2 v2.7.0
-	github.com/golang-module/carbon v1.5.5
+	github.com/golang-module/carbon v1.6.0
 	github.com/google/uuid v1.1.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/redis/go-redis/v9 v9.0.3
