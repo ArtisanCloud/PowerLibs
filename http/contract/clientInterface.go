@@ -1,6 +1,7 @@
 package contract
 
 import (
+	"crypto/tls"
 	"net/http"
 	"time"
 )
@@ -10,7 +11,7 @@ type ClientConfig struct {
 	Cert     CertConfig
 	ProxyURI string
 	// 如果需要定制化tls, 设置该属性, 否则请使用Cert
-	// TlsConfig *tls.Config
+	TlsConfig *tls.Config
 }
 
 type CertConfig struct {
@@ -22,6 +23,7 @@ func (c *ClientConfig) Default() {
 	if c.Timeout == 0 {
 		c.Timeout = time.Second * 30
 	}
+	c.TlsConfig = &tls.Config{InsecureSkipVerify: true}
 }
 
 type ClientInterface interface {
