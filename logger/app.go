@@ -60,22 +60,22 @@ func (log *Logger) Fatal(msg string, v ...interface{}) {
 }
 
 func (log *Logger) DebugF(format string, args ...interface{}) {
-	log.Driver.WithContext(log.ctx).DebugF(format, args)
+	log.Driver.WithContext(log.ctx).DebugF(format, args...)
 }
 func (log *Logger) InfoF(format string, args ...interface{}) {
-	log.Driver.WithContext(log.ctx).InfoF(format, args)
+	log.Driver.WithContext(log.ctx).InfoF(format, args...)
 }
 func (log *Logger) WarnF(format string, args ...interface{}) {
-	log.Driver.WithContext(log.ctx).WarnF(format, args)
+	log.Driver.WithContext(log.ctx).WarnF(format, args...)
 }
 func (log *Logger) ErrorF(format string, args ...interface{}) {
-	log.Driver.WithContext(log.ctx).ErrorF(format, args)
+	log.Driver.WithContext(log.ctx).ErrorF(format, args...)
 }
 func (log *Logger) PanicF(format string, args ...interface{}) {
-	log.Driver.WithContext(log.ctx).PanicF(format, args)
+	log.Driver.WithContext(log.ctx).PanicF(format, args...)
 }
 func (log *Logger) FatalF(format string, args ...interface{}) {
-	log.Driver.WithContext(log.ctx).FatalF(format, args)
+	log.Driver.WithContext(log.ctx).FatalF(format, args...)
 }
 
 func InitLogPath(path string, files ...string) (err error) {
