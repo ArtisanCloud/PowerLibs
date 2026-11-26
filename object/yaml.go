@@ -1,9 +1,10 @@
 package object
 
 import (
-	"gopkg.in/yaml.v3"
 	"io/fs"
 	"io/ioutil"
+
+	"go.yaml.in/yaml/v3"
 )
 
 func SaveYMLFile(yamlObject interface{}, savePath string, perm fs.FileMode) (err error) {
