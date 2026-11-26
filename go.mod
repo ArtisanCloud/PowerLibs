@@ -10,6 +10,8 @@ require (
 	github.com/redis/go-redis/v9 v9.0.3
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.21.0
+	go.yaml.in/yaml/v2 v2.4.5
+	go.yaml.in/yaml/v3 v3.0.6
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
 )
 
@@ -40,7 +42,6 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/gorm v1.23.6
-
 )

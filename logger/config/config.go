@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"go.uber.org/zap/zapcore"
-	"gopkg.in/yaml.v2"
+	"go.yaml.in/yaml/v2"
 )
 
 // FileConfig 配置本地文件日志
